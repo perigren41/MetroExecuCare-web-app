@@ -8,7 +8,7 @@ export default function Navbar() {
   bg-gradient-to-r from-[#3F6EC0] via-[#00539F] via-33% via-[#5D3EA4] to-[#7940A8] text-white"
 >
       {/* Left - Button with SVG */}
-      <button className="p-2 rounded-full hover:bg-white/20 transition">
+      <button className="p-2 rounded-full hover:bg-white/20 transition ">
         <svg xmlns="http://www.w3.org/2000/svg" 
           fill="none" viewBox="0 0 24 24" 
           strokeWidth="1.5" stroke="currentColor" 
@@ -26,9 +26,9 @@ export default function Navbar() {
 </div>
 
       {/* Right - Name + Circle Image */}
-      <div className="flex items-center space-x-3">
+      <div className="flex items-center space-x-2">
         <span className="font-medium">Name</span>
-        <button className="w-10 h-10 rounded-full overflow-hidden border-2 border-white">
+        <button className="w-8 h-8 rounded-full overflow-hidden border-2 border-white">
           <img
             src="https://via.placeholder.com/40"
             alt="profile"

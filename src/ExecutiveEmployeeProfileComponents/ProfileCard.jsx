@@ -12,14 +12,14 @@ export default function ProfileCard() {
       </h2>
 
       {/* Picture + Info */}
-      <div className="flex flex-col md:flex-row justify-center md:justify-start items-center md:items-start gap-8 sm:gap-12">
+      <div className="flex flex-col md:flex-row justify-center md:justify-start items-center md:items-start gap-8 sm:gap-8">
         
         {/* Profile Image + Button */}
         <div className="flex flex-col items-center">
           <img
             src="https://i.pinimg.com/originals/8f/16/f9/8f16f9f71c7d6db2d75f49e63f7f2f38.jpg"
             alt="Profile"
-            className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full border-2 border-purple-400 object-cover"
+            className="w-50 h-50 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full border-2 border-purple-400 object-cover"
           />
 
           {/* Action Button with Icon */}
@@ -48,19 +48,34 @@ export default function ProfileCard() {
         </div>
 
         {/* Employee Info */}
-        <div className="flex flex-col text-center md:text-left px-2 sm:px-6 space-y-1">
-          <p className="text-purple-700 font-bold text-lg sm:text-xl">Thor Odinson</p>
+        <div className="flex flex-col text-center md:text-left px-2 sm:px-6 space-y-0">
+          <p className="text-blue-700 font-bold text-lg sm:text-xl ">Thor Odinson</p>
           <p className="text-gray-600 text-sm sm:text-base">Senior Executive Officer</p>
           <p className="text-gray-500 text-xs sm:text-sm mb-2">
             Metrobank Fort - Ecoprime Tower
           </p>
 
           <div className="text-xs sm:text-sm space-y-2">
-            <p><strong>Employee ID:</strong> <br/>00009</p>
-            <p><strong>Email:</strong> <br/>odinson.thor@metrobank.com.ph</p>
-            <p><strong>Contact:</strong> <br/>09287327111</p>
-            <p><strong>Birth Date:</strong> <br/>1983-08-11</p>
-            <p><strong>Department:</strong> <br/> Marketing</p>
+          <p>
+            <span className="font-bold text-blue-600">Employee ID:</span><br />
+            <span className="text-black">00009</span>
+          </p>
+          <p>
+            <span className="font-bold text-blue-600">Email:</span><br />
+            <span className="text-black">odinson.thor@metrobank.com.ph</span>
+          </p>
+          <p>
+            <span className="font-bold text-blue-600">Contact:</span><br />
+            <span className="text-black">09287327111</span>
+          </p>
+          <p>
+            <span className="font-bold text-blue-600">Birth Date:</span><br />
+            <span className="text-black">1983-08-11</span>
+          </p>
+          <p>
+            <span className="font-bold text-blue-600">Department:</span><br />
+            <span className="text-black">Marketing</span>
+          </p>
           </div>
         </div>
       </div>
