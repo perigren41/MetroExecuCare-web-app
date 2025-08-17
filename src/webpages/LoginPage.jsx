@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom"; // ✅ for page navigation
 import { ThemeToggle } from "@/Components/ThemeToggle.jsx"
 import { NavbarSection } from "@/Components/NavbarSection.jsx"
-import MetrobankLogo from "@/assets/MetrobankLogo.svg";
+import metrobankicon from "@/assets/metrobank-icon.svg";
 import mainLogo from "@/assets/mainLogo-foreground.svg";
 
 export function LoginPage({ onLogin }) {
@@ -25,15 +25,18 @@ export function LoginPage({ onLogin }) {
   return (
     <div className="flex items-center justify-center h-screen bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden ">
 
-      {/*Theme Toggle night and light mode*/}
-      <ThemeToggle />
+     
       {/* Navbar always on top */}
       <NavbarSection />
 
       {/* Background Image Overlay */}
       <div
-        className="absolute inset-0 bg-cover bg-center opacity-20"
-        style={{ backgroundImage: `url(${MetrobankLogo})` }}
+        className="absolute inset-0 bg-no-repeat bg-center opacity-20"
+        style={{
+          backgroundImage: `url(${metrobankicon})`,
+          // backgroundSize: "1200px", // you can adjust size (px, %, cover, contain)
+          backgroundSize: "clamp(500px, 60vw, 1200px)"
+        }}
       ></div>
 
       {/* Login Card */}
@@ -41,7 +44,7 @@ export function LoginPage({ onLogin }) {
         {/* Logo + Heading */}
         <div className="text-left mb-8">
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <img src={mainLogo} alt="MetroExecuCare Logo" className="w-8 h-10" />
+            <img src={mainLogo} alt="MetroExecuCare Logo" className="w-10 h-10" />
             MetroExecuCare
           </h1>
           <h2 className="text-3xl font-bold mt-2">Welcome to MetroExecuCare!</h2>
