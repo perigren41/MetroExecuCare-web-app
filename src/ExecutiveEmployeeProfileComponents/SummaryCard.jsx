@@ -1,12 +1,23 @@
 import React from "react";
+import { useNavigate } from "react-router-dom"; // ✅ for navigation
 
 export default function SummaryCard() {
+  const navigate = useNavigate();
+
   const history = [
     { date: "2025-04-20", package: "Regular Package", location: "Makati Medical Center", status: "Approved" },
     { date: "2024-03-17", package: "Regular Package", location: "St. Lukes Medical Center", status: "Approved" },
     { date: "2023-07-30", package: "Special Request", location: "The Medical City Clinic", status: "Approved" },
     { date: "2022-04-15", package: "Regular Package", location: "Makati Medical Center", status: "Approved" },
   ];
+
+  // ✅ Handle row click
+  const handleRowClick = (item) => {
+    // Example: navigate to detail page
+    navigate(`/history/${item.date}`, { state: item });
+    // Or just console.log for now:
+    // console.log("Clicked row:", item);
+  };
 
   return (
     <div className="bg-white shadow-md rounded-2xl p-6">
@@ -26,7 +37,11 @@ export default function SummaryCard() {
           </thead>
           <tbody>
             {history.map((item, idx) => (
-              <tr key={idx} className="border-t">
+              <tr
+                key={idx}
+                className="border-t hover:bg-purple-50 cursor-pointer transition"
+                onClick={() => handleRowClick(item)} // ✅ click handler
+              >
                 <td className="p-2 text-blue-600">{item.date}</td>
                 <td className="p-2">{item.package}</td>
                 <td className="p-2">{item.location}</td>
