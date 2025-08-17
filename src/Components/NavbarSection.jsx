@@ -8,7 +8,7 @@ const NavItems = [
     {name: "About us", href: "#about"},
     {name: "FAQ", href: "#faq"},
     {name: "Contact", href: "#contact"},
-    {name: "Login", href: "#login"},
+    {name: "Login", href: "/loginpage"},
 ]
 
 export const NavbarSection = () => {
