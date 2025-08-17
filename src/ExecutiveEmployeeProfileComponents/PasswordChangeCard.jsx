@@ -11,7 +11,7 @@ export default function PasswordChangeCard() {
       outline outline-2 outline-[#00539F] 
       shadow-lg shadow-[#00539F]/50">
       
-      <h2 className="text-blue-900 text-sm font-semibold mb-4">Change Password</h2>
+      <h2 className="text-blue-900 text-sm font-semibold mb-4 sm:text-base text-left">Change Password</h2>
       <div className="space-y-3">
 
         {/* Current Password */}

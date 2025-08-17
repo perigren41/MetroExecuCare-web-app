@@ -12,7 +12,7 @@ export default function ExecutiveEmployeeProfile() {
     <><NavBarSide />
 
     <div className="min-h-screen bg-gray-50 p-4 md:p-8 {COLORS}">
-      <h1 className="text-center text-xl font-bold mb-6">Executive Employee Profile</h1>
+      <h1 className="text-center text-base font-bold mb-6">Executive Employee Profile</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
   {/* Profile top-left */}

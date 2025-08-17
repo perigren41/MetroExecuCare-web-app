@@ -28,7 +28,7 @@ export default function SummaryCard() {
     >
       {/* Header */}
       <div className="text-left">
-        <h2 className="text-blue-900 font-semibold">Summary</h2>
+        <h2 className="text-blue-900 font-semibold sm:text-base">Summary</h2>
         <p className="text-sm">Your activity overview in MetroExecuCare</p>
       </div>
 
@@ -62,7 +62,7 @@ export default function SummaryCard() {
       <div className="bg-white shadow-md rounded-2xl p-6 flex flex-col 
           outline outline-2 outline-[#00539F] 
           shadow-lg shadow-[#00539F]/50">
-        <h2 className="text-blue-900 text-sm font-semibold mb-4 text-left">Notes</h2>
+        <h2 className="text-blue-900 text-sm font-semibold mb-4 text-left sm:text-base">Notes</h2>
         <textarea
           placeholder="Write down notes or reminders..."
           className="w-full border rounded-lg p-2 h-22 resize-none"

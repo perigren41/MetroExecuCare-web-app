@@ -1,29 +1,30 @@
 import React from "react";
 
+
 export default function ProfileCard() {
   return (
-    <div className="bg-white rounded-2xl p-6 
+    <div className="bg-white rounded-2xl p-6 flex flex-col 
       outline outline-2 outline-[#00539F] 
-      shadow-lg shadow-[#00539F]/50 w-full max-w-3xl mx-auto">
+      shadow-lg shadow-[#00539F]/50">
       
       {/* Title */}
-      <h2 className="text-blue-900 font-semibold mb-4 px-2 sm:px-5 text-left text-lg sm:text-xl">
+      <h2 className="text-blue-900 font-semibold mb-4 text-left text-lg sm:text-base">
         Basic Information
       </h2>
 
       {/* Picture + Info */}
-      <div className="flex flex-col md:flex-row justify-center md:justify-start items-center md:items-start gap-8 sm:gap-8">
-        
+      <div className="flex flex-col md:flex-row md:justify-start items-center md:items-start sm:gap-8 gap-4">
+
         {/* Profile Image + Button */}
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col md:justify-center items-center pl-7">
           <img
             src="https://i.pinimg.com/originals/8f/16/f9/8f16f9f71c7d6db2d75f49e63f7f2f38.jpg"
             alt="Profile"
-            className="w-50 h-50 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full border-2 border-purple-400 object-cover"
+            className="w-50 h-50 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full border-1 border-purple-400 object-cover"
           />
 
           {/* Action Button with Icon */}
-          <button className="mt-3 flex items-center gap-2 text-blue-600 hover:underline text-sm sm:text-base">
+          <button className="mt-2 flex items-center gap-2 text-blue-600 hover:underline text-sm sm:text-base">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -49,32 +50,32 @@ export default function ProfileCard() {
 
         {/* Employee Info */}
         <div className="flex flex-col text-center md:text-left px-2 sm:px-6 space-y-0">
-          <p className="text-blue-700 font-bold text-lg sm:text-xl ">Thor Odinson</p>
-          <p className="text-gray-600 text-sm sm:text-base">Senior Executive Officer</p>
-          <p className="text-gray-500 text-xs sm:text-sm mb-2">
+          <p className="text-blue-700 font-bold text-lg sm:text-base">Thor Odinson</p>
+          <p className="text-gray-600 text-sm sm:text-xs">Senior Executive Officer</p>
+          <p className="text-gray-500 text-xs sm:text-xs mb-2">
             Metrobank Fort - Ecoprime Tower
           </p>
 
-          <div className="text-xs sm:text-sm space-y-2">
+          <div className="sm:text-sm space-y-2">
           <p>
-            <span className="font-bold text-blue-600">Employee ID:</span><br />
-            <span className="text-black">00009</span>
+            <span className="font-bold text-blue-600 text-sm">Employee ID:</span><br />
+            <span className="text-black text-xs">00009</span>
           </p>
           <p>
-            <span className="font-bold text-blue-600">Email:</span><br />
-            <span className="text-black">odinson.thor@metrobank.com.ph</span>
+            <span className="font-bold text-blue-600 text-sm">Email:</span><br />
+            <span className="text-black text-xs">odinson.thor@metrobank.com.ph</span>
           </p>
           <p>
-            <span className="font-bold text-blue-600">Contact:</span><br />
-            <span className="text-black">09287327111</span>
+            <span className="font-bold text-blue-600 text-sm">Contact:</span><br />
+            <span className="text-black text-xs">09287327111</span>
           </p>
           <p>
-            <span className="font-bold text-blue-600">Birth Date:</span><br />
-            <span className="text-black">1983-08-11</span>
+            <span className="font-bold text-blue-600 text-sm">Birth Date:</span><br />
+            <span className="text-black text-xs">1983-08-11</span>
           </p>
           <p>
-            <span className="font-bold text-blue-600">Department:</span><br />
-            <span className="text-black">Marketing</span>
+            <span className="font-bold text-blue-600 text-sm">Department:</span><br />
+            <span className="text-black text-xs">Marketing</span>
           </p>
           </div>
         </div>

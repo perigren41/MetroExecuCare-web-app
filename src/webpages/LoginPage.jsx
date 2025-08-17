@@ -23,7 +23,7 @@ export function LoginPage({ onLogin }) {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden ">
+    <div className="flex items-center justify-center h-screen relative overflow-hidden bg-[linear-gradient(to_right,#3F6EC0_2%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)]">
 
      
       {/* Navbar always on top */}
@@ -31,7 +31,7 @@ export function LoginPage({ onLogin }) {
 
       {/* Background Image Overlay */}
       <div
-        className="absolute inset-0 bg-no-repeat bg-center opacity-20"
+        className="absolute inset-0 bg-no-repeat bg-center opacity-20   bg-[linear-gradient(to_right,#3F6EC0_20%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)]"
         style={{
           backgroundImage: `url(${metrobankicon})`,
           // backgroundSize: "1200px", // you can adjust size (px, %, cover, contain)
