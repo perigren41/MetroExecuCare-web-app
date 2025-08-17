@@ -3,7 +3,10 @@ import CircleButton from "./CircleButton";
 
 export default function PasswordChangeCard() {
   return (
-    <div className="bg-white shadow-md rounded-2xl p-6">
+    <div className="bg-white rounded-2xl p-6 flex flex-col 
+    outline outline-2 outline-[#00539F] 
+    shadow-lg shadow-[#00539F]/50">
+      
       <h2 className="text-blue-900 font-semibold mb-4">Change Password</h2>
       <div className="space-y-3">
         <input
