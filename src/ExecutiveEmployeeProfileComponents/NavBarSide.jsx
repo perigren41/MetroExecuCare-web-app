@@ -18,11 +18,11 @@ export default function Navbar() {
       </button>
 
         {/* Center - Logo */}
-    <div className="flex justify-center">
-  <h1 className="text-base font-semibold flex items-center gap-1">
-    <img src={mainLogo} alt="MetroExecuCare Logo" className="w-8 h-9" />
-    MetroExecuCare
-  </h1>
+        <div className="flex justify-center">
+        <h1 className="text-base font-semibold flex items-center gap-1">
+        <img src={mainLogo} alt="MetroExecuCare Logo" className="w-8 h-9" />
+        MetroExecuCare
+        </h1>
 </div>
 
       {/* Right - Name + Circle Image */}
