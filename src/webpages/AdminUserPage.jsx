@@ -3,7 +3,7 @@ import SearchBar from "@/AdminUserPageComponents/SearchBar";
 import UserTable from "@/AdminUserPageComponents/UserTable";
 import UserDetailsModal from "@/AdminUserPageComponents/UserDetailsModal";
 import NewUserFormModal from "@/AdminUserPageComponents/NewUserFormModal";
-import NavBarSide from "@/ExecutiveEmployeeProfileComponents/NavBarSide";
+import NavBarAdmin from "@/AdminUserPageComponents/NavBarAdmin";
 
 export default function AdminUsersPage() {
   const [users, setUsers] = useState([
@@ -65,20 +65,36 @@ export default function AdminUsersPage() {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
       {/* Top Nav */}
-      <NavBarSide />
+      <NavBarAdmin />
 
+      <h1 className="text-center text-base font-bold mb-1 pt-6">MetroExecuCare Users</h1>
       {/* Main Content */}
-      <div className="flex-1 p-6">
-        {/* Add Button (left) + SearchBar (right) */}
-        <div className="flex justify-between items-center mb-6">
-          <button
-            onClick={handleAddUser}
-            className="bg-blue-700 text-white px-4 py-2 rounded-full hover:bg-blue-800 transition"
-          >
-            + Add User
-          </button>
-          <SearchBar value={searchQuery} onChange={setSearchQuery} />
-        </div>
+      <div className="flex-1 py-0 px-4 md:px-8 lg:px-8 xl:px-16">
+        {/* SearchBar (left) + Add Button (right) */}
+        <div className="flex flex-col mb-1">
+        {/* Title */}
+        <h1 className="text-left text-xs mb-2 pt-2">
+        <span className="font-bold">Branch:</span> Metrobank Fort - Ecoprime Tower
+      </h1>
+        {/* SearchBar (left) + Button (right) */}
+      <div className="flex items-center justify-between gap-2">
+        <SearchBar
+          value={searchQuery}
+          onChange={setSearchQuery}
+          className="flex-1"
+        />
+
+      <div className="flex items-center gap-1">
+      <span className="text-sm font-medium text-gray-700">Add</span>
+      <button
+        onClick={handleAddUser}
+        className="w-8 h-8 bg-blue-700 text-white
+                  rounded-full hover:bg-blue-800 transition text-xs sm:text-base"
+      >
+        +
+  </button>
+      </div>
+    </div>
 
         {/* Users Table */}
         <UserTable users={filteredUsers} onView={setSelectedUser} />
@@ -106,6 +122,7 @@ export default function AdminUsersPage() {
           />
         )}
       </div>
+    </div>
     </div>
   );
 }

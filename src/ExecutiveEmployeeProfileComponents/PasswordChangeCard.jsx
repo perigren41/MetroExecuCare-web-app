@@ -11,8 +11,8 @@ export default function PasswordChangeCard() {
       outline outline-2 outline-[#00539F] 
       shadow-lg shadow-[#00539F]/50">
       
-      <h2 className="text-blue-900 text-sm font-semibold mb-4 sm:text-base text-left">Change Password</h2>
-      <div className="space-y-3">
+      <h2 className="text-blue-900 text-sm font-semibold mb-4 sm:text-sm text-left">Change Password</h2>
+      <div className="space-y-2 text-xs">
 
         {/* Current Password */}
         <div className="relative">
@@ -65,7 +65,7 @@ export default function PasswordChangeCard() {
         </div>
 
         {/* New Password */}
-        <div className="relative">
+        <div className="relative mt-2">
           <input
             type={showNew ? "text" : "password"}
             placeholder="New Password"

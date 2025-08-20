@@ -29,29 +29,32 @@ export default function SummaryCard() {
       {/* Header */}
       <div className="text-left">
         <h2 className="text-blue-900 font-semibold sm:text-base">Summary</h2>
-        <p className="text-sm">Your activity overview in MetroExecuCare</p>
+        <p className="text-xs">Your activity overview in MetroExecuCare</p>
       </div>
 
       {/* History Table */}
       <div className="bg-white shadow-md rounded-2xl p-6 flex flex-col 
           outline outline-2 outline-[#00539F] 
-          shadow-lg shadow-[#00539F]/50 gap-4">
+          shadow-lg shadow-[#00539F]/50 gap-4 pt-2">
+            <h1 className="text-xs sm:text-xs text-left">
+              <span className="text-blue-900 font-semibold">Action Log:</span> Your past ten (10) actions made
+            </h1>
         <table className="w-full text-xs">
-          <thead className="bg-purple-100 text-left">
+          <thead className="bg-purple-100 text-center p-1">
             <tr>
-              <th className="p-2">Date</th>
-              <th className="p-2">Package</th>
-              <th className="p-2">Location</th>
-              <th className="p-2">Status</th>
+              <th className="p-1">Date</th>
+              <th className="p-1">Package</th>
+              <th className="p-1">Location</th>
+              <th className="p-1">Status</th>
             </tr>
           </thead>
           <tbody>
             {paddedHistory.map((item, idx) => (
               <tr key={idx} className="border-t">
-                <td className="p-2 text-blue-600">{item.date}</td>
-                <td className="p-2">{item.package}</td>
-                <td className="p-2">{item.location}</td>
-                <td className="p-2">{item.status}</td>
+                <td className="p-1 text-blue-600">{item.date}</td>
+                <td className="p-1">{item.package}</td>
+                <td className="p-1">{item.location}</td>
+                <td className="p-1">{item.status}</td>
               </tr>
             ))}
           </tbody>
@@ -61,13 +64,13 @@ export default function SummaryCard() {
       {/* Notes Section */}
       <div className="bg-white shadow-md rounded-2xl p-6 flex flex-col 
           outline outline-2 outline-[#00539F] 
-          shadow-lg shadow-[#00539F]/50">
-        <h2 className="text-blue-900 text-sm font-semibold mb-4 text-left sm:text-base">Notes</h2>
+          shadow-lg shadow-[#00539F]/50 text-xs">
+        <h2 className="text-blue-900 text-sm font-semibold mb-4 text-left sm:text-sm">Notes</h2>
         <textarea
           placeholder="Write down notes or reminders..."
           className="w-full border rounded-lg p-2 h-22 resize-none"
         ></textarea>
-        <div className="flex gap-2 mt-3">
+        <div className="flex gap-2 mt-2">
           <CircleButton text="Save" color="bg-blue-600" />
           <CircleButton text="Cancel" color="bg-gray-400" />
         </div>

@@ -8,7 +8,7 @@ export default function ProfileCard() {
       shadow-lg shadow-[#00539F]/50">
       
       {/* Title */}
-      <h2 className="text-blue-900 font-semibold mb-4 text-left text-lg sm:text-base">
+      <h2 className="text-blue-900 font-semibold mb-4 text-left text-base sm:text-base">
         Basic Information
       </h2>
 

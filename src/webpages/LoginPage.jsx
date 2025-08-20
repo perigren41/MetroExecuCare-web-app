@@ -32,7 +32,7 @@ export function LoginPage({ onLogin }) {
 
       {/* Background Image Overlay */}
       <div
-        className="absolute inset-0 bg-no-repeat bg-center opacity-20   bg-[linear-gradient(to_right,#3F6EC0_20%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)]"
+        className="absolute inset-0 bg-no-repeat bg-center opacity-20  bg-[linear-gradient(to_right,#3F6EC0_20%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)]"
         style={{
           backgroundImage: `url(${metrobankicon})`,
           // backgroundSize: "1200px", // you can adjust size (px, %, cover, contain)
@@ -54,33 +54,39 @@ export function LoginPage({ onLogin }) {
           </p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Username */}
-          <div>
-            <label className="block mb-1 text-sm text-left">Username</label>
-            <div className="flex items-center bg-white rounded-full px-3">
-              <span className="text-gray-500 mr-2">👤</span>
-              <input
-                type="text"
-                placeholder="Enter username"
-                onChange={(e) => setUsername(e.target.value)}
-                className="flex-1 py-2 bg-transparent focus:outline-none text-gray-800"
-              />
-            </div>
-          </div>
-
+        {/* Username */}
+        <div>
+          <label className="block mb-1 text-sm text-left">Username</label>
+          <div className="flex items-center bg-white rounded-full px-3">
+            <span className="text-gray-500 mr-2">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+              </svg>
+            </span>
+            <input
+              type="text"
+              placeholder="Enter username"
+              onChange={(e) => setUsername(e.target.value)}
+              className="flex-1 py-2 bg-transparent focus:outline-none text-gray-800"
+            />
+    </div>
+  </div>
           {/* Password */}
-          <div>
-  <label className="block mb-1 text-sm text-left">Password</label>
-  <div className="flex items-center bg-white rounded-full px-3">
-    <span className="text-gray-500 mr-2">🔒</span>
-    <input
-      type={showPassword ? "text" : "password"}
-      onChange={(e) => setPassword(e.target.value)}
-      placeholder="Enter password"
-      className="flex-1 py-2 bg-transparent focus:outline-none text-gray-800"
-    />
+      <div>
+        <label className="block mb-1 text-sm text-left">Password</label>
+        <div className="flex items-center bg-white rounded-full px-3">
+          <span className="text-gray-500 mr-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+            </svg>
+          </span>
+          <input
+            type={showPassword ? "text" : "password"}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter password"
+            className="flex-1 py-2 bg-transparent focus:outline-none text-gray-800"
+          />
     <button
       type="button"
       onClick={() => setShowPassword(!showPassword)}

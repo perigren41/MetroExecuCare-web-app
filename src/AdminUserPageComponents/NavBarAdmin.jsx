@@ -1,5 +1,5 @@
 import React from "react";
-import mainLogo from "@/assets/mainLogo-foreground.svg";
+import metrobankicon from "@/assets/metrobank-icon.svg";
 
 export default function Navbar() {
   return (
@@ -26,11 +26,11 @@ export default function Navbar() {
         </svg>
       </button>
 
-      {/* Center - Logo + Text */}
+    {/* Center - Logo + Text */}
       <div className="absolute left-1/2 transform -translate-x-1/2">
         <h1 className="text-base font-semibold flex items-center gap-0">
-          <img src={mainLogo} alt="MetroExecuCare Logo" className="w-8 h-9" />
-          MetroExecuCare
+          <img src={metrobankicon} alt="Metrobank Icon" className="w-5 h-5" />
+          Metrobank
         </h1>
       </div>
 
