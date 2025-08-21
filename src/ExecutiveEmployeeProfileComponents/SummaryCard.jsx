@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import CircleButton from "./CircleButton";
 
 export default function SummaryCard() {
@@ -21,6 +21,16 @@ export default function SummaryCard() {
     })),
   ];
 
+  // 🔹 Notes state + lock/unlock
+  const [notes, setNotes] = useState("");
+  const [isEditing, setIsEditing] = useState(true);
+
+  const handleSave = () => setIsEditing(false);
+  const handleCancel = () => {
+    setNotes("");
+    setIsEditing(true);
+  };
+
   return (
     <div className="bg-white rounded-2xl pt-3 pb-6 px-6 flex flex-col 
       outline outline-2 outline-[#00539F] 
@@ -36,9 +46,9 @@ export default function SummaryCard() {
       <div className="bg-white shadow-md rounded-2xl pt-2 pb-6 px-6 flex flex-col 
           outline outline-1 outline-[#00539F] 
           shadow-lg shadow-[#00539F]/50 gap-2">
-            <h1 className="text-xs sm:text-xs text-left">
-              <span className="text-blue-900 font-semibold">Action Log:</span> Your past ten (10) requests
-            </h1>
+        <h1 className="text-xs sm:text-xs text-left">
+          <span className="text-blue-900 font-semibold">Action Log:</span> Your past ten (10) requests
+        </h1>
         <table className="w-full text-xs">
           <thead className="bg-purple-300 text-center p-1">
             <tr>
@@ -65,14 +75,17 @@ export default function SummaryCard() {
       <div className="bg-white shadow-md rounded-2xl py-3 px-6 flex flex-col 
           outline outline-1 outline-[#00539F] 
           shadow-lg shadow-[#00539F]/50 text-xs">
-        <h2 className="text-blue-900 text-sm font-semibold mb-2 text-left sm:text-sm ">Notes</h2>
+        <h2 className="text-blue-900 text-sm font-semibold mb-2 text-left sm:text-sm">Notes: Write down notes or reminders of yourself ...</h2>
         <textarea
-          placeholder="Write down notes or reminders..."
-          className="w-full border rounded-lg p-1 h-22 resize-none"
+        className="w-full rounded-lg px-1 h-22 resize-none bg-[repeating-linear-gradient(white,white_23px,#6b7280_24px)]"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+        readOnly={!isEditing}
+        onFocus={() => setIsEditing(true)}
         ></textarea>
         <div className="flex gap-2 mt-2">
-          <CircleButton text="Save" color="bg-blue-600" />
-          <CircleButton text="Cancel" color="bg-gray-400" />
+          <CircleButton text="Save" color="bg-blue-600" onClick={handleSave} />
+          <CircleButton text="Cancel" color="bg-gray-400" onClick={handleCancel} />
         </div>
       </div>
     </div>

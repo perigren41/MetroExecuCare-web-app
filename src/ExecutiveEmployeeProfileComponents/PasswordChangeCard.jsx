@@ -19,7 +19,7 @@ export default function PasswordChangeCard() {
           <input
             type={showCurrent ? "text" : "password"}
             placeholder="Current Password"
-            className="w-full border rounded-lg p-2 pr-10"
+            className="h-6 w-full border rounded-lg p-2 pr-10"
           />
           <button
             type="button"
@@ -69,7 +69,7 @@ export default function PasswordChangeCard() {
           <input
             type={showNew ? "text" : "password"}
             placeholder="New Password"
-            className="w-full border rounded-lg p-2 pr-10"
+            className="h-6 w-full border rounded-lg p-2 pr-10"
           />
           <button
             type="button"
@@ -119,7 +119,7 @@ export default function PasswordChangeCard() {
           <input
             type={showConfirm ? "text" : "password"}
             placeholder="Confirm New Password"
-            className="w-full border rounded-lg p-2 pr-10"
+            className="h-6 w-full border rounded-lg p-2 pr-10"
           />
           <button
             type="button"
