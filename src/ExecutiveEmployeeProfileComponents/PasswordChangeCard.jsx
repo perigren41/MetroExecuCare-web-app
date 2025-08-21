@@ -165,7 +165,7 @@ export default function PasswordChangeCard() {
         </div>
 
         {/* Update Button */}
-        <div className="flex justify-end">
+        <div className="flex justify-end gap-2 mt-2">
           <CircleButton text="Update" color="bg-blue-600" />
         </div>
       </div>
