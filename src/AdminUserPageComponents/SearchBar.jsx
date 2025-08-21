@@ -27,8 +27,8 @@ export default function SearchBar({ search, setSearch }) {
         placeholder="Search by Name or Employee ID..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-80 h-6 pl-7 border border-gray-300 rounded-lg 
-        focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs"
+        className="w-80 h-7 pl-7 border rounded-lg 
+        focus:outline-none focus:ring-2 focus:ring-blue-900 text-xs"
       />
     </div>
   );
