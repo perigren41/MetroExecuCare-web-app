@@ -22,7 +22,7 @@ export default function SummaryCard() {
   ];
 
   return (
-    <div className="bg-white rounded-2xl p-6 flex flex-col 
+    <div className="bg-white rounded-2xl pt-3 pb-6 px-6 flex flex-col 
       outline outline-2 outline-[#00539F] 
       shadow-lg shadow-[#00539F]/50 gap-4"
     >
@@ -33,14 +33,14 @@ export default function SummaryCard() {
       </div>
 
       {/* History Table */}
-      <div className="bg-white shadow-md rounded-2xl p-6 flex flex-col 
-          outline outline-2 outline-[#00539F] 
-          shadow-lg shadow-[#00539F]/50 gap-4 pt-2">
+      <div className="bg-white shadow-md rounded-2xl pt-2 pb-6 px-6 flex flex-col 
+          outline outline-1 outline-[#00539F] 
+          shadow-lg shadow-[#00539F]/50 gap-2">
             <h1 className="text-xs sm:text-xs text-left">
-              <span className="text-blue-900 font-semibold">Action Log:</span> Your past ten (10) actions made
+              <span className="text-blue-900 font-semibold">Action Log:</span> Your past ten (10) requests
             </h1>
         <table className="w-full text-xs">
-          <thead className="bg-purple-100 text-center p-1">
+          <thead className="bg-purple-300 text-center p-1">
             <tr>
               <th className="p-1">Date</th>
               <th className="p-1">Package</th>
@@ -62,13 +62,13 @@ export default function SummaryCard() {
       </div>
 
       {/* Notes Section */}
-      <div className="bg-white shadow-md rounded-2xl p-6 flex flex-col 
-          outline outline-2 outline-[#00539F] 
+      <div className="bg-white shadow-md rounded-2xl py-3 px-6 flex flex-col 
+          outline outline-1 outline-[#00539F] 
           shadow-lg shadow-[#00539F]/50 text-xs">
-        <h2 className="text-blue-900 text-sm font-semibold mb-4 text-left sm:text-sm">Notes</h2>
+        <h2 className="text-blue-900 text-sm font-semibold mb-2 text-left sm:text-sm ">Notes</h2>
         <textarea
           placeholder="Write down notes or reminders..."
-          className="w-full border rounded-lg p-2 h-22 resize-none"
+          className="w-full border rounded-lg p-1 h-22 resize-none"
         ></textarea>
         <div className="flex gap-2 mt-2">
           <CircleButton text="Save" color="bg-blue-600" />

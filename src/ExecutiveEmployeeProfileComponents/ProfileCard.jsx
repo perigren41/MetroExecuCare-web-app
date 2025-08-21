@@ -3,7 +3,7 @@ import React from "react";
 
 export default function ProfileCard() {
   return (
-    <div className="bg-white rounded-2xl p-6 flex flex-col 
+    <div className="bg-white rounded-2xl pt-3 pb-6 px-6 flex flex-col 
       outline outline-2 outline-[#00539F] 
       shadow-lg shadow-[#00539F]/50">
       

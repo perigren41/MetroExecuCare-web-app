@@ -67,7 +67,7 @@ export default function AdminUsersPage() {
       {/* Top Nav */}
       <NavBarAdmin />
 
-      <h1 className="text-center text-base font-bold mb-1 pt-6">MetroExecuCare Users</h1>
+      <h1 className="text-center text-base font-bold mb-1 pt-6 text-blue-900">MetroExecuCare Users</h1>
       {/* Main Content */}
       <div className="flex-1 py-0 px-4 md:px-8 lg:px-8 xl:px-16">
         {/* SearchBar (left) + Add Button (right) */}
@@ -125,4 +125,4 @@ export default function AdminUsersPage() {
     </div>
     </div>
   );
-}
+  }

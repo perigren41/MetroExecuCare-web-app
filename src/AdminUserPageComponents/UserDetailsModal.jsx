@@ -14,7 +14,8 @@ export default function UserDetailsModal({ user, onClose, onEdit, onDelete }) {
           ✖
         </button>
 
-        <h2 className="text-lg font-bold text-blue-900 mb-4">
+        <h2 className="text-base font-bold text-blue-900 mb-4 bg-[linear-gradient(to_right,#3F6EC0_2%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] 
+      text-white">
           Employee Details
         </h2>
 

@@ -7,12 +7,12 @@ export default function PasswordChangeCard() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   return (
-    <div className="bg-white rounded-2xl p-6 flex flex-col 
+    <div className="bg-white rounded-2xl pt-3 px-6 pb-3 flex flex-col 
       outline outline-2 outline-[#00539F] 
       shadow-lg shadow-[#00539F]/50">
       
       <h2 className="text-blue-900 text-sm font-semibold mb-4 sm:text-sm text-left">Change Password</h2>
-      <div className="space-y-2 text-xs">
+      <div className="space-y-1 text-xs">
 
         {/* Current Password */}
         <div className="relative">
@@ -65,7 +65,7 @@ export default function PasswordChangeCard() {
         </div>
 
         {/* New Password */}
-        <div className="relative mt-2">
+        <div className="relative">
           <input
             type={showNew ? "text" : "password"}
             placeholder="New Password"

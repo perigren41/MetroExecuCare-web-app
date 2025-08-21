@@ -49,7 +49,7 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-gray-800">
-            {user ? "Edit User" : "Add New User"}
+            {"Add New User"}
           </h2>
           <button
             onClick={onClose}
@@ -60,103 +60,104 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium">Full Name</label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              required
-              className="w-full border rounded-lg px-3 py-2 mt-1"
-            />
-          </div>
+<form onSubmit={handleSubmit} className="space-y-4 text-xs">
+  <div className="flex items-center gap-4">
+    <label className="w-1/3 font-medium">Full Name</label>
+    <input
+      type="text"
+      name="name"
+      value={formData.name}
+      onChange={handleChange}
+      required
+      className="flex-1 border rounded-lg px-3 py-2 text-xs"
+    />
+  </div>
 
-          <div>
-            <label className="block text-sm font-medium">Position</label>
-            <input
-              type="text"
-              name="position"
-              value={formData.position}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2 mt-1"
-            />
-          </div>
+  <div className="flex items-center gap-4">
+    <label className="w-1/3 font-medium">Position</label>
+    <input
+      type="text"
+      name="position"
+      value={formData.position}
+      onChange={handleChange}
+      className="flex-1 border rounded-lg px-3 py-2 text-xs"
+    />
+  </div>
 
-          <div>
-            <label className="block text-sm font-medium">Email</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2 mt-1"
-            />
-          </div>
+  <div className="flex items-center gap-4">
+    <label className="w-1/3 font-medium">Email</label>
+    <input
+      type="email"
+      name="email"
+      value={formData.email}
+      onChange={handleChange}
+      className="flex-1 border rounded-lg px-3 py-2 text-xs"
+    />
+  </div>
 
-          <div>
-            <label className="block text-sm font-medium">Contact</label>
-            <input
-              type="text"
-              name="contact"
-              value={formData.contact}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2 mt-1"
-            />
-          </div>
+  <div className="flex items-center gap-4">
+    <label className="w-1/3 font-medium">Contact</label>
+    <input
+      type="text"
+      name="contact"
+      value={formData.contact}
+      onChange={handleChange}
+      className="flex-1 border rounded-lg px-3 py-2 text-xs"
+    />
+  </div>
 
-          <div>
-            <label className="block text-sm font-medium">Department</label>
-            <input
-              type="text"
-              name="department"
-              value={formData.department}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2 mt-1"
-            />
-          </div>
+  <div className="flex items-center gap-4">
+    <label className="w-1/3 font-medium">Department</label>
+    <input
+      type="text"
+      name="department"
+      value={formData.department}
+      onChange={handleChange}
+      className="flex-1 border rounded-lg px-3 py-2 text-xs"
+    />
+  </div>
 
-          <div>
-            <label className="block text-sm font-medium">Birth Date</label>
-            <input
-              type="date"
-              name="birthDate"
-              value={formData.birthDate}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2 mt-1"
-            />
-          </div>
+  <div className="flex items-center gap-4">
+    <label className="w-1/3 font-medium">Birth Date</label>
+    <input
+      type="date"
+      name="birthDate"
+      value={formData.birthDate}
+      onChange={handleChange}
+      className="flex-1 border rounded-lg px-3 py-2 text-xs"
+    />
+  </div>
 
-          <div>
-            <label className="block text-sm font-medium">Avatar URL</label>
-            <input
-              type="text"
-              name="avatar"
-              value={formData.avatar}
-              onChange={handleChange}
-              className="w-full border rounded-lg px-3 py-2 mt-1"
-            />
-          </div>
+  <div className="flex items-center gap-4">
+    <label className="w-1/3 font-medium">Avatar URL</label>
+    <input
+      type="text"
+      name="avatar"
+      value={formData.avatar}
+      onChange={handleChange}
+      className="flex-1 border rounded-lg px-3 py-2 text-xs"
+    />
+  </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-3 mt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-lg border hover:bg-gray-100"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 rounded-lg bg-blue-700 text-white hover:bg-blue-800"
-            >
-              {user ? "Update" : "Save"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+  {/* Actions */}
+  <div className="flex justify-end gap-3 mt-4">
+    <button
+      type="button"
+      onClick={onClose}
+      className="px-4 py-2 rounded-lg border hover:bg-gray-100 text-xs"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      className="px-4 py-2 rounded-lg bg-blue-700 text-white hover:bg-blue-800 text-xs"
+    >
+      {user ? "Update" : "Save"}
+    </button>
+  </div>
+</form>
+</div>
+
+</div>
   );
 }
