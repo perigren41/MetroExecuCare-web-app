@@ -17,7 +17,7 @@ export function LoginPage({ onLogin }) {
 
      if (username === "admin" && password === "1234") {
       onLogin?.(); // optional callback if you need it
-      navigate("/executive-employee-dashboard"); // redirect to dashboard page
+      navigate("/admin-users-page"); // redirect to dashboard page
     } else {
       alert("Invalid username or password");
     }
@@ -44,7 +44,7 @@ export function LoginPage({ onLogin }) {
       <div className="relative z-10 w-full max-w-200 bg-transparent p-10 rounded-2xl text-white">
         {/* Logo + Heading */}
         <div className="text-left mb-8">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
+          <h1 className="text-2xl font-bold flex items-center gap-0">
             <img src={mainLogo} alt="MetroExecuCare Logo" className="w-10 h-10" />
             MetroExecuCare
           </h1>

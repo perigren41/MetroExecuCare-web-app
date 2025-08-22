@@ -77,7 +77,7 @@ export default function AdminUsersPage() {
         <span className="font-bold">Branch:</span> Metrobank Fort - Ecoprime Tower
       </h1>
         {/* SearchBar (left) + Button (right) */}
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-2 mb-1">
         <SearchBar
           value={searchQuery}
           onChange={setSearchQuery}
@@ -88,11 +88,12 @@ export default function AdminUsersPage() {
       <span className="text-sm font-medium text-gray-700">Add</span>
       <button
         onClick={handleAddUser}
-        className="w-8 h-8 bg-blue-700 text-white
-                  rounded-full hover:bg-blue-800 transition text-xs sm:text-base"
+        className="w-8 h-8 bg-blue-700 text-white 
+                  rounded-full hover:bg-blue-800 transition 
+                  flex items-center justify-center"
       >
-        +
-  </button>
+        <span className="text-lg font-bold">+</span>
+      </button>
       </div>
     </div>
 

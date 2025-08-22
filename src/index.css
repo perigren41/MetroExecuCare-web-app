@@ -83,6 +83,14 @@
     border-image-slice: 1;
     border-radius: 0.5rem; /* match your rounded-lg */
   }
+
+  .rounded-gradient {
+  border-radius: 0.75rem; /* same as rounded-lg */
+  border: 1px solid transparent;
+  background: 
+    linear-gradient(white, white) padding-box, /* inner bg */
+    linear-gradient(to right,#3F6EC0 2%,#00539F 30%,#5D3EA4 50%,#7940A8 75%) border-box;
+}
 }
 
 @layer utilities {

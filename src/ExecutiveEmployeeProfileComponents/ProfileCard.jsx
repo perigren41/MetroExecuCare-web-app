@@ -56,7 +56,7 @@ export default function ProfileCard() {
 
         {/* Employee Info */}
         <div className="flex flex-col text-center md:text-left px-8 sm:px-8 space-y-0 pt-0">
-          <p className="text-blue-700 font-bold text-2xl sm:text-2xl">Thor Odinson</p>
+          <p className="text-blue-700 font-bold text-2xl sm:text-2xl">Thor Odinson</p> 
           <p className="text-gray-600 text-sm sm:text-xs">Senior Executive Officer</p>
           <p className="text-gray-500 text-xs sm:text-xs mb-2">
             Metrobank Fort - Ecoprime Tower

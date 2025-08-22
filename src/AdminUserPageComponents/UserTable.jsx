@@ -3,7 +3,7 @@ import React from "react";
 
 export default function UserTable({ users, onView }) {
   return (
-    <div className="overflow-x-auto shadow-md rounded-xl bg-white max-h-[300px] text-xs">
+    <div className="overflow-x-auto shadow-xl/30 shadow-blue-500/50 rounded-xl bg-white max-h-[300px] text-xs">
       <table className="min-w-full border-collapse border-white">
         <thead className="sticky top-0 z-10">
           <tr className="bg-[linear-gradient(to_right,#3F6EC0_10%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] text-white">
@@ -34,7 +34,6 @@ export default function UserTable({ users, onView }) {
             </td>
 
                 <td className="px-4 py-2 border-b">{user.id}</td>
-                
                 <td className="px-4 py-2 border-b">{user.position}</td>
                 <td className="px-4 py-2 border-b">{user.dateAdded}</td>
                 <td className="px-4 py-2 border-b justify-center">
