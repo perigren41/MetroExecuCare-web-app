@@ -30,7 +30,7 @@ export default function PasswordChangeCard() {
               // Eye
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" 
                 viewBox="0 0 24 24" strokeWidth={1.5} 
-                stroke="currentColor" className="size-6">
+                stroke="currentColor" className="size-4">
                 <path strokeLinecap="round" strokeLinejoin="round" 
                   d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 
                   7.51 7.355 4.5 12 4.5c4.646 0 8.578 3.01 
@@ -45,7 +45,7 @@ export default function PasswordChangeCard() {
               // Eye-off
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" 
                 viewBox="0 0 24 24" strokeWidth={1.5} 
-                stroke="currentColor" className="size-6">
+                stroke="currentColor" className="size-4">
                 <path strokeLinecap="round" strokeLinejoin="round" 
                   d="M3.98 8.223A10.477 10.477 0 001.934 
                   12C3.226 16.338 7.244 19.5 
@@ -80,7 +80,7 @@ export default function PasswordChangeCard() {
               // Eye
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" 
                 viewBox="0 0 24 24" strokeWidth={1.5} 
-                stroke="currentColor" className="size-6">
+                stroke="currentColor" className="size-4">
                 <path strokeLinecap="round" strokeLinejoin="round" 
                   d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 
                   7.51 7.355 4.5 12 4.5c4.646 0 8.578 3.01 
@@ -95,7 +95,7 @@ export default function PasswordChangeCard() {
               // Eye-off
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" 
                 viewBox="0 0 24 24" strokeWidth={1.5} 
-                stroke="currentColor" className="size-6">
+                stroke="currentColor" className="size-4">
                 <path strokeLinecap="round" strokeLinejoin="round" 
                   d="M3.98 8.223A10.477 10.477 0 001.934 
                   12C3.226 16.338 7.244 19.5 
@@ -130,7 +130,7 @@ export default function PasswordChangeCard() {
               // Eye
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" 
                 viewBox="0 0 24 24" strokeWidth={1.5} 
-                stroke="currentColor" className="size-6">
+                stroke="currentColor" className="size-4">
                 <path strokeLinecap="round" strokeLinejoin="round" 
                   d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 
                   7.51 7.355 4.5 12 4.5c4.646 0 8.578 3.01 
@@ -145,7 +145,7 @@ export default function PasswordChangeCard() {
               // Eye-off
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" 
                 viewBox="0 0 24 24" strokeWidth={1.5} 
-                stroke="currentColor" className="size-6">
+                stroke="currentColor" className="size-4">
                 <path strokeLinecap="round" strokeLinejoin="round" 
                   d="M3.98 8.223A10.477 10.477 0 001.934 
                   12C3.226 16.338 7.244 19.5 
