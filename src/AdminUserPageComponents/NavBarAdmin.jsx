@@ -10,6 +10,7 @@ export default function Navbar() {
     if (location.pathname === "/admin-users-page") {
       // ✅ If already on adminpage → Logout
       navigate("/loginpage", { replace: true });
+      alert("Are you sure you want to logout?");
     } else {
       // ✅ If in admin subpage → go back to adminpage
       navigate("/admin-users-page");

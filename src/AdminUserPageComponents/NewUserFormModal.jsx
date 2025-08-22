@@ -50,7 +50,7 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
         <div className="flex justify-between items-center 
             bg-[linear-gradient(to_right,#3F6EC0_2%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] 
             text-white px-4 py-1 rounded-t-lg">
-          <h2 className="text-sm font-bold">New Add User</h2>
+          <h2 className="text-sm font-bold">New User</h2>
           <button
             onClick={onClose}
             className="text-white hover:text-gray-200 text-lg"
@@ -191,16 +191,17 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
             name="role"
             value={formData.role}
             onChange={handleChange}
-            className="border rounded-sm gap-1 py-0 text-xs w-full border-gray-500"
+            className="border rounded-sm gap-1 py-0 text-xs w-full shadow-lg border-gray-500"
           >
             <option value="" disabled>
               Select role
             </option>
             <option value="admin">Admin</option>
-            <option value="Human Resources">Staff</option>
-            <option value="">Benefits Offficer Assistant</option>
-            <option value="user">Division Head</option>
-          </select>
+            <option value="Senior Executive Officer">Senior Executive Officer</option>
+            <option value="Benefits Assistant">Benefits Assistant</option>
+            <option value="Benefits Services Officer">Benefits Services Officer</option>
+            <option value="Division Head">Division Head</option>
+          </select> 
 
           {/* Position */}
           <label className="font-medium text-blue-900">Position</label>
