@@ -5,7 +5,7 @@ export const FeaturesSection = () => {
         <section id="features" className="flex flex-col items-center justify-center min-h-screen w-full">
             <div className="w-full gradient-bg-border p-8">
                 <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-mainWhite mb-8 text-center">
-                    MetroExeCuCare Features
+                    MetroExecuCare Features
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 ">

@@ -2,7 +2,7 @@ import { ThemeToggle } from "@/Components/ThemeToggle.jsx"
 import { NavbarSection } from "@/Components/NavbarSection.jsx"
 import { HeroSection } from "@/Components/HeroSection.jsx"
 import { FeaturesSection} from "@/Components/FeaturesSection.jsx"
-import { HowItWorksSection } from "../Components/HowItWorksSection.jsx" 
+import { HowItWorksSection } from "@/Components/HowItWorksSection.jsx" 
 
 export const LandingPage = () => {
     return(
