@@ -3,44 +3,29 @@ import SearchBar from "@/AdminUserPageComponents/SearchBar";
 import UserTable from "@/AdminUserPageComponents/UserTable";
 import UserDetailsModal from "@/AdminUserPageComponents/UserDetailsModal";
 import NewUserFormModal from "@/AdminUserPageComponents/NewUserFormModal";
-import NavBarAdmin from "@/AdminUserPageComponents/NavBarAdmin";
+import NavBarSide from "@/ExecutiveEmployeeProfileComponents/NavBarSide";
+import { USERS_DATABASE } from "@/webpages/MockUsers.jsx";
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState([
-    {
-      id: "EMP001",
-      name: "John Doe",
-      position: "Software Engineer",
-      email: "john.doe@example.com",
-      contact: "09171234567",
-      department: "IT",
-      birthDate: "1995-04-15",
-      dateAdded: "2023-08-15",
-      avatar: "https://i.pravatar.cc/100?img=1",
-    },
-    {
-      id: "EMP002",
-      name: "Jane Smith",
-      position: "HR Manager",
-      email: "jane.smith@example.com",
-      contact: "09181234567",
-      department: "HR",
-      birthDate: "1990-08-20",
-      dateAdded: "2023-09-01",
-      avatar: "https://i.pravatar.cc/100?img=2",
-    },
-  ]);
+  // Initialize users state with mock data
+  const [users, setUsers] = useState(USERS_DATABASE);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [showFormModal, setShowFormModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
+  const [filter, setFilter] = useState("all");
+  const [currentBranch, setCurrentBranch] = useState(
+    "Metrobank Fort - Ecoprime Tower" // replace with real logged-in user's branch
+  );
 
+  // Add New User
   const handleAddUser = () => {
     setEditUser(null);
     setShowFormModal(true);
   };
 
+  // Save New or Edited User from NewUserFormModal
   const handleSaveUser = (userData) => {
     if (editUser) {
       setUsers((prev) =>
@@ -51,51 +36,69 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleDeleteUser = (user) => {
-    if (window.confirm(`Are you sure you want to delete ${user.name}?`)) {
-      setUsers((prev) => prev.filter((u) => u.id !== user.id));
-      setSelectedUser(null);
-    }
+  // Delete User (no more browser confirm)
+  const handleDeleteUser = (userId) => {
+    setUsers((prev) => prev.filter((u) => u.id !== userId));
+    setSelectedUser(null); // close modal after delete
   };
 
-  const filteredUsers = users.filter((u) =>
-    u.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Update User from UserDetailsModal
+  const handleUpdateUser = (updatedUser) => {
+    setUsers((prevUsers) =>
+      prevUsers.map((u) => (u.id === updatedUser.id ? updatedUser : u))
+    );
+    setSelectedUser(updatedUser); // optional: keep modal open and updated
+  };
+
+  // Filtered Users
+  const filteredUsers = users.filter((u) => {
+    const matchesSearch =
+      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      u.id.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesFilter =
+      filter === "all" ? true : u.role.toLowerCase() === filter.toLowerCase();
+
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Top Nav */}
-      <NavBarAdmin />
+      <NavBarSide />
 
-      <h1 className="text-center text-base font-bold mb-1 pt-6 text-blue-900">MetroExecuCare Users</h1>
-      {/* Main Content */}
-      <div className="flex-1 py-0 px-4 md:px-8 lg:px-8 xl:px-16">
-        {/* SearchBar (left) + Add Button (right) */}
-        <div className="flex flex-col mb-1">
-        {/* Title */}
-        <h1 className="text-left text-xs mb-2 pt-2">
-        <span className="font-bold">Branch:</span> Metrobank Fort - Ecoprime Tower
+      <h1 className="text-center text-base font-bold mb-1 pt-6 text-blue-900">
+        MetroExecuCare Users
       </h1>
-        {/* SearchBar (left) + Button (right) */}
-      <div className="flex items-center justify-between gap-2 mb-1">
-        <SearchBar
-          value={searchQuery}
-          onChange={setSearchQuery}
-          className="flex-1"
-        />
 
-      <div className="flex items-center gap-1">
-      <span className="text-sm font-medium text-gray-700">Add</span>
-      <button
-        onClick={handleAddUser}
-        className="w-8 h-8 bg-blue-700 text-white 
+      <div className="flex-1 py-0 px-4 md:px-8 lg:px-8 xl:px-16">
+        {/* SearchBar + Add Button */}
+      
+        <div className="flex flex-col mb-1">
+          <h1 className="text-left text-xs mb-2 pt-2">
+            <span className="font-bold">Branch:</span> {currentBranch}
+          </h1>
+
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <SearchBar
+              search={searchQuery}
+              setSearch={setSearchQuery}
+              filter={filter}
+              setFilter={setFilter}
+            />
+
+            <div className="flex items-center gap-1">
+              <span className="text-sm font-medium text-gray-700">Add</span>
+              <button
+                onClick={handleAddUser}
+                className="w-8 h-8 bg-blue-700 text-white 
                   rounded-full hover:bg-blue-800 transition 
                   flex items-center justify-center"
-      >
-        <span className="text-lg font-bold">+</span>
-      </button>
-      </div>
-    </div>
+              >
+                <span className="text-lg font-bold">+</span>
+              </button>
+            </div>
+          </div>
+        </div>
 
         {/* Users Table */}
         <UserTable users={filteredUsers} onView={setSelectedUser} />
@@ -105,12 +108,8 @@ export default function AdminUsersPage() {
           <UserDetailsModal
             user={selectedUser}
             onClose={() => setSelectedUser(null)}
-            onEdit={(user) => {
-              setEditUser(user);
-              setShowFormModal(true);
-              setSelectedUser(null);
-            }}
             onDelete={handleDeleteUser}
+            onUpdate={handleUpdateUser} // ✅ update table after save
           />
         )}
 
@@ -124,6 +123,5 @@ export default function AdminUsersPage() {
         )}
       </div>
     </div>
-    </div>
   );
-  }
+}

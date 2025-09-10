@@ -1,57 +1,184 @@
 import React, { useState, useEffect } from "react";
-
+import EyeOpen from "@/assets/eyeopen.svg";
+import EyeClose from "@/assets/eyeclose.svg";
+import ProfileGray from "@/assets/profilegray.svg";
 
 export default function NewUserFormModal({ user, onClose, onSave }) {
   const [formData, setFormData] = useState({
     id: "",
-    name: "",
+    employeeid: "EMP" + String(Date.now()).slice(-4), // auto-generate ID
+    FirstName: "",
+    MiddleName: "",
+    LastName: "",
+    password: "",
     position: "",
+    role: "",
+    branch: "",
     email: "",
-    contact: "",
+    contact_number: "",
     department: "",
     birthDate: "",
-    avatar: "",
+    profileImage: "",
   });
+
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [showMissingFields, setShowMissingFields] = useState(false);
+  const [missingFields, setMissingFields] = useState([]);
+
+  // Generate Employee ID based on role
+  const generateEmployeeId = (role) => {
+    let prefix = "EMP"; // default
+    
+    switch (role) {
+      case "Admin":
+        prefix = "ADM";
+        break;
+      case "Senior Executive Officer":
+        prefix = "SEO";
+        break;
+      case "Benefits Assistant":
+        prefix = "BA";
+        break;
+      case "Benefits Services Officer":
+        prefix = "BSO";
+        break;
+      case "Division Head":
+        prefix = "DH";
+        break;
+      default:
+        prefix = "EMP"; // fallback
+    }
+    
+    // Generate 3-digit random number
+    const randomNum = String(Math.floor(100 + Math.random() * 900));
+    return prefix;
+  };
 
   // Pre-fill form if editing
   useEffect(() => {
     if (user) {
       setFormData(user);
     } else {
+      // For new users, start with default Employee ID
+      const defaultEmployeeId = "EMP" + String(Math.floor(100 + Math.random() * 900));
       setFormData({
-        id: "EMP" + String(Date.now()).slice(-4), // auto-generate ID
-        name: "",
+        id: "",
+        employeeid: defaultEmployeeId, // Auto-generate default ID
+        FirstName: "",
+        MiddleName: "",
+        LastName: "",
+        password: "",
         position: "",
+        role: "",
+        branch: "",
         email: "",
-        contact: "",
+        contact_number: "",
         department: "",
         birthDate: "",
-        avatar: "https://i.pravatar.cc/100", // default avatar
+        profileImage: "",
       });
     }
   }, [user]);
 
-  // Handle input change
+  // Handle input change - Updated to include automatic Employee ID generation
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    
+    // If role is changing, auto-generate new Employee ID
+    if (name === "role" && value) {
+      const newEmployeeId = generateEmployeeId(value);
+      setFormData((prev) => ({ 
+        ...prev, 
+        [name]: value,
+        employeeid: newEmployeeId
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
-  // Submit form
+  // Handle form submit → show confirm modal or missing fields
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSave(formData);
+
+    const requiredFields = [
+      "FirstName",
+      "MiddleName",
+      "LastName",
+      "employeeid",
+      "password",
+      "position",
+      "role",
+      "branch",
+      "email",
+      "contact_number",
+      "department",
+      "birthDate",
+    ];
+
+    const missing = requiredFields.filter(
+      (field) => !formData[field] || formData[field].trim() === ""
+    );
+
+    if (missing.length > 0) {
+      setMissingFields(missing);
+      setShowMissingFields(true); // show warning modal
+    } else {
+      setMissingFields([]);
+      setShowConfirm(true); // show confirm modal
+    }
+  };
+
+  // Confirm Save - Updated to use the existing employeeid
+  const confirmSave = () => {
+    // Use the existing employeeid from formData (already generated when role was selected)
+    const employeeId = formData.employeeid || generateEmployeeId(formData.role || "");
+    
+    // Generate numeric internal ID (sequential or fallback)
+    const nextId =
+      typeof confirmSave.lastId === "number"
+        ? confirmSave.lastId + 1
+        : 1; // start at 1 if none yet
+    confirmSave.lastId = nextId; // store for next save
+
+    const userData = {
+      id: nextId, // Internal numeric ID
+      employeeid: employeeId, // Use the generated/existing Employee ID
+      name: `${formData.FirstName || ""} ${formData.MiddleName || ""} ${
+        formData.LastName || ""
+      }`.trim(),
+      profileImage: formData.profileImage || "https://i.pravatar.cc/100",
+      position: formData.position,
+      role: formData.role,
+      email: formData.email,
+      contact: formData.contact_number,
+      contact_number: formData.contact_number,
+      department: formData.department,
+      branch: formData.branch,
+      birthDate: formData.birthDate,
+      created_at: new Date().toISOString().split("T")[0],
+    };
+
+    console.log("Saving user data:", userData);
+    onSave(userData);
+    setShowConfirm(false);
     onClose();
   };
 
+  // Utility to add red border for missing fields
+  const borderClass = (fieldName) =>
+    missingFields.includes(fieldName) ? "border-red-500" : "border-gray-500";
+
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
-  <div className="bg-white rounded-3xl shadow-lg w-full max-w-xl h-auto relative overflow-hidden mx-4 my-8 sm:mx-6 sm:my-10 md:mx-0 md:my-0">
-            {/* Header */}
-        <div className="flex justify-between items-center 
+      <div className="bg-white rounded-3xl shadow-lg w-full max-w-xl h-auto relative overflow-hidden mx-4 my-8 sm:mx-6 sm:my-10 md:mx-0 md:my-0">
+        {/* Header */}
+        <div
+          className="flex justify-between items-center 
             bg-[linear-gradient(to_right,#3F6EC0_2%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] 
-            text-white px-4 py-1 rounded-t-lg">
+            text-white px-4 py-1 rounded-t-lg"
+        >
           <h2 className="text-sm font-bold">New User</h2>
           <button
             onClick={onClose}
@@ -64,9 +191,9 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
         {/* Form */}
         <form
           onSubmit={handleSubmit}
-          className="grid grid-cols-[7fr_14fr_auto] gap-1 p-5 text-xs items-start text-left"
+          className="grid grid-cols-[7fr_14fr_auto] grid-rows-[auto] gap-1 p-5 text-xs items-start text-left"
         >
-          {/* Full Name */}
+          {/* First Name */}
           <label className="font-medium text-blue-900">First Name</label>
           <input
             type="text"
@@ -74,80 +201,67 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
             value={formData.FirstName}
             onChange={handleChange}
             required
-            className="border rounded-sm gap-1 py-0 text-xs w-full border-gray-500 px-1"
-
-            
+            className={`border rounded-sm gap-1 py-0 text-xs w-full px-1 ${borderClass(
+              "FirstName"
+            )}`}
           />
 
-          
-      {/* Profile upload section */}
-      <div className="row-span-10 flex flex-col items-center gap-2 mt-6 ml-4">
-        {/* Circle that only shows the image */}
-        <div className="w-40 h-40 rounded-full border flex items-center justify-center bg-white overflow-hidden">
-          {formData.profileImage ? (
-            <img
-              src={formData.profileImage}
-              alt="Profile"
-              className="w-40 h-40 object-cover"
+          {/* Profile upload - IMPROVED: Better styling and error handling */}
+          <div className="row-span-11 flex flex-col items-center gap-2 mt-6 ml-4">
+            <div className="w-40 h-40 rounded-full border flex items-center justify-center bg-white overflow-hidden">
+              {formData.profileImage ? (
+                <img
+                  src={formData.profileImage}
+                  alt="Profile"
+                  className="w-40 h-40 object-cover"
+                />
+              ) : (
+                <img
+                  src={ProfileGray}
+                  alt="Default Profile"
+                  className="w-10 h-10 text-gray-400"
+                />
+              )}
+            </div>
+
+            <label
+              htmlFor="profileImage"
+              className="text-xs text-blue-600 cursor-pointer hover:underline"
+            >
+              {formData.profileImage ? "Change Image" : "Add Image"}
+            </label>
+
+            <input
+              id="profileImage"
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  // Check file size (optional: limit to 5MB)
+                  if (file.size > 5 * 1024 * 1024) {
+                    alert("File size should be less than 5MB");
+                    return;
+                  }
+                  
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    setFormData(prev => ({ 
+                      ...prev, 
+                      profileImage: reader.result 
+                    }));
+                  };
+                  reader.onerror = () => {
+                    alert("Error reading file. Please try again.");
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+              className="hidden"
             />
-          ) : (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        className="w-10 h-10 text-gray-400"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 
-          2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 
-          21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 
-          0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 
-          2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 
-          0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"
-        />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 
-          10.5h.008v.008h-.008V10.5Z"
-        />
-      </svg>
-    )}
-  </div>
+          </div>
 
-  {/* Upload button as text under the circle */}
-        <label
-          htmlFor="profileImage"
-          className="text-xs text-blue-600 cursor-pointer hover:underline"
-        >
-          {formData.profileImage ? "Change Image" : "Add Image"}
-        </label>
-
-        {/* Hidden file input */}
-        <input
-          id="profileImage"
-          type="file"
-          accept="image/*"
-          onChange={(e) => {
-            const file = e.target.files[0];
-            if (file) {
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                setFormData({ ...formData, profileImage: reader.result });
-              };
-              reader.readAsDataURL(file);
-            }
-          }}
-          className="hidden"
-        />
-      </div>
-
-
-
+          {/* Middle Name */}
           <label className="font-medium text-blue-900">Middle Name</label>
           <input
             type="text"
@@ -155,8 +269,12 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
             value={formData.MiddleName}
             onChange={handleChange}
             required
-            className="border rounded-sm gap-1 py-0  text-xs w-full border-gray-500 px-1"
+            className={`border rounded-sm gap-1 py-0 text-xs w-full px-1 ${borderClass(
+              "MiddleName"
+            )}`}
           />
+
+          {/* Last Name */}
           <label className="font-medium text-blue-900">Last Name</label>
           <input
             type="text"
@@ -164,70 +282,50 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
             value={formData.LastName}
             onChange={handleChange}
             required
-            className="border rounded-sm gap-1 py-0 text-xs w-full border-gray-500 px-1"
+            className={`border rounded-sm gap-1 py-0 text-xs w-full px-1 ${borderClass(
+              "LastName"
+            )}`}
           />
 
-            {/* Employee Number */}
+          {/* Employee ID - Updated with generate button */}
           <label className="font-medium text-blue-900">Employee ID</label>
-          <input
-            type="text"
-            name="employeeNumber"
-            value={formData.employeeNumber}
-            onChange={handleChange}
-            className="border rounded-sm gap-1 py-0 text-xs w-full border-gray-500 px-1"
-          />
+          <div className="flex gap-1 items-center">
+            <input
+              type="text"
+              name="employeeid"
+              value={formData.employeeid}
+              onChange={handleChange}
+              className={`border rounded-sm gap-1 py-0 text-xs flex-1 px-1 ${borderClass(
+                "employeeid"
+              )}`}
+            />
+            
+          </div>
 
           {/* Password */}
-          {/* Password */}
-<label className="font-medium text-blue-900">Password</label>
-<div className="relative w-full">
-  <input
-    type={showPassword ? "text" : "password"}
-    name="password"
-    value={formData.password}
-    onChange={handleChange}
-    className="border rounded-sm gap-1 py-0 text-xs w-full border-gray-500 pr-8 px-1"
-  />
-
-  {/* Toggle Eye Icon */}
-  <button
-    type="button"
-    onClick={() => setShowPassword(!showPassword)}
-    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600"
-  >
-    {showPassword ? (
-      // Eye Slash (hidden)
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" 
-        viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" 
-        className="w-3 h-3">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 
-        0 1 0-.639C3.423 7.51 7.36 
-        4.5 12 4.5c4.638 0 8.573 
-        3.007 9.963 7.178.07.207.07.431 
-        0 .639C20.577 16.49 16.64 
-        19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 
-        1 1-6 0 3 3 0 0 1 6 0Z" />
-      </svg>
-    ) : (
-      // Eye (visible)
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" 
-        viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" 
-        className="w-3 h-3">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 
-        19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 
-        4.5c4.756 0 8.773 3.162 10.065 
-        7.498a10.522 10.522 0 0 1-4.293 
-        5.774M6.228 6.228 3 3m3.228 3.228 
-        3.65 3.65m7.894 7.894L21 
-        21m-3.228-3.228-3.65-3.65m0 
-        0a3 3 0 1 0-4.243-4.243m4.242 
-        4.242L9.88 9.88" />
-      </svg>
-    )}
-  </button>
-</div>
-
+          <label className="font-medium text-blue-900">Password</label>
+          <div className="relative w-full">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className={`border rounded-sm gap-1 py-0 text-xs w-full pr-8 px-1 ${borderClass(
+                "password"
+              )}`}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-2 top-1/2 -translate-y-1/2"
+            >
+              {showPassword ? (
+                <img src={EyeOpen} alt="Hide password" className="size-4" />
+              ) : (
+                <img src={EyeClose} alt="Show password" className="size-4" />
+              )}
+            </button>
+          </div>
 
           {/* Role */}
           <label className="font-medium text-blue-900">Role</label>
@@ -235,17 +333,23 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
             name="role"
             value={formData.role}
             onChange={handleChange}
-            className="border rounded-sm gap-1 py-0 text-xs w-full shadow-lg border-gray-500 px-1"
+            className={`border rounded-sm gap-1 py-0 text-xs w-full shadow-lg px-1 ${borderClass(
+              "role"
+            )}`}
           >
             <option value="" disabled>
               Select role
             </option>
-            <option value="admin">Admin</option>
-            <option value="Senior Executive Officer">Senior Executive Officer</option>
+            <option value="Admin">Admin</option>
+            <option value="Senior Executive Officer">
+              Senior Executive Officer
+            </option>
             <option value="Benefits Assistant">Benefits Assistant</option>
-            <option value="Benefits Services Officer">Benefits Services Officer</option>
+            <option value="Benefits Services Officer">
+              Benefits Services Officer
+            </option>
             <option value="Division Head">Division Head</option>
-          </select> 
+          </select>
 
           {/* Position */}
           <label className="font-medium text-blue-900">Position</label>
@@ -254,8 +358,31 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
             name="position"
             value={formData.position}
             onChange={handleChange}
-            className="border rounded-sm gap-1 py-0 text-xs w-full border-gray-500 px-1"
+            required
+            className={`border rounded-sm gap-1 py-0 text-xs w-full px-1 ${borderClass(
+              "position"
+            )}`}
           />
+
+          {/* Branch */}
+          <label className="font-medium text-blue-900">Branch</label>
+          <select
+            name="branch"
+            value={formData.branch}
+            onChange={handleChange}
+            className={`border rounded-sm gap-1 py-0 text-xs w-full shadow-lg px-1 ${borderClass(
+              "branch"
+            )}`}
+          >
+            <option value="" disabled>
+              Select branch
+            </option>
+            <option value="Metrobank Fort - Mckinley Branch">Metrobank Fort - Mckinley Branch</option>
+            <option value="Metrobank Fort - Ecoprime Tower">Metrobank Fort - Ecoprime Tower</option>
+            <option value="Metrobank Taguig - Puregold Branch">Metrobank Taguig - Puregold Branch</option>
+            <option value="Metrobank Taguig - Vista Mall">Metrobank Fort-Ten West Campus Branch</option>
+            <option value="Metrobank Fort - Bayani Road Branch">Metrobank Fort - Bayani Road Branch</option>
+          </select>
 
           {/* Email */}
           <label className="font-medium text-blue-900">Email Address</label>
@@ -264,17 +391,24 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className="border rounded-sm gap-1 py-0 text-xs w-full border-gray-500 px-1"
+            className={`border rounded-sm gap-1 py-0 text-xs w-full px-1 ${borderClass(
+              "email"
+            )}`}
           />
 
           {/* Contact */}
-          <label className="font-medium text-blue-900">Contact</label>
+          <label className="font-medium text-blue-900">Contact Number</label>
           <input
             type="text"
-            name="contact"
-            value={formData.contact}
-            onChange={handleChange}
-            className="border rounded-sm gap-1 py-0 text-xs w-full border-gray-500 px-1"
+            name="contact_number"
+            value={formData.contact_number}
+            onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, "").slice(0, 20);
+              setFormData((prev) => ({ ...prev, contact_number: value }));
+            }}
+            className={`border rounded-sm gap-1 py-0 text-xs w-full px-1 ${borderClass(
+              "contact_number"
+            )}`}
           />
 
           {/* Department */}
@@ -284,7 +418,9 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
             name="department"
             value={formData.department}
             onChange={handleChange}
-            className="border rounded-sm gap-1 py-0 text-xs w-full border-gray-500  px-1"
+            className={`border rounded-sm gap-1 py-0 text-xs w-full px-1 ${borderClass(
+              "department"
+            )}`}
           />
 
           {/* Birth Date */}
@@ -294,7 +430,9 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
             name="birthDate"
             value={formData.birthDate}
             onChange={handleChange}
-            className="border rounded-sm gap-1 py-0 text-xs w-full border-gray-500 px-1"
+            className={`border rounded-sm gap-1 py-0 text-xs w-full px-1 ${borderClass(
+              "birthDate"
+            )}`}
           />
 
           {/* Actions */}
@@ -314,7 +452,49 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
             </button>
           </div>
         </form>
+      </div>
+
+      {/* Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-2xl shadow-lg text-center w-60">
+            <h2 className="text-sm font-bold text-blue-900 mb-3">
+              Add this user?
+            </h2>
+            <div className="flex justify-center gap-3">
+              <button
+                onClick={confirmSave}
+                className="px-4 py-1 rounded-full bg-blue-700 text-white text-xs hover:bg-blue-800"
+              >
+                Yes
+              </button>
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="px-4 py-1 rounded-full bg-gray-400 text-white text-xs hover:bg-gray-500"
+              >
+                No
+              </button>
+            </div>
+          </div>
         </div>
+      )}
+
+      {/* Missing Fields Modal */}
+      {showMissingFields && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl shadow-lg text-center w-80">
+            <h2 className="text-sm font-bold text-red-600 mb-3">
+              Fill all the missing fields
+            </h2>
+            <button
+              onClick={() => setShowMissingFields(false)}
+              className="px-4 py-1 rounded-full bg-blue-700 text-white text-xs hover:bg-blue-800"
+            >
+              OK
+            </button>
+          </div>
         </div>
+      )}
+    </div>
   );
 }
