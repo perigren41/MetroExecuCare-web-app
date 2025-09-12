@@ -6,7 +6,6 @@ import LogoutBlueSolid from "@/assets/logoutbluesolid.svg";
 import BackButtonBlue from "@/assets/BackButtonBlue.svg";
 import LogoutRed from "@/assets/logoutred.svg";
 
-
 export default function Navbar({ currentUser, onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,7 +25,7 @@ export default function Navbar({ currentUser, onLogout }) {
     department: "IT",
     birthDate: "1995-04-15",
     created_at: "2023-08-15",
-    profileImage: "https://i.pravatar.cc/100?img=1", // Changed from "avatar"
+    profileImage: "https://i.pravatar.cc/100?img=1",
     username: "admin",
     password: "1234",
     branch: "Metrobank Fort - Ecoprime Tower"
@@ -50,14 +49,31 @@ export default function Navbar({ currentUser, onLogout }) {
     if (location.pathname === "/admin-users-page") {
       // If already on adminpage → Logout
       setShowLogoutModal(true);
+    } else if (location.pathname === "/admin-profile-page") {
+      // If in admin profile page → go back to adminpage
+      navigate("/admin-users-page");
+    } else if (location.pathname === "/executive-employee-submit-loauthorization") {
+      // If in executive employee submit page → go back to dashboard
+      navigate("/executive-employee-dashboard");
+    } else if (location.pathname === "/executive-employee-submit-loapproval") {
+      // If in executive employee submit page → go back to dashboard
+      navigate("/executive-employee-dashboard");
+    } else if (location.pathname === "/executive-employee-profile") {
+      // If in executive employee profile page → go back to dashboard
+      navigate("/executive-employee-dashboard");
     } else {
-      // If in admin subpage → go back to adminpage
+      // Default fallback
       navigate("/admin-users-page");
     }
   };
 
   const handleProfileClick = () => {
-    navigate("/admin-profile-page");
+    // Navigate to appropriate profile page based on current location
+    if (location.pathname.includes("executive-employee")) {
+      navigate("/executive-employee-profile");
+    } else {
+      navigate("/admin-profile-page");
+    }
     setShowDropdown(false);
   };
 
@@ -80,10 +96,46 @@ export default function Navbar({ currentUser, onLogout }) {
   };
 
   const handleUserClick = () => {
-    // Show dropdown on both admin-users-page and admin-profile-page
-    if (location.pathname === "/admin-users-page" || location.pathname === "/admin-profile-page") {
+    // Show dropdown on admin pages and executive employee pages
+    const showDropdownPages = [
+      "/admin-users-page",
+      "/admin-profile-page",
+      "/executive-employee-dashboard",
+      "/executive-employee-submit-loauthorization",
+      "/executive-employee-submit-loapproval",
+      "/executive-employee-profile"
+    ];
+    
+    if (showDropdownPages.includes(location.pathname)) {
       setShowDropdown(!showDropdown);
     }
+  };
+
+  const shouldShowBackButton = () => {
+    return location.pathname === "/admin-profile-page" || 
+           location.pathname === "/executive-employee-submit-loauthorization" ||
+           location.pathname === "/executive-employee-submit-loapproval" ||
+           location.pathname === "/executive-employee-profile";
+  };
+
+  const shouldShowDropdown = () => {
+    const dropdownPages = [
+      "/admin-users-page",
+      "/admin-profile-page",
+      "/executive-employee-dashboard",
+      "/executive-employee-submit-loauthorization",
+      "/executive-employee-submit-loapproval",
+      "/executive-employee-profile"
+    ];
+    return dropdownPages.includes(location.pathname);
+  };
+
+  const shouldShowProfileOption = () => {
+    // Show profile option on dashboard pages, not on profile pages themselves
+    return location.pathname === "/admin-users-page" || 
+           location.pathname === "/executive-employee-dashboard" ||
+           location.pathname === "/executive-employee-submit-loauthorization" ||
+           location.pathname === "/executive-employee-submit-loapproval";
   };
 
   return (
@@ -94,8 +146,8 @@ export default function Navbar({ currentUser, onLogout }) {
         text-white md:pl-16 sm:pl-2 sm:pr-2"
       >
         {/* Left - Back Button or Empty Space */}
-        <div className=" relative w-5 h-5 flex items-center justify-center">
-          {location.pathname === "/admin-profile-page" && (
+        <div className="relative w-5 h-5 flex items-center justify-center">
+          {shouldShowBackButton() && (
             <button 
               className="w-5 h-5 flex items-center justify-center rounded-lg bg-white border border-white hover:bg-gray-100 transition" 
               onClick={handleClick}
@@ -121,18 +173,18 @@ export default function Navbar({ currentUser, onLogout }) {
             onClick={handleUserClick}
           >
             <img
-              src={user.avatar}
+              src={user.profileImage || "https://via.placeholder.com/40"}
               alt="profile"
               className="w-full h-full object-cover"
             />
           </button>
 
-          {/* Dropdown Modal - Shown on both admin pages */}
-          {showDropdown && (location.pathname === "/admin-users-page" || location.pathname === "/admin-profile-page") && (
+          {/* Dropdown Modal */}
+          {showDropdown && shouldShowDropdown() && (
             <div className="absolute top-full right-0 mt-2 w-28 bg-white rounded-2xl shadow-xl border border-gray-200 z-50">
               <div className="py-1">
-                {/* Profile option - only show on admin-users-page */}
-                {location.pathname === "/admin-users-page" && (
+                {/* Profile option - show on dashboard and submit pages, not on profile pages */}
+                {shouldShowProfileOption() && (
                   <button
                     onClick={handleProfileClick}
                     className="w-full px-4 py-1 text-left text-sm text-blue-700 hover:bg-gray-200 hover:rounded-2xl transition flex items-center gap-2"
@@ -141,7 +193,7 @@ export default function Navbar({ currentUser, onLogout }) {
                     <span>Profile</span>
                   </button>
                 )}
-                {/* Logout option - always show on both pages */}
+                {/* Logout option - always show on all dropdown pages */}
                 <button
                   onClick={handleLogoutClick}
                   className="w-full px-4 py-1 text-left text-sm text-blue-700 hover:bg-gray-200 hover:rounded-2xl transition flex items-center gap-2"
@@ -158,12 +210,10 @@ export default function Navbar({ currentUser, onLogout }) {
       {/* Logout Confirmation Modal */}
       {showLogoutModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg text-center w-80">
+          <div className="bg-white p-6 rounded-3xl shadow-lg text-center w-80">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                
-
-<img src={LogoutRed} alt="Logout" className="w-3 h-3" />
+                <img src={LogoutRed} alt="Logout" className="w-3 h-3" />
               </div>
               <h3 className="text-sm font-semibold text-gray-900">Confirm Logout</h3>
             </div>
@@ -171,13 +221,13 @@ export default function Navbar({ currentUser, onLogout }) {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={cancelLogout}
-                className="px-4 py-2 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-500 rounded-full transition"
+                className="px-4 py-2 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-500 rounded-2xl transition"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmLogout}
-                className="px-4 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-full transition"
+                className="px-4 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-2xl transition"
               >
                 Logout
               </button>

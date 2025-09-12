@@ -185,155 +185,35 @@ function SummaryCard({ notes, setNotes }) {
   );
 }
 
-// PasswordChangeCard component with validation
 function PasswordChangeCard() {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  
-  // Form state
-  const [formData, setFormData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: ''
-  });
-  
-  // Validation errors
-  const [errors, setErrors] = useState({});
-  
-  // Loading state
-  const [isLoading, setIsLoading] = useState(false);
+  const [modalType, setModalType] = useState('success');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
-  // Password validation rules
-  const validatePassword = (password) => {
-    const errors = [];
-    if (password.length < 8) {
-      errors.push('At least 8 characters');
-    }
-    if (!/[A-Z]/.test(password)) {
-      errors.push('One uppercase letter');
-    }
-    if (!/[a-z]/.test(password)) {
-      errors.push('One lowercase letter');
-    }
-    if (!/\d/.test(password)) {
-      errors.push('One number');
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      errors.push('One special character');
-    }
-    return errors;
-  };
+  const handleUpdate = () => {
+    // Simulate checking current password (replace with actual logic)
+    const correctCurrentPassword = '1234'; // This would come from your backend
 
-  // Handle input changes
-  const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-    
-    // Clear error for this field when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: null
-      }));
-    }
-  };
-
-  // Validate form
-  const validateForm = () => {
-    const newErrors = {};
-    
-    // Current password validation
-    if (!formData.currentPassword.trim()) {
-      newErrors.currentPassword = 'Current password is required';
-    }
-    
-    // New password validation
-    if (!formData.newPassword.trim()) {
-      newErrors.newPassword = 'New password is required';
-    } else {
-      const passwordErrors = validatePassword(formData.newPassword);
-      if (passwordErrors.length > 0) {
-        newErrors.newPassword = passwordErrors;
-      }
-    }
-    
-    // Confirm password validation
-    if (!formData.confirmPassword.trim()) {
-      newErrors.confirmPassword = 'Please confirm your new password';
-    } else if (formData.newPassword !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
-    }
-    
-    // Check if new password is same as current
-    if (formData.currentPassword && formData.newPassword && 
-        formData.currentPassword === formData.newPassword) {
-      newErrors.newPassword = 'New password must be different from current password';
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Handle form submission
-  const handleSubmit = async () => {
-    if (!validateForm()) {
+    if (currentPassword !== correctCurrentPassword) {
+      setModalType('wrongPassword');
+      setShowModal(true);
       return;
     }
     
-    setIsLoading(true);
-    
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Show success modal
+    if (newPassword !== confirmPassword) {
+      setModalType('passwordMismatch');
       setShowModal(true);
-      
-      // Reset form
-      setFormData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
-      
-    } catch (error) {
-      setErrors({
-        submit: 'Failed to update password. Please try again.'
-      });
-    } finally {
-      setIsLoading(false);
+      return;
     }
-  };
-
-  // Render password requirements
-  const renderPasswordRequirements = () => {
-    if (!formData.newPassword) return null;
     
-    const requirements = [
-      { rule: 'At least 8 characters', valid: formData.newPassword.length >= 8 },
-      { rule: 'One uppercase letter', valid: /[A-Z]/.test(formData.newPassword) },
-      { rule: 'One lowercase letter', valid: /[a-z]/.test(formData.newPassword) },
-      { rule: 'One number', valid: /\d/.test(formData.newPassword) },
-      { rule: 'One special character', valid: /[!@#$%^&*(),.?":{}|<>]/.test(formData.newPassword) }
-    ];
-    
-    return (
-      <div className="text-xs">
-        <p className="text-gray-600 mb-2">Password requirements:</p>
-        <ul className="space-y-1">
-          {requirements.map((req, index) => (
-            <li key={index} className={`flex items-center gap-2 ${req.valid ? 'text-green-600' : 'text-red-500'}`}>
-              <span className="text-xs font-bold">{req.valid ? '✓' : '×'}</span>
-              <span>{req.rule}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
+    // If all validations pass
+    setModalType('success');
+    setShowModal(true);
   };
 
   return (
@@ -350,11 +230,9 @@ function PasswordChangeCard() {
             <input
               type={showCurrent ? "text" : "password"}
               placeholder="Current Password"
-              value={formData.currentPassword}
-              onChange={(e) => handleInputChange('currentPassword', e.target.value)}
-              className={`h-6 w-full border rounded-lg p-2 pr-10 ${
-                errors.currentPassword ? 'border-red-500' : 'border-gray-300'
-              }`}
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="h-6 w-full border rounded-lg p-2 pr-10"
             />
             <button
               type="button"
@@ -362,14 +240,16 @@ function PasswordChangeCard() {
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
             >
               {showCurrent ? (
-                <img src={EyeOpen} alt="Show password" className="size-4 text-gray-500" />
+                <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
               ) : (
-                <img src={EyeClose} alt="Hide password" className="size-4 text-gray-500" />
+                <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                </svg>
               )}
             </button>
-            {errors.currentPassword && (
-              <p className="text-red-500 text-xs mt-1">{errors.currentPassword}</p>
-            )}
           </div>
 
           {/* New Password */}
@@ -377,11 +257,9 @@ function PasswordChangeCard() {
             <input
               type={showNew ? "text" : "password"}
               placeholder="New Password"
-              value={formData.newPassword}
-              onChange={(e) => handleInputChange('newPassword', e.target.value)}
-              className={`h-6 w-full border rounded-lg p-2 pr-10 ${
-                errors.newPassword ? 'border-red-500' : 'border-gray-300'
-              }`}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="h-6 w-full border rounded-lg p-2 pr-10"
             />
             <button
               type="button"
@@ -389,25 +267,16 @@ function PasswordChangeCard() {
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
             >
               {showNew ? (
-                  <img src={EyeOpen} alt="Show password" className="size-4 text-gray-500" />
+                <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
               ) : (
-                <img src={EyeClose} alt="Hide password" className="size-4 text-gray-500" />
+                <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                </svg>
               )}
             </button>
-            {errors.newPassword && (
-              <div className="text-red-500 text-xs mt-1">
-                {Array.isArray(errors.newPassword) ? (
-                  <ul className="list-disc list-inside">
-                    {errors.newPassword.map((error, index) => (
-                      <li key={index}>{error}</li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p>{errors.newPassword}</p>
-                )}
-              </div>
-            )}
-            {renderPasswordRequirements()}
           </div>
 
           {/* Confirm New Password */}
@@ -415,11 +284,9 @@ function PasswordChangeCard() {
             <input
               type={showConfirm ? "text" : "password"}
               placeholder="Confirm New Password"
-              value={formData.confirmPassword}
-              onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-              className={`h-6 w-full border rounded-lg p-2 pr-10 ${
-                errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-              }`}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="h-6 w-full border rounded-lg p-2 pr-10"
             />
             <button
               type="button"
@@ -427,51 +294,68 @@ function PasswordChangeCard() {
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
             >
               {showConfirm ? (
-                  <img src={EyeOpen} alt="Show password" className="size-4 text-gray-500" />
+                <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
               ) : (
-                <img src={EyeClose} alt="Hide password" className="size-4 text-gray-500" />
+                <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                </svg>
               )}
             </button>
-            {errors.confirmPassword && (
-              <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>
-            )}
           </div>
 
-          {/* Submit Error */}
-          {errors.submit && (
-            <p className="text-red-500 text-xs mt-2">{errors.submit}</p>
-          )}
-
-          <div className="flex justify-end gap-2 mt-2">
-            <button
-              onClick={handleSubmit}
-              disabled={isLoading}
-              className={`px-4 py-2 rounded-full text-white text-xs font-medium ${
-                isLoading 
-                  ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-blue-600 hover:bg-blue-700'
-              }`}
-            >
-              {isLoading ? 'Updating...' : 'Update'}
-            </button>
+        <div className="flex justify-end gap-2 mt-2">
+          <div onClick={handleUpdate}>
+            <CircleButton text="Update" color="bg-blue-600" />
           </div>
+        </div>
         </div>
       </div>
 
-      {/* Success Modal */}
+      {/* Modals */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-lg text-center w-80">
             <div className="mb-4">
-              <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Password Updated Successfully!</h3>
-              <p className="text-sm text-gray-600">Your password has been changed successfully.</p>
+              {modalType === 'success' && (
+                <>
+                  <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Password Updated Successfully!</h3>
+                  <p className="text-sm text-gray-600">Your password has been changed successfully.</p>
+                </>
+              )}
+              
+              {modalType === 'wrongPassword' && (
+                <>
+                  <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-3">
+                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Incorrect Current Password</h3>
+                  <p className="text-sm text-gray-600">The current password you entered is not correct. Please try again.</p>
+                </>
+              )}
+              
+              {modalType === 'passwordMismatch' && (
+                <>
+                  <div className="mx-auto w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-3">
+                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.99-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Passwords Don't Match</h3>
+                  <p className="text-sm text-gray-600">The new password and confirmation password do not match. Please check and try again.</p>
+                </>
+              )}
             </div>
-            <button
+            <button 
               onClick={() => setShowModal(false)}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
             >

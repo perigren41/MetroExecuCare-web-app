@@ -43,10 +43,10 @@ export default function SearchBar({ search, setSearch, filter, setFilter }) {
 
       {/* Filters Box */}
       {showFilters && (
-        <div className="absolute top-9 left-40 shadow-xl/30 sm:left-81 bg-white rounded-xl w-70 sm:w-70 z-50">
+        <div className="absolute top-9 left-40 shadow-xl/30 sm:left-81 bg-white rounded-2xl w-70 sm:w-70 z-50">
           <div className="flex justify-between items-center 
             bg-[linear-gradient(to_right,#3F6EC0_2%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] 
-            text-white px-3 py-1 rounded-t-lg">
+            text-white px-3 py-1 rounded-t-2xl">
             <h2 className="text-xs font-bold text-left">Filters</h2>
             <button
               onClick={() => setShowFilters(false)}
