@@ -9,8 +9,8 @@ import HRDashboard from "@/webpages/HRDashboard";
 import HR_HistoryPage from "@/webpages/HR_HistoryPage";
 import { NotFound } from "@/NotFound";
 import LOA_RecordSummary from "@/webpages/LOA_RecordSummary";
-
-
+import HR_PendingRequestsPage from "@/webpages/HR_PendingRequestsPage";
+import HR_Profile from "@/webpages/HR_Profile";
 
 export default function App() {
   return (
@@ -29,6 +29,8 @@ export default function App() {
         <Route path="/hr-dashboard" element={<HRDashboard />} />
         <Route path="/hr-history" element={<HR_HistoryPage />} />
         <Route path="/loa-record-summary/:requestId" element={<LOA_RecordSummary />} />
+        <Route path="/hr-pending-requests" element={<HR_PendingRequestsPage />} />
+        <Route path="/profile" element={<HR_Profile />} /> {/* Add this line */}
 
         {/* 404 fallback */}
         <Route path="*" element={<NotFound />} />

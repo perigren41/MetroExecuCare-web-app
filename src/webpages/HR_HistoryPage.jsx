@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { mockRequests } from "./mockRequests";
+import NavBarMain from "@/Components/NavBarMain";
 
 // Assets
 import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
@@ -48,6 +49,21 @@ export default function HR_HistoryPage() {
         navigate(`/loa-record-summary/${requestId}`);
     };
 
+    // Navbar handlers
+    const handleBackClick = () => {
+        navigate("/hr-dashboard");
+    };
+
+    const handleProfileClick = () => {
+        // Add your profile navigation logic here
+        console.log("Navigate to profile");
+    };
+
+    const handleLogout = () => {
+        // Add your logout logic here
+        navigate("/LoginPage");
+    };
+
     // Filter and sort requests
     const filteredRequests = mockRequests
         .filter(req => {
@@ -70,54 +86,20 @@ export default function HR_HistoryPage() {
             return 0;
         });
 
-
     return (
         <div className="min-h-screen bg-white">
-            {/* Header */}
-            <header
-                className="w-full h-[56px] flex items-center justify-between px-[162px] relative"
-                style={{
-                    background:
-                        "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
-                }}
-            >
-                {/* Left - Back Button */}
-                <button
-                    onClick={() => navigate("/hr-dashboard")}
-                    className="flex items-center"
-                >
-                    <img
-                        src={BackSquareIconWhite}
-                        alt="Back"
-                        className="w-[28px] h-[28px]"
-                    />
-                </button>
-
-                {/* Center - Metrobank Logo */}
-                <div className="absolute left-1/2 transform -translate-x-1/2">
-                    <img
-                        src={MetroBankLogo}
-                        alt="Metrobank Logo"
-                        className="h-[40px] object-contain"
-                    />
-                </div>
-
-                {/* Right - HR Name + Profile */}
-                <button className="absolute right-[155px] flex items-center gap-2 hover:opacity-80">
-                    <span className="text-base font-medium text-white">{user.name}</span>
-                    {user.profilePic ? (
-                        <img
-                            src={user.profilePic}
-                            alt={`${user.name} profile`}
-                            className="w-7 h-7 rounded-full object-cover"
-                        />
-                    ) : (
-                        <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs">
-                            {user.name[0]}
-                        </div>
-                    )}
-                </button>
-            </header>
+            {/* Navbar */}
+            <NavBarMain
+                user={user}
+                onBackClick={handleBackClick}
+                onProfileClick={handleProfileClick}
+                onLogout={handleLogout}
+                showBackButton={true}
+                showProfileOption={true}
+                showDropdown={true}
+                backButtonIcon={BackSquareIconWhite}
+                logo={MetroBankLogo}
+            />
 
             {/* Title */}
             <div className="flex justify-center mt-[43px]">
@@ -126,7 +108,6 @@ export default function HR_HistoryPage() {
                 </h1>
             </div>
 
-            {/* Search + Filter Buttons */}
             {/* Search + Filter Buttons */}
             <div className="px-[200px] mt-2 flex items-center gap-3">
                 {/* Search Input */}

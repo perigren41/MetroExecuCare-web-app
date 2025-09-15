@@ -117,7 +117,7 @@ export default function LOA_RecordSummary() {
             {/* Content Container */}
             <div className="px-[200px] mt-8">
                 <div
-                    className="p-[3px] rounded-[24px]"
+                    className="p-[3px] rounded-[68px]"
                     style={{
                         background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
                         maxWidth: "1200px",
@@ -125,7 +125,7 @@ export default function LOA_RecordSummary() {
                     }}
                 >
                     <div
-                        className="bg-white rounded-[24px] p-8"
+                        className="bg-white rounded-[68px] p-8"
                         style={{
                             boxShadow: "0px 4px 28px 0px rgba(0, 0, 0, 0.25)",
                         }}
@@ -135,13 +135,13 @@ export default function LOA_RecordSummary() {
                             <h2 className="text-[#023184] text-xl font-bold mb-6 border-b-2 border-gray-200 pb-2">
                                 Employee Information
                             </h2>
-                            
+
                             <div className="flex items-center gap-6 mb-6">
                                 {/* Employee Avatar */}
                                 <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#3F6EC0] to-[#7940A8] flex items-center justify-center text-white font-bold text-xl">
                                     {request.employee.first_name[0]}{request.employee.last_name[0]}
                                 </div>
-                                
+
                                 <div>
                                     <h3 className="text-2xl font-bold text-gray-900">
                                         {request.employee.first_name} {request.employee.last_name}
@@ -177,7 +177,7 @@ export default function LOA_RecordSummary() {
                             <h2 className="text-[#023184] text-xl font-bold mb-6 border-b-2 border-gray-200 pb-2">
                                 Request Details
                             </h2>
-                            
+
                             <div className="grid grid-cols-2 gap-6 mb-6">
                                 <div>
                                     <label className="text-gray-600 text-sm font-medium">Request Type</label>
@@ -203,67 +203,48 @@ export default function LOA_RecordSummary() {
 
                             {/* Purpose/Reason */}
                             <div className="mb-6">
-                                <label className="text-gray-600 text-sm font-medium">Purpose/Reason</label>
+                                <label className="text-gray-600 text-sm font-medium">Comment/s</label>
                                 <p className="text-gray-900 text-lg mt-1 p-4 bg-gray-50 rounded-lg">
-                                    {request.purpose || 'No specific purpose provided'}
+                                    {request.comment || 'No comment provided'}
                                 </p>
                             </div>
                         </div>
 
-                        {/* Request History/Timeline */}
+                        {/* Request Timeline */}
                         <div className="mb-8">
                             <h2 className="text-[#023184] text-xl font-bold mb-6 border-b-2 border-gray-200 pb-2">
                                 Request Timeline
                             </h2>
-                            
+
                             <div className="space-y-4">
-                                <div className="flex items-center gap-4 p-4 bg-blue-50 rounded-lg">
-                                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                                    <div>
+                                <div className="flex items-start gap-4 p-4 bg-blue-50 rounded-lg">
+                                    <div className="w-3 h-3 bg-blue-500 rounded-full mt-1" />
+                                    <div className="flex flex-col">
                                         <p className="font-medium text-gray-900">Request Submitted</p>
-                                        <p className="text-sm text-gray-600">{request.created_at}</p>
+                                        <p className="text-sm text-gray-600 text-left">{request.created_at}</p>
                                     </div>
                                 </div>
-                                
+
                                 {request.current_status === 'approved' && (
-                                    <div className="flex items-center gap-4 p-4 bg-green-50 rounded-lg">
-                                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                                        <div>
-                                            <p className="font-medium text-gray-900">Request Approved</p>
-                                            <p className="text-sm text-gray-600">Approved by HR Department</p>
+                                    <div className="flex items-start gap-4 p-4 bg-green-50 rounded-lg">
+                                        <div className="w-3 h-3 bg-green-500 rounded-full mt-1" />
+                                        <div className="flex flex-col">
+                                            <p className="font-medium text-gray-900 text-left">Request Approved</p>
+                                            <p className="text-sm text-gray-600 text-left">Approved by HR Department</p>
                                         </div>
                                     </div>
                                 )}
-                                
+
                                 {request.current_status === 'rejected' && (
-                                    <div className="flex items-center gap-4 p-4 bg-red-50 rounded-lg">
-                                        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                                        <div>
-                                            <p className="font-medium text-gray-900">Request Rejected</p>
-                                            <p className="text-sm text-gray-600">Rejected by HR Department</p>
+                                    <div className="flex items-start gap-4 p-4 bg-red-50 rounded-lg">
+                                        <div className="w-3 h-3 bg-red-500 rounded-full mt-1" />
+                                        <div className="flex flex-col">
+                                            <p className="font-medium text-gray-900 text-left">Request Rejected</p>
+                                            <p className="text-sm text-gray-600 text-left">Rejected by HR Department</p>
                                         </div>
                                     </div>
                                 )}
                             </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex justify-center gap-4 pt-6 border-t border-gray-200">
-                            <button
-                                onClick={() => navigate(-1)}
-                                className="px-8 py-3 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition-colors"
-                            >
-                                Back to History
-                            </button>
-                            <button
-                                onClick={() => window.print()}
-                                className="px-8 py-3 text-white rounded-lg font-medium hover:opacity-90 transition-opacity"
-                                style={{
-                                    background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)"
-                                }}
-                            >
-                                Print Record
-                            </button>
                         </div>
                     </div>
                 </div>
