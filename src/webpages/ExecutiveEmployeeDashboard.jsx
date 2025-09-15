@@ -7,7 +7,14 @@ import LogoutBlueSolid from "@/assets/logoutbluesolid.svg";
 import LogoutRed from "@/assets/logoutred.svg";
 import ApprovalBg from "@/assets/approvalbg.svg";
 import AuthorizationBg from "@/assets/authorizationbg.svg";
+import ChevronRight from "@/assets/chevronright.svg";
 
+import CheckSquare from "@/assets/checksquare.svg";
+import ClockSquare from "@/assets/clocksquare.svg";
+import BlankSquare from "@/assets/blanksquare.svg";
+import XSquare from "@/assets/xsquare.svg";
+import AddSquare from "@/assets/addsquare.svg";
+import { Clock } from "lucide-react";
 const COLORS = {
   ombre: ["#3F6EC0", "#00539F", "#5D3EA4", "#7940A8"],
   blue: "#00539F",
@@ -38,11 +45,11 @@ function ActionButton({ label, color, onClick, backgroundImage }) {
 }
 
 // GreetingStatusCard Component
-function GreetingStatusCard({ firstName, lastName, requestStatus }) {
+function GreetingStatusCard({ firstName, lastName, requestStatus, onChevronClick }) {
   const fullName = `${firstName} ${lastName}`;
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 w-full items-center mt-8 mb-2 md:mx-20 gap-12">
+    <div className="grid grid-cols-1 md:grid-cols-2 w-full items-center mt-8 mb-2 md:mx-15 gap-8">
       {/* Greeting Section */}
       <div>
         <div className="grid grid-flow-row md:grid-flow-col grid-rows-3 md:flex-row max-w-8xl gap-0 text-center md:text-left my-0">
@@ -63,35 +70,29 @@ function GreetingStatusCard({ firstName, lastName, requestStatus }) {
       </div>
 
       {/* Status Section */}
-      <div className="bg-white text-gray-900 rounded-4xl shadow-lg w-110 h-70 mt-0 md:mt-0 text-center 
-      flex flex-col justify-center mx-auto">
+      <div className="bg-white text-gray-900 rounded-4xl shadow-xl/30 w-110 h-70 mt-0 md:mt-0 text-center 
+      flex flex-col justify-center mx-auto ml-15 table-fixed">
         {/* Inside Status Section */}
-        <h2 className="text-2xl font-bold pb-3">Current Request Status</h2>
+        <h2 className="text-2xl font-bold pb-3 ">Current Request Status</h2>
 
         {/* Status Pill */}
         <div
-          className="font-bold rounded-full px-4 py-2 inline-flex items-center border mx-auto"
+          className="font-bold rounded-full shadow-xl/20 px-4 py-2 flex flex-col items-center border mx-auto w-60 h-21"
           style={requestStatus.pillStyle}
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 16 16"
-            fill="currentColor"
-            className="size-10 mr-2"
-          >
-            <path
-              fillRule="evenodd"
-              d="M1 8a7 7 0 1 1 14 0A7 7 0 0 1 1 8Zm7.75-4.25a.75.75 0 0 0-1.5 0V8c0 .414.336.75.75.75h3.25a.75.75 0 0 0 0-1.5h-2.5v-3.5Z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span>{requestStatus.text}</span>
-          <span>{requestStatus.text}</span>
-          <p className="text-xs text-gray-500 mt-2">{requestStatus.next}</p>
-          <p className="text-xs text-gray-500 mt-2">{requestStatus.note}</p>
-        </div>
-
-        
+          <div className="flex items-center">
+            <img src={requestStatus.icon} alt="Status" className="w-10 h-10 mr-1" />
+            <span>{requestStatus.text}</span>
+          </div>
+          <p className="text-xs text-gray-500 flex flex-col">{requestStatus.note}</p>
+        </div>  
+        <button
+          onClick={onChevronClick}
+          className="bg-blue-700 text-white w-6 h-6 rounded-full hover:bg-blue-800 transition 
+          flex items-center justify-center mx-auto mt-3"
+            >
+          <img src={ChevronRight} alt="Chevron Right" className="w-3 h-3" />
+          </button>   
       </div>
     </div>
   );
@@ -123,7 +124,7 @@ export default function ExecutiveEmployeeDashboard() {
     id: null,
     request_number: null,
     request_type: null, // enum values could be 'annual_checkup', 'medical_clearance', etc.
-    current_status: "no_request", // enum: pending, approved, rejected, completed, etc.
+    current_status: "submittedauthorization", // enum: submittedapproval,submittedauthorization, rejected, completed, awaitingbso, awaitingba, awaitingdh, no_request
     priority_level: "normal", // enum: low, normal, high, urgent
     hospital_id: null,
     hospital_name: null,
@@ -139,57 +140,92 @@ export default function ExecutiveEmployeeDashboard() {
       no_request: {
         text: "No Active Request",
         note: "Ready to submit new request",
+        icon: AddSquare,
         pillStyle: {
           backgroundColor: "#F3F4F6",
           color: "#6B7280",
-          borderColor: "#D1D5DB",
+          borderColor: "#6B7280",
+          boxShadow: "#6B7280",
         },
       },
-      pending: {
-        text: "Pending Review",
-        note: "Awaiting HR assignment",
-        pillStyle: {
-          backgroundColor: "#FFF3BF",
-          color: "#8D6B00",
-          borderColor: "#E9CF7A",
-        },
-      },
-      hr_assigned: {
-        text: "HR Assigned",
-        note: "Under HR review",
+      
+      awaitingbso: {
+        text: "Waiting for approval",
+        note: "Benefit Service Officer under review",
+        icon: ClockSquare,
         pillStyle: {
           backgroundColor: "#DBECFF",
           color: COLORS.blue,
           borderColor: "#B3D6FF",
+          boxShadow: "#B3D6FF",
         },
       },
-      approved: {
-        text: "Approved",
-        note: "Letter generated",
+      awaitingba: {
+        text: "Waiting for approval",
+        note: "Benefits Assistant under review",
+        icon: ClockSquare,
+        pillStyle: {
+          backgroundColor: "#DBECFF",
+          color: COLORS.blue,
+          borderColor: "#B3D6FF",
+          boxShadow: "#B3D6FF",
+        },
+      },
+        awaitingdh: {
+        text: "Waiting for approval",
+        note: "Division Head under review",
+        icon: ClockSquare,
+        pillStyle: {
+          backgroundColor: "#DBECFF",
+          color: COLORS.blue,
+          borderColor: "#B3D6FF",
+          boxShadow: "#B3D6FF",
+        },
+      },
+      submittedapproval: {
+        text: "Request Submitted",
+        note: "Submitted Letter of Approval",
+        icon: CheckSquare,
         pillStyle: {
           backgroundColor: "#D1FAE5",
           color: "#059669",
           borderColor: "#A7F3D0",
+          boxShadow: "#A7F3D0",
+        },
+      },
+      submittedauthorization: {
+        text: "Request Submitted",
+        note: "Submitted Letter of Authorization",
+        icon: CheckSquare,
+        pillStyle: {
+          backgroundColor: "#D1FAE5",
+          color: "#059669",
+          borderColor: "#A7F3D0",
+          boxShadow: "#A7F3D0",
+        },
+      },
+      completed: {
+        text: "Request Completed",
+        note: "Your request has been completed",
+        icon: CheckSquare,
+        pillStyle: {
+          backgroundColor: "#D1FAE5",
+          color: "#059669",
+          borderColor: "#A7F3D0",
+          boxShadow: "#A7F3D0",
         },
       },
       rejected: {
         text: "Rejected",
         note: "Please review and resubmit",
+        icon: XSquare,
         pillStyle: {
           backgroundColor: "#FEE2E2",
           color: "#DC2626",
           borderColor: "#FECACA",
+          boxShadow: "#FECACA",
         },
       },
-      completed: {
-        text: "Completed",
-        note: "Check-up finished",
-        pillStyle: {
-          backgroundColor: "#E9DBFF",
-          color: COLORS.purple,
-          borderColor: "#D1B9FF",
-        },
-      }
     };
     
     return statusConfig[status] || statusConfig.no_request;
@@ -205,13 +241,18 @@ export default function ExecutiveEmployeeDashboard() {
     navigate('/executive-employee-submit-loauthorization');
   };
 
+  // Handle chevron click - Navigate to LOA status tracker
+  const handleChevronClick = () => {
+    navigate('/loa-status-tracker');
+  };
+
   // Modal handlers
   const handleUserProfile = () => {
     setShowProfileModal(!showProfileModal);
   };
 
   const handleProfileNavigation = () => {
-    navigate('/employee-profile-page');
+    navigate('/executive-employee-profile');
     setShowProfileModal(false);
   };
 
@@ -271,6 +312,7 @@ export default function ExecutiveEmployeeDashboard() {
           firstName={userData.firstName} 
           lastName={userData.lastName}
           requestStatus={statusDisplay} 
+          onChevronClick={handleChevronClick}
         />
 
         {/* Top Right - User Profile */}

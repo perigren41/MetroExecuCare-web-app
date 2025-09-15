@@ -43,17 +43,19 @@ export default function SubmitLetterOfAuthorization() {
       </h1>
 
       {/* Container */}
-      <div className="flex justify-center px-4 py-6">
-        <div className="w-full max-w-4xl bg-white shadow-md rounded-2xl p-8 border border-purple-300">
-          <h2 className="text-lg font-semibold text-center text-blue-900 mb-6">
+      <div className="flex justify-center px-4 py-4">
+        <div className="w-full max-w-4xl bg-white rounded-3xl shadow-xl shadow-[#00539F]/30 px-8 pt-4
+        border border-gray-200 
+        outline outline-2 outline-[#00539F]">
+          <h2 className="text-base font-semibold text-center text-blue-900 mb-6">
             Details
           </h2>
 
-          <form className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <form className="grid grid-cols-2 text-left text-xs">
             {/* Left Side: Form Fields */}
-            <div className="space-y-4">
+            <div className="space-y-2 pr-6">
               <div>
-                <label className="block text-sm text-blue-900 font-medium">
+                <label className="block text-xs text-blue-900 font-medium">
                   Preferred hospital:
                 </label>
                 <input
@@ -61,14 +63,14 @@ export default function SubmitLetterOfAuthorization() {
                   name="hospital_id"
                   value={formData.hospital_id}
                   onChange={handleChange}
-                  className="w-full border rounded-md px-3 py-2"
+                  className="w-60 border rounded-md p-1"
                   placeholder="Enter hospital ID or name"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-blue-900 font-medium">
+                <label className="block text-xs text-blue-900 font-medium">
                   Preferred date of checkup:
                 </label>
                 <input
@@ -76,13 +78,13 @@ export default function SubmitLetterOfAuthorization() {
                   name="preferred_date"
                   value={formData.preferred_date}
                   onChange={handleChange}
-                  className="w-full border rounded-md px-3 py-2"
+                  className="w-60 border rounded-md p-1"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-blue-900 font-medium">
+                <label className="block text-xs text-blue-900 font-medium">
                   Address of preferred hospital:
                 </label>
                 <input
@@ -90,12 +92,12 @@ export default function SubmitLetterOfAuthorization() {
                   name="address"
                   value={formData.address}
                   onChange={handleChange}
-                  className="w-full border rounded-md px-3 py-2"
+                  className="w-60 border rounded-md p-1"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-blue-900 font-medium">
+                <label className="block text-xs text-blue-900 font-medium">
                   Contact of preferred hospital:
                 </label>
                 <input
@@ -103,19 +105,19 @@ export default function SubmitLetterOfAuthorization() {
                   name="contact_number"
                   value={formData.contact_number}
                   onChange={handleChange}
-                  className="w-full border rounded-md px-3 py-2"
+                  className="w-60 border rounded-md p-1"
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-blue-900 font-medium">
+                <label className="block text-xs text-blue-900 font-medium">
                   Reason of request:
                 </label>
                 <textarea
                   name="reason_request"
                   value={formData.reason_request}
                   onChange={handleChange}
-                  className="w-full border rounded-md px-3 py-2"
+                  className="w-60 border rounded-md p-1"
                   rows="3"
                 />
               </div>

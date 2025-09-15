@@ -44,7 +44,9 @@ export default function SubmitLetterOfApproval() {
 
       {/* Container */}
       <div className="flex justify-center px-4 py-6">
-        <div className="w-full max-w-4xl bg-white shadow-md rounded-2xl p-8 border border-purple-300">
+        <div className="w-full max-w-4xl bg-white rounded-3xl shadow-xl shadow-[#00539F]/30 p-8 
+        border border-gray-200 
+        outline outline-2 outline-[#00539F]">
           <h2 className="text-lg font-semibold text-center text-blue-900 mb-6">
             Details
           </h2>

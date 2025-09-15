@@ -61,6 +61,9 @@ export default function Navbar({ currentUser, onLogout }) {
     } else if (location.pathname === "/executive-employee-profile") {
       // If in executive employee profile page → go back to dashboard
       navigate("/executive-employee-dashboard");
+    } else if (location.pathname === "/loa-status-tracker") {
+      // If in LOA status tracker page → go back to dashboard
+      navigate("/executive-employee-dashboard");
     } else {
       // Default fallback
       navigate("/admin-users-page");
@@ -70,6 +73,9 @@ export default function Navbar({ currentUser, onLogout }) {
   const handleProfileClick = () => {
     // Navigate to appropriate profile page based on current location
     if (location.pathname.includes("executive-employee")) {
+      navigate("/executive-employee-profile");
+    } 
+    else if (location.pathname.includes("loa-status-tracker")) {
       navigate("/executive-employee-profile");
     } else {
       navigate("/admin-profile-page");
@@ -103,7 +109,8 @@ export default function Navbar({ currentUser, onLogout }) {
       "/executive-employee-dashboard",
       "/executive-employee-submit-loauthorization",
       "/executive-employee-submit-loapproval",
-      "/executive-employee-profile"
+      "/executive-employee-profile",
+      "/loa-status-tracker",
     ];
     
     if (showDropdownPages.includes(location.pathname)) {
@@ -115,7 +122,8 @@ export default function Navbar({ currentUser, onLogout }) {
     return location.pathname === "/admin-profile-page" || 
            location.pathname === "/executive-employee-submit-loauthorization" ||
            location.pathname === "/executive-employee-submit-loapproval" ||
-           location.pathname === "/executive-employee-profile";
+           location.pathname === "/executive-employee-profile" ||
+           location.pathname === "/loa-status-tracker";
   };
 
   const shouldShowDropdown = () => {
@@ -125,7 +133,8 @@ export default function Navbar({ currentUser, onLogout }) {
       "/executive-employee-dashboard",
       "/executive-employee-submit-loauthorization",
       "/executive-employee-submit-loapproval",
-      "/executive-employee-profile"
+      "/executive-employee-profile",
+      "/loa-status-tracker"
     ];
     return dropdownPages.includes(location.pathname);
   };
@@ -135,7 +144,8 @@ export default function Navbar({ currentUser, onLogout }) {
     return location.pathname === "/admin-users-page" || 
            location.pathname === "/executive-employee-dashboard" ||
            location.pathname === "/executive-employee-submit-loauthorization" ||
-           location.pathname === "/executive-employee-submit-loapproval";
+           location.pathname === "/executive-employee-submit-loapproval" ||
+           location.pathname === "/loa-status-tracker";
   };
 
   return (
@@ -169,7 +179,7 @@ export default function Navbar({ currentUser, onLogout }) {
         <div className="relative flex items-center space-x-1 md:pr-14 sm:pr-4" ref={dropdownRef}>
           <span className="text-xs">{user.name}</span>
           <button 
-            className="w-6 h-6 rounded-full overflow-hidden border border-white hover:opacity-80 transition" 
+            className="w-6 h-6 rounded-full overflow-hidden border border-white hover:opacity-80 transition m-0" 
             onClick={handleUserClick}
           >
             <img

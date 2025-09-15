@@ -34,8 +34,8 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
       case "Admin":
         prefix = "ADM";
         break;
-      case "Senior Executive Officer":
-        prefix = "SEO";
+      case "Executive Employee":
+        prefix = "EO";
         break;
       case "Benefits Assistant":
         prefix = "BA";

@@ -1,4 +1,5 @@
 import React from "react";
+import ChevronRight from "@/assets/chevronright.svg";
 
 export default function UserTable({ users, onView }) {
   return (
@@ -39,20 +40,7 @@ export default function UserTable({ users, onView }) {
                     className="bg-blue-700 text-white w-5 h-5 rounded-full hover:bg-blue-800 transition 
                     flex items-center justify-center mx-auto"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="w-3 h-3 justify-center mx-auto"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="m8.25 4.5 7.5 7.5-7.5 7.5"
-                      />
-                    </svg>
+                    <img src={ChevronRight} alt="Chevron Right" className="w-3 h-3" />
                   </button>
                 </td>
               </tr>

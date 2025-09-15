@@ -99,23 +99,25 @@ function ProfileCard({ profile, setProfile }) {
 // Summary Card component
 function SummaryCard({ notes, setNotes }) {
   const history = [
-    { created_at: "2024-11-15", employeeid: "EMP001", name: "Makati Medical Center", action_status: "Added" },
-    { created_at: "2024-08-22", employeeid: "EMP002", name: "St. Lukes Medical Center", action_status: "Deleted" },
-    { created_at: "2024-05-10", employeeid: "EMP003", name: "The Medical City Clinic", action_status: "Updated" },
-    { created_at: "2024-02-18", employeeid: "EMP004", name: "Asian Hospital", action_status: "Added" },
-    { created_at: "2023-11-20", employeeid: "EMP005", name: "Makati Medical Center", action_status: "Added" },
-    { created_at: "2023-08-14", employeeid: "EMP006", name: "Cardinal Santos", action_status: "Updated" },
-    { created_at: "2023-05-05", employeeid: "EMP007", name: "St. Lukes Medical Center", action_status: "Deleted" },
-    { created_at: "2023-02-12", employeeid: "EMP008", name: "The Medical City Clinic", action_status: "Added" },
+    { completed_at: "2024-11-15", request_type: "Executive Premium", hospital_name: "Makati Medical Center", current_status: "Completed" },
+    { completed_at: "2024-08-22", request_type: "Regular Package", hospital_name: "St. Lukes Medical Center", current_status: "Completed" },
+    { completed_at: "2024-05-10", request_type: "Executive Premium", hospital_name: "The Medical City Clinic", current_status: "Completed" },
+    { completed_at: "2024-02-18", request_type: "Regular Package", hospital_name: "Asian Hospital", current_status: "Completed" },
+    { completed_at: "2023-11-20", request_type: "Executive Premium", hospital_name: "Makati Medical Center", current_status: "Completed" },
+    { completed_at: "2023-08-14", request_type: "Special Request", hospital_name: "Cardinal Santos", current_status: "Completed" },
+    { completed_at: "2023-05-05", request_type: "Regular Package", hospital_name: "St. Lukes Medical Center", current_status: "Completed" },
+    { completed_at: "2023-02-12", request_type: "Executive Premium", hospital_name: "The Medical City Clinic", current_status: "Completed" },
+    { completed_at: "2022-11-25", request_type: "Regular Package", hospital_name: "Asian Hospital", current_status: "Completed" },
+    { completed_at: "2022-08-30", request_type: "Executive Premium", hospital_name: "Makati Medical Center", current_status: "Completed" },
   ];
 
   const paddedHistory = [
     ...history,
     ...Array.from({ length: Math.max(0, 10 - history.length) }, () => ({
-      date_Added: "-",
-      employeeid: "-",
-      name: "-",
-      action_status: "-",
+      completed_at: "-",
+      request_type: "-",
+      hospital_name: "-",
+      current_status: "-",
     })),
   ].slice(0, 10);
 
@@ -141,24 +143,24 @@ function SummaryCard({ notes, setNotes }) {
           outline outline-1 outline-[#00539F] 
           shadow-lg shadow-[#00539F]/50 gap-2">
         <h1 className="text-xs sm:text-xs text-left">
-          <span className="text-blue-900 font-semibold">Action Log:</span> Your past ten (10) actions made
+          <span className="text-blue-900 font-semibold">Action Log:</span> Your past ten (10) requests
         </h1>
         <table className="w-full text-xs table-fixed">
           <thead className="bg-purple-300 text-center p-1">
             <tr>
-              <th className="p-1">Date Added</th>
-              <th className="p-1">Employee ID</th>
-              <th className="p-1">Name</th>
+              <th className="p-1">Date</th>
+              <th className="p-1">Package</th>
+              <th className="p-1">Location</th>
               <th className="p-1">Status</th>
             </tr>
           </thead>
           <tbody>
             {paddedHistory.map((item, idx) => (
               <tr key={idx} className="border-t">
-                <td className="p-1 text-blue-600">{item.created_at}</td>
-                <td className="p-1">{item.employeeid}</td>
-                <td className="p-1">{item.name}</td>
-                <td className="p-1">{item.action_status}</td>
+                <td className="p-1 text-blue-600">{item.completed_at}</td>
+                <td className="p-1">{item.request_type}</td>
+                <td className="p-1">{item.hospital_name}</td>
+                <td className="p-1">{item.current_status}</td>
               </tr>
             ))}
           </tbody>
@@ -185,7 +187,7 @@ function SummaryCard({ notes, setNotes }) {
   );
 }
 
-// Password Change Card component
+// Password ChangeCard component
 function PasswordChangeCard() {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
@@ -285,7 +287,7 @@ function PasswordChangeCard() {
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
             >
               {showConfirm ? (
-                  <img src={EyeOpen} alt="Hide password" className="size-4" />
+                <img src={EyeOpen} alt="Hide password" className="size-4" />
               ) : (
                 <img src={EyeClose} alt="Show password" className="size-4" />
               )}
@@ -375,8 +377,8 @@ export default function AdminProfilePage() {
   return (
     <>
       <NavBarSide />
-      <h1 className="text-center text-base font-bold mb-1 pt-6 text-blue-900 table-fixed">
-        Admin Profile
+      <h1 className="text-center text-base font-bold mb-1 pt-6 text-blue-900">
+        Employee Profile
       </h1>
       <div className="min-h-screen bg-gray-50 py-4 px-4 md:py-4 md:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-[40%_60%] gap-4 md:pr-13 md:pl-10 sm:pr-2 sm:pl-2">
