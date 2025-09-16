@@ -1,5 +1,6 @@
 // src/pages/HRProfilePage.jsx
 import React, { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom"; // Add useLocation and useNavigate
 import { mockUser } from "../webpages/mockUser";
 import NavBarMain from "@/Components/NavBarMain";
 import EyeOpenIcon from "@/assets/eyeopen.svg";
@@ -518,20 +519,33 @@ function SummaryCard({ notes, setNotes }) {
 
 /* ---------------- Main HRProfilePage ---------------- */
 export default function HRProfilePage() {
-    const [profile, setProfile] = useState(mockUser); // ✅ use imported mockUser
+    const location = useLocation(); // Add this
+    const navigate = useNavigate(); // Add this
+    const user = location.state?.user || mockUser; // Change this
+    
+    const [profile, setProfile] = useState(user); // Use the correct user
     const [notes, setNotes] = useState("");
 
-    const handleBackClick = () => window.history.back();
-    const handleProfileClick = () => { };
-    const handleLogout = () => console.log("Logout clicked");
+    const handleBackClick = () => {
+        // Navigate back to the previous page with user data
+        navigate(-1);
+    };
+    
+    const handleProfileClick = () => { 
+        // Already on profile page, do nothing
+    };
+    
+    const handleLogout = () => {
+        navigate("/LoginPage");
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">
             <NavBarMain
-                user={mockUser}
+                user={user} // Use the correct user
                 onBackClick={handleBackClick}
-                onProfileClick={handleProfileClick}
-                onLogout={handleLogout}
+                customProfileClick={handleProfileClick}
+                customLogout={handleLogout}
                 showBackButton={true}
                 showProfileOption={true}
                 showDropdown={true}

@@ -1,12 +1,12 @@
 // HR_HistoryPage.jsx
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // Add useLocation
 import { mockRequests } from "./mockRequests";
 import NavBarMain from "@/Components/NavBarMain";
 
 // Assets
 import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
-import MetroBankLogo from "@/assets/metroBankLogo2.svg";
+import mainLogo from '../assets/mainLogo-foreground.svg';
 import RoundArrowRightWhiteArrow from "@/assets/RoundArrowRightWhiteArrow.svg";
 import SearchIcon from "@/assets/search.svg";
 
@@ -15,7 +15,8 @@ import { mockUser } from "./mockUser";
 
 export default function HR_HistoryPage() {
     const navigate = useNavigate();
-    const user = mockUser;
+    const location = useLocation(); // Add this line
+    const user = location.state?.user || mockUser; // Change this line
 
     const [searchTerm, setSearchTerm] = useState("");
     const [sortOrder, setSortOrder] = useState("");
@@ -51,12 +52,12 @@ export default function HR_HistoryPage() {
 
     // Navbar handlers
     const handleBackClick = () => {
-        navigate("/hr-dashboard");
+        navigate("/hr-dashboard", { state: { user } }); // Pass user back to dashboard
     };
 
     const handleProfileClick = () => {
         // Add your profile navigation logic here
-        console.log("Navigate to profile");
+        navigate("/profile", { state: { user } });
     };
 
     const handleLogout = () => {
@@ -92,14 +93,15 @@ export default function HR_HistoryPage() {
             <NavBarMain
                 user={user}
                 onBackClick={handleBackClick}
-                onProfileClick={handleProfileClick}
-                onLogout={handleLogout}
+                customProfileClick={handleProfileClick} // ✅ correct prop
+                customLogout={handleLogout}             // ✅ correct prop
                 showBackButton={true}
                 showProfileOption={true}
                 showDropdown={true}
                 backButtonIcon={BackSquareIconWhite}
-                logo={MetroBankLogo}
+                logo={mainLogo}
             />
+
 
             {/* Title */}
             <div className="flex justify-center mt-[43px]">

@@ -74,7 +74,7 @@ export const mockPendingRequests = [
             profile_pic: null
         },
         request_type: "letter_of_approval",
-        current_status: "pending review",
+        current_status: "pending ba review",
         created_at: "2025-04-15"
     },
     {

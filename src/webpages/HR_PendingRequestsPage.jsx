@@ -1,6 +1,6 @@
 // HR_PendingRequestsPage.jsx
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { mockPendingRequests } from "./mockPendingRequests";
 import NavBarMain from "@/Components/NavBarMain";
 import LoginPage from "./LoginPage";
@@ -16,8 +16,19 @@ import { mockUser } from "./mockUser";
 
 export default function HR_PendingRequestsPage() {
     const navigate = useNavigate();
-    const user = mockUser;
-    const filterPopupRef = useRef(null);
+    const location = useLocation();
+    
+    // Add error handling and logging
+    console.log('Location state:', location.state);
+    
+    const user = location.state?.user || mockUser;
+    
+    console.log('User:', user);
+    
+    // Add a safety check
+    if (!user) {
+        return <div>Loading user data...</div>;
+    }
 
     const [searchTerm, setSearchTerm] = useState("");
     const [showFilterPopup, setShowFilterPopup] = useState(false);
@@ -151,12 +162,12 @@ export default function HR_PendingRequestsPage() {
 
     // Navbar handlers
     const handleBackClick = () => {
-        navigate("/hr-dashboard");
-    };
+       navigate("/hr-dashboard", { state: { user } });
+   };
 
     const handleProfileClick = () => {
         // Add your profile navigation logic here
-        console.log("Navigate to profile");
+        navigate("/profile", { state: { user } });
     };
 
     const handleLogout = () => {

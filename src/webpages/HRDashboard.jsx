@@ -1,4 +1,4 @@
-// HRDashboard.jsx (with profile dropdown functionality and proper user session management)
+// HRDashboard.jsx (with counter helper integration)
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { mockUser } from "./mockUser";
@@ -10,17 +10,22 @@ import approvedIcon from "@/assets/approvedIcon.svg";
 import rejectedIcon from "@/assets/rejectedIcon.svg";
 import RoundArrowIconBlue from "@/assets/RoundArrowIconBlue.svg";
 import RoundArrowIconWhite from "@/assets/RoundArrowIconWhite.svg";
+import { mockPendingRequests } from "./mockPendingRequests";
 import { mockRequests } from "./mockRequests";
+import ProfileIcon from '../assets/ProfileIcon.svg';
+import LogoutIcon from '../assets/LogoutIcon.svg';
+import AlertIcon from '../assets/AlertIcon.svg';
+
 
 const recentTransactions = mockRequests.slice(0, 3); // just 3 most recent
 
 export default function HRDashboard() {
     const location = useLocation();
     const navigate = useNavigate();
-    
+
     // Get user from navigation state or fallback to default
     const user = location.state?.user || mockUser;
-    
+
     const [isMobile, setIsMobile] = useState(false);
     const [showDropdownMenu, setShowDropdownMenu] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -48,22 +53,40 @@ export default function HRDashboard() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Dynamic request counts based on user position - replace with your actual data source
-    const getRequestCounts = (userPosition) => {
-        // This should be replaced with actual API calls or state management
-        switch (userPosition) {
-            case "Benefits Assistant":
-                return { requestsToApprove: 2, requestsToReview: 1 };
-            case "Benefits Services Officer":
-                return { requestsToApprove: 0, requestsToReview: 3 };
-            case "Division Head":
-                return { requestsToApprove: 0, requestsToReview: 1 };
-            default:
-                return { requestsToApprove: 0, requestsToReview: 0 };
+    // Helper function to get counts by position 
+    const getCountsByPosition = (position, requests) => {
+        if (position === "Benefits Assistant") {
+            const toApprove = requests.filter(
+                (r) => r.current_status.toLowerCase() === "pending ba approval"
+            ).length;
+            const toReview = requests.filter(
+                (r) => r.current_status.toLowerCase() === "pending ba review"
+            ).length;
+            return {
+                message: `You have ${toApprove} LOA request/s to approve, and ${toReview} to review.`,
+            };
         }
+        if (position === "Benefits Services Officer") {
+            const count = requests.filter(
+                (r) => r.current_status.toLowerCase() === "pending bso approval"
+            ).length;
+            return {
+                message: `You have ${count} LOA request/s to review and sign.`,
+            };
+        }
+        if (position === "Division Head") {
+            const count = requests.filter(
+                (r) => r.current_status.toLowerCase() === "pending division head approval"
+            ).length;
+            return {
+                message: `You have ${count} LOA request/s to review and sign.`,
+            };
+        }
+        return { message: "" };
     };
 
-    const { requestsToApprove, requestsToReview } = getRequestCounts(user.position);
+    // Get the message using the helper function
+    const { message } = getCountsByPosition(user.position, mockPendingRequests);
 
     // Profile dropdown handlers
     const handleUserClick = () => {
@@ -90,49 +113,19 @@ export default function HRDashboard() {
         navigate("/login");
     };
 
-    // Get description text based on user position
-    const getDescriptionText = () => {
-        switch (user.position) {
-            case "Benefits Assistant":
+    // Parse the message to add styling to numbers
+    const getStyledMessage = (message) => {
+        // Split the message and wrap numbers in styled spans
+        return message.split(/(\d+)/).map((part, index) => {
+            if (/^\d+$/.test(part)) {
                 return (
-                    <>
-                        You have{" "}
-                        <span className="font-bold" style={{ color: '#023184' }}>
-                            {requestsToApprove}
-                        </span>{" "}
-                        LOA request{requestsToApprove !== 1 ? "s" : ""} to approve, and{" "}
-                        <span className="font-bold" style={{ color: '#023184' }}>
-                            {requestsToReview}
-                        </span>{" "}
-                        to review.
-                    </>
+                    <span key={index} className="font-bold" style={{ color: '#023184' }}>
+                        {part}
+                    </span>
                 );
-            case "Benefits Services Officer":
-            case "Division Head":
-                return (
-                    <>
-                        You have{" "}
-                        <span className="font-bold" style={{ color: '#023184' }}>
-                            {requestsToReview}
-                        </span>{" "}
-                        LOA request{requestsToReview !== 1 ? "s" : ""} to review and sign.
-                    </>
-                );
-            default:
-                return (
-                    <>
-                        You have{" "}
-                        <span className="font-bold" style={{ color: '#023184' }}>
-                            {requestsToApprove}
-                        </span>{" "}
-                        LOA request{requestsToApprove !== 1 ? "s" : ""} to approve, and{" "}
-                        <span className="font-bold" style={{ color: '#023184' }}>
-                            {requestsToReview}
-                        </span>{" "}
-                        to review.
-                    </>
-                );
-        }
+            }
+            return part;
+        });
     };
 
     // Mobile Layout
@@ -149,7 +142,7 @@ export default function HRDashboard() {
                 >
                     {/* User info with dropdown - upper right corner */}
                     <div className="absolute top-4 right-4" ref={dropdownRef}>
-                        <button 
+                        <button
                             onClick={handleUserClick}
                             className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
                         >
@@ -169,29 +162,26 @@ export default function HRDashboard() {
 
                         {/* Dropdown Menu */}
                         {showDropdownMenu && (
-                            <div className="absolute top-full right-0 mt-2 w-28 bg-white rounded-2xl shadow-xl border border-gray-200 z-50">
+                            <div className="absolute top-full right-0 mt-2 w-40 bg-white rounded-2xl shadow-xl border border-gray-200 z-50">
                                 <div className="py-1">
                                     <button
                                         onClick={handleProfileClick}
-                                        className="w-full px-4 py-2 text-left text-sm text-blue-700 hover:bg-gray-200 hover:rounded-2xl transition flex items-center gap-2"
+                                        className="w-full px-4 py-2 text-left text-sm text-[#023184] hover:bg-gray-100 hover:rounded-2xl transition flex items-center gap-3"
                                     >
-                                        <div className="w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center">
-                                            <span className="text-white text-xs">👤</span>
-                                        </div>
+                                        <img src={ProfileIcon} alt="" className="w-5 h-5" />
                                         <span>Profile</span>
                                     </button>
                                     <button
                                         onClick={handleLogoutClick}
-                                        className="w-full px-4 py-2 text-left text-sm text-blue-700 hover:bg-gray-200 hover:rounded-2xl transition flex items-center gap-2"
+                                        className="w-full px-4 py-2 text-left text-sm text-[#023184] hover:bg-gray-100 hover:rounded-2xl transition flex items-center gap-3"
                                     >
-                                        <div className="w-4 h-4 bg-red-600 rounded-full flex items-center justify-center">
-                                            <span className="text-white text-xs">⟲</span>
-                                        </div>
+                                        <img src={LogoutIcon} alt="" className="w-5 h-5" />
                                         <span>Logout</span>
                                     </button>
                                 </div>
                             </div>
                         )}
+
                     </div>
 
                     {/* Content container */}
@@ -229,9 +219,9 @@ export default function HRDashboard() {
                                 Pending Requests
                             </h2>
 
-                            {/* Description Text */}
+                            {/* Description Text with styled numbers */}
                             <p className="text-center text-base mb-4 px-4" style={{ color: '#484848' }}>
-                                {getDescriptionText()}
+                                {getStyledMessage(message)}
                             </p>
 
                             {/* Review Now Button */}
@@ -243,8 +233,9 @@ export default function HRDashboard() {
                                     height: '29px'
                                 }}
                                 onClick={() => {
-                                    navigate("/hr-pending-requests", { state: { user } });
-                                }}
+    console.log('Navigating with user:', user); // Add this line
+    navigate("/hr-pending-requests", { state: { user } });
+}}
                             >
                                 Review now
                                 <img src={RoundArrowIconWhite} alt="Arrow" className="w-5 h-5" />
@@ -301,8 +292,8 @@ export default function HRDashboard() {
                     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
                         <div className="bg-white p-6 rounded-3xl shadow-lg text-center w-80">
                             <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                                    <span className="text-red-600 text-lg">⚠️</span>
+                                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <img src={AlertIcon} alt="Alert" className="w-5 h-5" />
                                 </div>
                                 <h3 className="text-sm font-semibold text-gray-900">Confirm Logout</h3>
                             </div>
@@ -328,7 +319,7 @@ export default function HRDashboard() {
         );
     }
 
-    // Desktop Layout (keeping your original design)
+    // Desktop Layout
     return (
         <div className="h-screen flex flex-col overflow-hidden">
             {/* Upper half with diagonal gradient */}
@@ -365,7 +356,7 @@ export default function HRDashboard() {
                 >
                     {/* User info with dropdown above card */}
                     <div className="absolute -top-10 right-0" ref={dropdownRef}>
-                        <button 
+                        <button
                             onClick={handleUserClick}
                             className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
                         >
@@ -389,25 +380,22 @@ export default function HRDashboard() {
                                 <div className="py-1">
                                     <button
                                         onClick={handleProfileClick}
-                                        className="w-full px-4 py-2 text-left text-sm text-blue-700 hover:bg-gray-200 hover:rounded-2xl transition flex items-center gap-2"
+                                        className="w-full px-4 py-2 text-left text-sm text-[#023184] hover:bg-gray-100 hover:rounded-2xl transition flex items-center gap-3"
                                     >
-                                        <div className="w-4 h-4 bg-blue-600 rounded-full flex items-center justify-center">
-                                            <span className="text-white text-xs">👤</span>
-                                        </div>
+                                        <img src={ProfileIcon} alt="" className="w-5 h-5" />
                                         <span>Profile</span>
                                     </button>
                                     <button
                                         onClick={handleLogoutClick}
-                                        className="w-full px-4 py-2 text-left text-sm text-blue-700 hover:bg-gray-200 hover:rounded-2xl transition flex items-center gap-2"
+                                        className="w-full px-4 py-2 text-left text-sm text-[#023184] hover:bg-gray-100 hover:rounded-2xl transition flex items-center gap-3"
                                     >
-                                        <div className="w-4 h-4 bg-red-600 rounded-full flex items-center justify-center">
-                                            <span className="text-white text-xs">⟲</span>
-                                        </div>
+                                        <img src={LogoutIcon} alt="" className="w-5 h-5" />
                                         <span>Logout</span>
                                     </button>
                                 </div>
                             </div>
                         )}
+
                     </div>
 
                     {/* Icon/Image */}
@@ -420,9 +408,9 @@ export default function HRDashboard() {
                         Pending Requests
                     </h2>
 
-                    {/* Description Text */}
+                    {/* Description Text with styled numbers */}
                     <p className="text-center mb-4 max-w-md" style={{ color: '#484848' }}>
-                        {getDescriptionText()}
+                        {getStyledMessage(message)}
                     </p>
 
                     {/* Review Now Button */}
@@ -482,8 +470,6 @@ export default function HRDashboard() {
                                 <div>
                                     {transaction.request_type === 'letter_of_approval' ? 'LOApp' :
                                         transaction.request_type === 'letter_of_authorization' ? 'LOAuth' :
-                                            transaction.request_type === 'annual_checkup' ? 'Annual Checkup' :
-                                                transaction.request_type === 'special_request' ? 'Special Request' :
                                                     transaction.request_type}
                                 </div>
 
@@ -527,8 +513,8 @@ export default function HRDashboard() {
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-3xl shadow-lg text-center w-80">
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                                <span className="text-red-600 text-lg">⚠️</span>
+                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <img src={AlertIcon} alt="Alert" className="w-5 h-5" />
                             </div>
                             <h3 className="text-sm font-semibold text-gray-900">Confirm Logout</h3>
                         </div>

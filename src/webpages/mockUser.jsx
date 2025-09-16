@@ -1,5 +1,7 @@
 // src/webpages/mockUser.jsx
 import ProfilePicPlaceholder from "@/assets/ProfilePicPlaceholder.svg";
+import ProfilePicPlaceholder1 from "@/assets/ProfilePicPlaceholder1.svg";
+import ProfilePicPlaceholder2 from "@/assets/ProfilePicPlaceholder2.svg";
 
 export const mockUsers = [
   {
@@ -14,8 +16,8 @@ export const mockUsers = [
     birthDate: "2004-03-24",
     department: "Human Resources",
     profilePic: ProfilePicPlaceholder,
-    username: "BA",
-    password: "ba123",
+    username: "ba",
+    password: "123",
   },
   {
     id: 2,
@@ -28,9 +30,9 @@ export const mockUsers = [
     contactNumber: "09987654321",
     birthDate: "1998-08-15",
     department: "Human Resources",
-    profilePic: ProfilePicPlaceholder,
-    username: "BSO",
-    password: "bso456",
+    profilePic: ProfilePicPlaceholder1,
+    username: "bso",
+    password: "456",
   },
   {
     id: 3,
@@ -43,9 +45,9 @@ export const mockUsers = [
     contactNumber: "09112223334",
     birthDate: "1985-12-02",
     department: "Human Resources",
-    profilePic: ProfilePicPlaceholder,
-    username: "DivisionHead",
-    password: "div789",
+    profilePic: ProfilePicPlaceholder2,
+    username: "dh",
+    password: "789",
   },
 ];
 
