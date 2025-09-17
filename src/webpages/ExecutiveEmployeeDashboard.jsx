@@ -77,7 +77,7 @@ function GreetingStatusCard({ firstName, lastName, requestStatus, onChevronClick
 
         {/* Status Pill */}
         <div
-          className="font-bold rounded-full shadow-xl/20 px-4 py-2 flex flex-col items-center border mx-auto w-60 h-21"
+          className="font-bold rounded-full shadow-xl/20 px-4 pt-2 pb-1 flex flex-col items-center border mx-auto w-60 h-20"
           style={requestStatus.pillStyle}
         >
           <div className="flex items-center">
@@ -241,9 +241,39 @@ export default function ExecutiveEmployeeDashboard() {
     navigate('/executive-employee-submit-loauthorization');
   };
 
-  // Handle chevron click - Navigate to LOA status tracker
+  // Handle chevron click - Navigate to LOA status tracker with current data
   const handleChevronClick = () => {
-    navigate('/loa-status-tracker');
+    // Determine request type based on current status
+    let requestType = "Letter of Authorization";
+    if (currentRequest.current_status === "submittedapproval") {
+      requestType = "Letter of Approval";
+    } else if (currentRequest.current_status === "submittedauthorization") {
+      requestType = "Letter of Authorization";
+    }
+
+    // Pass complete request data through navigation state
+    navigate('/loa-status-tracker', {
+      state: {
+        requestDetails: {
+          request_type: requestType,
+          request_id: currentRequest.id || 12345,
+          requested_on: new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }),
+          requested_by: `${userData.firstName} ${userData.lastName}`,
+          current_status: currentRequest.current_status,
+          request_number: currentRequest.request_number || `REQ-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
+          priority_level: currentRequest.priority_level,
+          hospital_name: currentRequest.hospital_name,
+          preferred_date: currentRequest.preferred_date,
+          additional_notes: currentRequest.additional_notes,
+          letter_purpose: currentRequest.letter_purpose,
+          medical_requirements: currentRequest.medical_requirements
+        }
+      }
+    });
   };
 
   // Modal handlers
@@ -293,8 +323,29 @@ export default function ExecutiveEmployeeDashboard() {
 
   const statusDisplay = getStatusDisplay(currentRequest.current_status);
 
+  // ✅ Function to simulate status changes (for testing)
+  const changeStatus = (newStatus) => {
+    setCurrentRequest(prev => ({
+      ...prev,
+      current_status: newStatus
+    }));
+  };
+
   return (
     <div className="bg-gray-100 min-h-screen font-sans">
+      {/* 🧪 Testing Controls - Remove in production */}
+      <div className="bg-yellow-100 p-2 text-xs text-center">
+        <strong>Testing Controls:</strong>
+        <button onClick={() => changeStatus('no_request')} className="mx-1 px-2 py-1 bg-gray-200 rounded">No Request</button>
+        <button onClick={() => changeStatus('submittedapproval')} className="mx-1 px-2 py-1 bg-green-200 rounded">Submitted Approval</button>
+        <button onClick={() => changeStatus('submittedauthorization')} className="mx-1 px-2 py-1 bg-green-200 rounded">Submitted Auth</button>
+        <button onClick={() => changeStatus('awaitingbso')} className="mx-1 px-2 py-1 bg-blue-200 rounded">Awaiting BSO</button>
+        <button onClick={() => changeStatus('awaitingba')} className="mx-1 px-2 py-1 bg-blue-200 rounded">Awaiting BA</button>
+        <button onClick={() => changeStatus('awaitingdh')} className="mx-1 px-2 py-1 bg-blue-200 rounded">Awaiting DH</button>
+        <button onClick={() => changeStatus('completed')} className="mx-1 px-2 py-1 bg-green-200 rounded">Completed</button>
+        <button onClick={() => changeStatus('rejected')} className="mx-1 px-2 py-1 bg-red-200 rounded">Rejected</button>
+      </div>
+
       {/* Top Section */}
       <div
         className="relative text-white flex flex-col md:flex-row justify-between items-center shadow-2xl p-6 sm:p-8 sm:pr-30 sm:pl-30"
