@@ -159,7 +159,7 @@ export default function LOAStatusTracker() {
 
 
         {/* Right - Progress */}
-        <div className="bg-white rounded-3xl shadow-xl py-4 px-20  border border-gray-200 shadow-[#00539F]/30
+        <div className="bg-white rounded-3xl shadow-xl py-4 md:px-20 sm:px-4 border border-gray-200 shadow-[#00539F]/30
         outline outline-2 outline-[#00539F]">
           <h2 className="text-base font-bold text-blue-900 mb-4">
             LOA Request Progress
@@ -174,7 +174,7 @@ export default function LOAStatusTracker() {
           </div>
 
           {/* Steps */}
-          <div className="space-y-1 text-left text-sm mb-2">
+          <div className="space-y-1 text-left text-sm mb-2 pl-4">
             {steps.map((step) => (
               <div key={step.id} className="flex items-start gap-3">
                 <img src={getIcon(step.state)} alt="status" className="w-7 h-7" />
@@ -187,7 +187,7 @@ export default function LOAStatusTracker() {
           </div>
 
           {/* Legend */}
-          <div className="grid grid-cols-5 mt-6 text-xs text-gray-600">
+          <div className="grid grid-cols-[.5fr_1fr_1fr_1fr_1fr] mt-6 text-xs text-gray-600 pl-4 text-left">
 
             <p className="flex items-center font-bold">Legend:</p>
 

@@ -131,7 +131,7 @@ export default function SubmitLetterOfAuthorization() {
                       className="text-red-500 hover:text-red-700 p-2"
                       title="Remove file"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-6 h-6" />
                     </button>
                   </div>
                 )}
