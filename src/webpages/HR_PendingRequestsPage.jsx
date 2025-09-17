@@ -71,8 +71,9 @@ export default function HR_PendingRequestsPage() {
 
     // Handle row click to navigate to record summary
     const handleRecordClick = (requestId) => {
-        navigate(`/loa-record-summary/${requestId}`);
+        navigate(`/loa-submit/${requestId}`);
     };
+
 
     // Handle filter popup
     const handleFilterClick = (e) => {
@@ -155,41 +156,40 @@ export default function HR_PendingRequestsPage() {
     };
 
     const handleProfileClick = () => {
-        // Add your profile navigation logic here
-        console.log("Navigate to profile");
+        navigate("/profile", { state: { user } });
     };
 
     const handleLogout = () => {
         // Add your logout logic here
-       navigate("/login");
+        navigate("/login");
     };
 
     // Decide which requests the current user can see
-const roleFilteredRequests = mockPendingRequests.filter((req) => {
-  // Benefits Assistant sees all
-  if (user.position === "Benefits Assistant" || user.username === "BA") {
-    return true;
-  }
+    const roleFilteredRequests = mockPendingRequests.filter((req) => {
+        // Benefits Assistant sees all
+        if (user.position === "Benefits Assistant" || user.username === "BA") {
+            return true;
+        }
 
-  // BSO sees only pending BSO Approval
-  if (user.position === "Benefits Services Officer" || user.username === "BSO") {
-    return req.current_status === "pending bso approval";
-  }
+        // BSO sees only pending BSO Approval
+        if (user.position === "Benefits Services Officer" || user.username === "BSO") {
+            return req.current_status === "pending bso approval";
+        }
 
-  // Division Head sees only pending Division Head Approval
-  if (user.position === "Division Head" || user.username === "DivisionHead") {
-    return req.current_status === "pending division head approval";
-  }
+        // Division Head sees only pending Division Head Approval
+        if (user.position === "Division Head" || user.username === "DivisionHead") {
+            return req.current_status === "pending division head approval";
+        }
 
-  // default: nothing
-  return false;
-});
+        // default: nothing
+        return false;
+    });
 
 
 
     // Filter and sort requests - only show pending requests
     const filteredRequests = roleFilteredRequests
-  .filter((req) => {
+        .filter((req) => {
             const fullName = `${req.employee.first_name} ${req.employee.last_name}`.toLowerCase();
             const matchesSearch = fullName.includes(searchTerm.toLowerCase());
             const matchesType = filters.requestType === "" || req.request_type === filters.requestType;
@@ -603,8 +603,8 @@ const roleFilteredRequests = mockPendingRequests.filter((req) => {
                                         <tr
                                             key={`empty-${index}`}
                                             className={`border-b border-gray-200 ${(filteredRequests.length + index) % 2 === 0
-                                                    ? "bg-white"
-                                                    : "bg-gray-50"
+                                                ? "bg-white"
+                                                : "bg-gray-50"
                                                 }`}
                                             style={{ height: "72px" }}
                                         >

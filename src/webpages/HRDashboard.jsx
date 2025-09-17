@@ -233,9 +233,9 @@ export default function HRDashboard() {
                                     height: '29px'
                                 }}
                                 onClick={() => {
-    console.log('Navigating with user:', user); // Add this line
-    navigate("/hr-pending-requests", { state: { user } });
-}}
+                                    console.log('Navigating with user:', user); // Add this line
+                                    navigate("/hr-pending-requests", { state: { user } });
+                                }}
                             >
                                 Review now
                                 <img src={RoundArrowIconWhite} alt="Arrow" className="w-5 h-5" />
@@ -470,7 +470,7 @@ export default function HRDashboard() {
                                 <div>
                                     {transaction.request_type === 'letter_of_approval' ? 'LOApp' :
                                         transaction.request_type === 'letter_of_authorization' ? 'LOAuth' :
-                                                    transaction.request_type}
+                                            transaction.request_type}
                                 </div>
 
                                 {/* Created Date - from checkup_requests.created_at */}

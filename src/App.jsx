@@ -1,7 +1,7 @@
 // App.jsx
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoginPage from "@/webpages/LoginPage"; 
-import {LandingPage}  from "@/webpages/LandingPage";
+import { LandingPage } from "@/webpages/LandingPage";
 import { FAQ } from "@/webpages/FAQ";
 import { AboutUs } from "@/webpages/AboutUs";
 import { ContactUs } from "@/webpages/ContactUs";
@@ -11,6 +11,9 @@ import { NotFound } from "@/NotFound";
 import LOA_RecordSummary from "@/webpages/LOA_RecordSummary";
 import HR_PendingRequestsPage from "@/webpages/HR_PendingRequestsPage";
 import HR_Profile from "@/webpages/HR_Profile";
+
+// ✅ import your new page
+import LOA_Submit from "@/webpages/LOA_Submit";
 
 export default function App() {
   return (
@@ -30,7 +33,8 @@ export default function App() {
         <Route path="/hr-history" element={<HR_HistoryPage />} />
         <Route path="/loa-record-summary/:requestId" element={<LOA_RecordSummary />} />
         <Route path="/hr-pending-requests" element={<HR_PendingRequestsPage />} />
-        <Route path="/profile" element={<HR_Profile />} /> {/* Add this line */}
+        <Route path="/profile" element={<HR_Profile />} />
+        <Route path="/loa-submit/:requestId" element={<LOA_Submit />} />
 
         {/* 404 fallback */}
         <Route path="*" element={<NotFound />} />

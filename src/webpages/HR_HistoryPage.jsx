@@ -56,12 +56,10 @@ export default function HR_HistoryPage() {
     };
 
     const handleProfileClick = () => {
-        // Add your profile navigation logic here
         navigate("/profile", { state: { user } });
     };
 
     const handleLogout = () => {
-        // Add your logout logic here
         navigate("/login");
     };
 
