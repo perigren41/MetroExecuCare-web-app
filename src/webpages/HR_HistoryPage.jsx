@@ -62,7 +62,7 @@ export default function HR_HistoryPage() {
 
     const handleLogout = () => {
         // Add your logout logic here
-        navigate("/LoginPage");
+        navigate("/login");
     };
 
     // Filter and sort requests

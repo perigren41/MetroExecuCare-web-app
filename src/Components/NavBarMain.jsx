@@ -69,7 +69,7 @@ const Navbar = ({
     } else {
       localStorage.removeItem('authToken');
       sessionStorage.clear();
-      navigate("/LoginPage");
+      navigate("/login");
     }
   };
 

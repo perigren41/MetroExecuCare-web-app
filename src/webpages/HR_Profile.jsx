@@ -536,7 +536,7 @@ export default function HRProfilePage() {
     };
     
     const handleLogout = () => {
-        navigate("/LoginPage");
+        navigate("/login");
     };
 
     return (
