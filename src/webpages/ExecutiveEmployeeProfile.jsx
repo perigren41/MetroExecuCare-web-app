@@ -380,7 +380,7 @@ export default function AdminProfilePage() {
       <h1 className="text-center text-base font-bold mb-1 pt-6 text-blue-900">
         Employee Profile
       </h1>
-      <div className="min-h-screen bg-gray-50 py-4 px-4 md:py-4 md:px-8">
+      <div className="min-h-screen bg-gray-50 py-4 px-4 md:py-4 md:px-8 table-fixed">
         <div className="grid grid-cols-1 lg:grid-cols-[40%_60%] gap-4 md:pr-13 md:pl-10 sm:pr-2 sm:pl-2">
           
           <div>

@@ -147,10 +147,10 @@ export default function LOAStatusTracker() {
         </div>
 
         {/* Download Button */}
-        <div className="flex justify-center">
+        <div className="flex justify-center text-sm">
             <button
             disabled
-            className="px-6 py-4 rounded-full bg-gray-300 text-gray-600 cursor-not-allowed shadow-md"
+            className="px-4 py-2 rounded-full bg-gray-300 text-gray-600 cursor-not-allowed shadow-md"
             >
             Download
             </button>
@@ -187,17 +187,20 @@ export default function LOAStatusTracker() {
           </div>
 
           {/* Legend */}
-          <div className="grid grid-cols-4 mt-6 text-xs text-gray-600">
-            <p className="flex items-center gap-2">
+          <div className="grid grid-cols-5 mt-6 text-xs text-gray-600">
+
+            <p className="flex items-center font-bold">Legend:</p>
+
+            <p className="flex items-center gap-1">
               <img src={CheckSquare} className="w-5 h-5" alt="Completed" /> Completed
             </p>
-            <p className="flex items-center gap-2">
+            <p className="flex items-center gap-1">
               <img src={ClockSquare} className="w-5 h-5" alt="Waiting" /> Waiting
             </p>
-            <p className="flex items-center gap-2">
+            <p className="flex items-center gap-1">
               <img src={AddSquare} className="w-5 h-5" alt="No request" /> No request
             </p>
-            <p className="flex items-center gap-2">
+            <p className="flex items-center gap-1">
               <img src={XSquare} className="w-5 h-5" alt="Rejected" /> Rejected
             </p>
           </div>

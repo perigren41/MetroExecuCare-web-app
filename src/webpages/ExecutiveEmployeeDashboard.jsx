@@ -56,14 +56,14 @@ function GreetingStatusCard({ firstName, lastName, requestStatus, onChevronClick
           <div className="flex flex-col items-center md:items-start">
             <img
               src="src/assets/MetrobankLogo.svg"
-              className="sm:w-35 h-8 md:w-40 md:h-10"
+              className="sm:w-25 h-8 md:w-40 md:h-10"
               alt="Metrobank Logo"
             />
           </div>
-          <h1 className="text-4xl font-bold text-center md:text-left">
+          <h1 className="sm:text-4xl text-3xl font-bold text-center md:text-left">
             Hello, {firstName}!
           </h1>
-          <p className="sm:text-sm md:text-lg text-center md:text-left">
+          <p className="sm:text-xs md:text-lg text-center md:text-left">
             Welcome to the MetroExecuCare Annual Executive Check-up Portal
           </p>
         </div>
@@ -71,7 +71,7 @@ function GreetingStatusCard({ firstName, lastName, requestStatus, onChevronClick
 
       {/* Status Section */}
       <div className="bg-white text-gray-900 rounded-4xl shadow-xl/30 w-110 h-70 mt-0 md:mt-0 text-center 
-      flex flex-col justify-center mx-auto ml-15 table-fixed">
+      flex flex-col justify-center mx-auto ml-1 sm:ml-15 table-fixed">
         {/* Inside Status Section */}
         <h2 className="text-2xl font-bold pb-3 ">Current Request Status</h2>
 
