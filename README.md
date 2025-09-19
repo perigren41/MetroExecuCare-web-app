@@ -118,74 +118,6 @@ The Web-Based Annual Executive Check Up Benefit System enables:
 - ✅ System analytics and logs
 - ✅ Database maintenance functions
 
-## Development Action Plan
-
-### Step 1: Database Implementation (Week 1)
-1. **Database Setup**
-   - Install and configure MySQL
-   - Create database schema from ERD
-   - Set up database connection in Node.js using mysql2
-
-2. **Table Creation**
-   - Implement all 10 tables from schema
-   - Set up foreign key constraints
-   - Create indexes for performance optimization
-   - Seed initial data (hospitals, system settings, FAQs)
-
-### Step 2: Authentication System (Week 1-2)
-1. **JWT Authentication Setup**
-   - Implement user registration/login endpoints
-   - Create JWT token generation and validation middleware
-   - Set up password hashing with bcrypt
-   - Implement role-based access control (RBAC) middleware
-
-2. **User Management APIs**
-   - Create user CRUD operations
-   - Implement user profile management
-   - Set up session management
-
-### Step 3: Core API Development (Week 2-3)
-1. **Request Management APIs**
-   - Create checkup request submission endpoint
-   - Implement request status tracking
-   - Build approval workflow endpoints
-   - Create request handling
-
-2. **Hospital Management APIs**
-   - Hospital listing functionality
-   - Hospital assignment logic for HR
-
-3. **File Management APIs**
-   - File upload endpoints for supporting documents
-   - File download with access control
-   - Letter generation system
-
-### Step 4: Gmail API Integration (Week 3-4)
-1. **Email Service Setup**
-   - Configure Gmail API credentials
-   - Create email templates for different notification types
-   - Implement notification system for all workflow stages
-   - Set up email scheduling and retry logic
-
-### Step 5: Advanced Features (Week 4-5)
-1. **Activity Logging System**
-   - Implement comprehensive audit trail
-   - Track all user actions and system changes
-
-2. **Reporting and Analytics**
-   - Create dashboard endpoints for different user roles
-   - Implement request statistics and timeline tracking
-
-### Step 6: API Testing and Documentation (Week 5)
-1. **Testing Implementation**
-   - Unit tests for all API endpoints
-   - Integration tests for workflow processes
-   - Authentication and authorization tests
-
-2. **API Documentation**
-   - Create comprehensive API documentation
-   - Set up Postman collection for testing
-
 ## Technology Stack
 
 ### Backend
@@ -197,6 +129,11 @@ The Web-Based Annual Executive Check Up Benefit System enables:
 - **Email Service**: Gmail API
 - **File Upload**: Multer
 - **Security**: Helmet, CORS, Rate Limiting
+
+### Frontend
+- **Framework**: React + Vite
+- **Build Tool**: Vite with HMR and ESLint rules
+- **Fast Refresh**: [@vitejs/plugin-react](https://github.com/vitejs/plugin-react) using Babel
 
 ### Database Schema
 - **users**: Employee information and authentication
@@ -243,6 +180,24 @@ The Web-Based Annual Executive Check Up Benefit System enables:
 - `PUT /api/requests/:id` - Update request
 - `PUT /api/requests/:id/status` - Update request status
 
+## Project Structure
+```
+MetroExecuCare/
+├── Backend/                 # Node.js/Express backend
+│   ├── config/
+│   ├── controllers/
+│   ├── routes/
+│   ├── middleware/
+│   ├── services/
+│   ├── templates/
+│   └── ...
+├── Frontend/                # React frontend
+│   ├── src/
+│   ├── public/
+│   └── ...
+└── README.md
+```
+
 ## Installation and Setup
 
 ### Prerequisites
@@ -274,14 +229,29 @@ GMAIL_CLIENT_SECRET=your_gmail_client_secret
 GMAIL_REFRESH_TOKEN=your_gmail_refresh_token
 ```
 
-### Installation Steps
-1. Clone the repository
-2. Navigate to the Backend directory
-3. Install dependencies: `npm install`
-4. Configure environment variables
-5. Set up MySQL database
-6. Run database migrations/schema setup
-7. Start the server: `npm start` or `npm run dev`
+### Backend Setup
+1. Navigate to the Backend directory: `cd Backend`
+2. Install dependencies: `npm install`
+3. Configure environment variables (see above)
+4. Set up MySQL database
+5. Run database migrations/schema setup
+6. Start the backend server: `npm start`
+
+### Frontend Setup
+1. Navigate to the Frontend directory: `cd Frontend`
+2. Install dependencies: `npm install`
+3. Start the development server: `npm run dev`
+
+## Development
+
+### Running Both Services
+```bash
+# Terminal 1: Start Backend
+cd Backend && npm start
+
+# Terminal 2: Start Frontend
+cd Frontend && npm run dev
+```
 
 ## Contributing
 

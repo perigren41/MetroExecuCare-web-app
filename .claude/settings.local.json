@@ -9,7 +9,8 @@
       "Bash(dir:*)",
       "Bash(cmd /c:*)",
       "Bash(tasklist)",
-      "Bash(git init:*)"
+      "Bash(git init:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
