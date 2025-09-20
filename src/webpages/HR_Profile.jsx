@@ -176,8 +176,8 @@ function ProfileCard({ profile, setProfile }) {
 }
 
 
-// PasswordChangeCard component
-function PasswordChangeCard() {
+// PasswordChangeCard component - Fixed version
+function PasswordChangeCard({ user }) {
     const [showCurrent, setShowCurrent] = useState(false);
     const [showNew, setShowNew] = useState(false);
     const [showConfirm, setShowConfirm] = useState(false);
@@ -188,8 +188,9 @@ function PasswordChangeCard() {
     const [confirmPassword, setConfirmPassword] = useState("");
 
     const handleUpdate = () => {
-        const correctCurrentPassword = "1234";
-
+        // Use the actual user's password instead of hardcoded "1234"
+        const correctCurrentPassword = user?.password || "1234"; // Fallback to "1234" if no user
+        
         if (currentPassword !== correctCurrentPassword) {
             setModalType("wrongPassword");
             setShowModal(true);
@@ -202,8 +203,19 @@ function PasswordChangeCard() {
             return;
         }
 
+        if (!newPassword.trim()) {
+            setModalType("emptyPassword");
+            setShowModal(true);
+            return;
+        }
+
         setModalType("success");
         setShowModal(true);
+        
+        // Clear form on success
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
     };
 
     const toggleVisibility = (field) => {
@@ -301,14 +313,62 @@ function PasswordChangeCard() {
                 </div>
             </GradientCard>
 
-            {/* Modal (unchanged) */}
+            {/* Fixed Modal with proper content */}
             {showModal && (
                 <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-                    <div className="bg-white p-8 rounded-3xl shadow-lg text-center w-96">
-                        {/* same modal content */}
-                        <button
+                    <div className="bg-white p-6 rounded-3xl shadow-lg text-center w-96">
+                        <div className="mb-4">
+                            {modalType === 'success' && (
+                                <>
+                                    <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+                                        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Password Updated Successfully!</h3>
+                                    <p className="text-sm text-gray-600">Your password has been changed successfully.</p>
+                                </>
+                            )}
+                            
+                            {modalType === 'wrongPassword' && (
+                                <>
+                                    <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-3">
+                                        <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Incorrect Current Password</h3>
+                                    <p className="text-sm text-gray-600">The current password you entered is not correct. Please try again.</p>
+                                </>
+                            )}
+                            
+                            {modalType === 'passwordMismatch' && (
+                                <>
+                                    <div className="mx-auto w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-3">
+                                        <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 14.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Passwords Don't Match</h3>
+                                    <p className="text-sm text-gray-600">The new password and confirmation password do not match. Please check and try again.</p>
+                                </>
+                            )}
+
+                            {modalType === 'emptyPassword' && (
+                                <>
+                                    <div className="mx-auto w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mb-3">
+                                        <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 14.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                        </svg>
+                                    </div>
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Password Required</h3>
+                                    <p className="text-sm text-gray-600">Please enter a new password.</p>
+                                </>
+                            )}
+                        </div>
+                        <button 
                             onClick={() => setShowModal(false)}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
                         >
                             Close
                         </button>
@@ -560,7 +620,7 @@ export default function HRProfilePage() {
                     {/* Left Column */}
                     <div className="flex flex-col gap-8">
                         <ProfileCard profile={profile} setProfile={setProfile} />
-                        <PasswordChangeCard />
+                        <PasswordChangeCard user={user} />
                     </div>
 
                     {/* Right Column */}

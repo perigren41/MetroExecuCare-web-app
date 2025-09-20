@@ -1,76 +1,121 @@
 // components/NavBarMain.jsx
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import mainLogo from '../assets/mainLogo-foreground.svg';
 import BackSquareIconWhite from '../assets/BackSquareIconWhite.svg';
 
 // ✅ new imports
 import ProfileIcon from '../assets/ProfileIcon.svg';
 import LogoutIcon from '../assets/LogoutIcon.svg';
-import AlertIcon from '../assets/AlertIcon.svg'; // ⚠️ icon
+import AlertIcon from '../assets/AlertIcon.svg';
+import HomeIcon from '../assets/HomeIconWhite.svg'; // Add this icon to your assets
 
 const Navbar = ({
   user,
-  onBackClick,
-  showBackButton = true,
-  showProfileOption = true,
-  showDropdown = true,
+  onLogout = null,
   backButtonIcon = null,
   logo = null,
-  customProfileClick = null,
-  customLogout = null
+  showHomeButton = false, // New prop for showing home button
+  customBackHandler = null, // Custom back handler
 }) => {
   const navigate = useNavigate();
-  const [showDropdownMenu, setShowDropdownMenu] = useState(false);
+  const location = useLocation();
+  const [showDropdown, setShowDropdown] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const dropdownRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdownMenu(false);
+        setShowDropdown(false);
       }
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const handleBackClick = () => {
-    if (onBackClick) onBackClick();
+    if (customBackHandler) {
+      customBackHandler();
+      return;
+    }
+    
+    // Default back behavior
+    navigate(-1);
   };
 
-  const handleUserClick = () => {
-    if (showDropdown) {
-      setShowDropdownMenu(!showDropdownMenu);
+  const handleHomeClick = () => {
+    // Navigate to appropriate dashboard based on user position
+    if (user?.position === "Benefits Assistant" || 
+        user?.position === "Benefits Services Officer" || 
+        user?.position === "Division Head") {
+      navigate("/hr-dashboard", { state: { user } });
+    } else {
+      navigate("/LOA_RecordSummary", { state: { user } });
     }
   };
 
   const handleProfileClick = () => {
-    setShowDropdownMenu(false);
-    if (customProfileClick) {
-      customProfileClick();
-    } else {
+    // Navigate to appropriate profile page based on user position
+    if (user?.position === "Benefits Assistant" || 
+        user?.position === "Benefits Services Officer" || 
+        user?.position === "Division Head") {
       navigate("/profile", { state: { user } });
+    } else {
+      // For non-HR employees (if any), fallback to employee page
+      navigate("/LOA_RecordSummary", { state: { user } });
     }
+    setShowDropdown(false);
   };
 
   const handleLogoutClick = () => {
-    setShowDropdownMenu(false);
+    setShowDropdown(false);
     setShowLogoutModal(true);
   };
 
-  const cancelLogout = () => setShowLogoutModal(false);
-
   const confirmLogout = () => {
-    setShowLogoutModal(false);
-    if (customLogout) {
-      customLogout();
+    // Call onLogout callback if provided
+    if (onLogout) {
+      onLogout();
     } else {
       localStorage.removeItem('authToken');
+      sessionStorage.removeItem('user');
       sessionStorage.clear();
-      navigate("/login");
     }
+    navigate("/login", { replace: true });
+    setShowLogoutModal(false);
+  };
+
+  const cancelLogout = () => {
+    setShowLogoutModal(false);
+  };
+
+  const handleUserClick = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  // Determine what to show in the left section
+  const shouldShowBackButton = () => {
+    return location.pathname !== "/hr-dashboard" && location.pathname !== "/LOA_RecordSummary";
+  };
+
+  const shouldShowHomeButton = () => {
+    return showHomeButton || 
+           location.pathname.startsWith("/loa-submit") || 
+           location.pathname.startsWith("/loa-record-summary");
+  };
+
+  const shouldShowDropdown = () => {
+    // Show dropdown on most pages except login
+    return !location.pathname.includes("/login");
+  };
+
+  const shouldShowProfileOption = () => {
+    // Show profile option everywhere except on profile page itself
+    return location.pathname !== "/profile";
   };
 
   return (
@@ -81,12 +126,13 @@ const Navbar = ({
           background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
         }}
       >
-        {/* Left - Back Button */}
-        <div className="flex items-center">
-          {showBackButton && (
+        {/* Left - Navigation Buttons */}
+        <div className="flex items-center gap-2 min-w-[60px]">
+          {shouldShowBackButton() && (
             <button
               onClick={handleBackClick}
               className="flex items-center cursor-pointer hover:opacity-80 transition"
+              title="Go Back"
             >
               <img
                 src={backButtonIcon || BackSquareIconWhite}
@@ -95,6 +141,20 @@ const Navbar = ({
               />
             </button>
           )}
+          
+          {shouldShowHomeButton() && (
+  <button
+    onClick={handleHomeClick}
+    className="flex items-center cursor-pointer hover:opacity-80 transition ml-1"
+    title="Go to Dashboard"
+  >
+    <img
+      src={HomeIcon}
+      alt="Home"
+      className="w-[28px] h-[28px]"
+    />
+  </button>
+)}
         </div>
 
         {/* Center - Logo */}
@@ -128,11 +188,11 @@ const Navbar = ({
           </button>
 
           {/* Dropdown Modal */}
-          {showDropdownMenu && showDropdown && (
+          {showDropdown && shouldShowDropdown() && (
             <div className="absolute top-full right-0 mt-2 w-28 bg-white rounded-2xl shadow-xl border border-gray-200 z-50">
               <div className="py-1">
                 {/* Profile option */}
-                {showProfileOption && (
+                {shouldShowProfileOption() && (
                   <button
                     onClick={handleProfileClick}
                     className="w-full px-4 py-2 text-left text-sm text-[#023184] hover:bg-gray-200 hover:rounded-2xl transition flex items-center gap-2"
