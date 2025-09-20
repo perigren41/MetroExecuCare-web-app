@@ -72,7 +72,7 @@ export default function Navbar({ currentUser, onLogout }) {
 
   const handleProfileClick = () => {
     // Navigate to appropriate profile page based on current location
-    if (location.pathname.includes("executive-employee")) {
+    if (location.pathname.includes("executive-employee-dashboard")) {
       navigate("/executive-employee-profile");
     } 
     else if (location.pathname.includes("loa-status-tracker")) {
