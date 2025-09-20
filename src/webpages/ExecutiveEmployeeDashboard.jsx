@@ -8,13 +8,16 @@ import LogoutRed from "@/assets/logoutred.svg";
 import ApprovalBg from "@/assets/approvalbg.svg";
 import AuthorizationBg from "@/assets/authorizationbg.svg";
 import ChevronRight from "@/assets/chevronright.svg";
-
 import CheckSquare from "@/assets/checksquare.svg";
 import ClockSquare from "@/assets/clocksquare.svg";
 import BlankSquare from "@/assets/blanksquare.svg";
 import XSquare from "@/assets/xsquare.svg";
 import AddSquare from "@/assets/addsquare.svg";
 import { Clock } from "lucide-react";
+
+// Import MockUsers data
+import { USERS_DATABASE } from '@/webpages/MockUsers.jsx'; // Adjust path as needed
+
 const COLORS = {
   ombre: ["#3F6EC0", "#00539F", "#5D3EA4", "#7940A8"],
   blue: "#00539F",
@@ -30,10 +33,9 @@ function ActionButton({ label, color, onClick, backgroundImage }) {
       style={{ 
         backgroundColor: color || "transparent",
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : "none",
-        backgroundSize: "cover",       // 👈 change this to "contain" or custom size
-        backgroundRepeat: "no-repeat", // 👈 prevent repeating
-        backgroundPosition: "center",  // 👈 center the image
-        
+        backgroundSize: "cover",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center",
       }}
       onClick={onClick}
       onMouseEnter={(e) => (e.currentTarget.style.filter = "brightness(1.05)")}
@@ -73,7 +75,7 @@ function GreetingStatusCard({ firstName, lastName, requestStatus, onChevronClick
       <div className="bg-white text-gray-900 rounded-4xl shadow-xl/30 w-110 h-70 mt-0 md:mt-0 text-center 
       flex flex-col justify-center mx-auto ml-1 sm:ml-15 table-fixed">
         {/* Inside Status Section */}
-        <h2 className="text-2xl font-bold pb-3 ">Current Request Status</h2>
+        <h2 className="text-2xl font-bold text-blue-900 pb-3 ">Current Request Status</h2>
 
         {/* Status Pill */}
         <div
@@ -106,26 +108,17 @@ export default function ExecutiveEmployeeDashboard() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  // Mock user data based on users table schema
-  const [userData] = useState({
-    id: 1,
-    employeeid: "EMP001",
-    email: "thor.odinson@metrobank.com",
-    firstName: "Thor",
-    lastName: "Odinson",
-    middleName: "God",
-    position: "Senior Executive",
-    contact_number: "+63-123-456-7890",
-    address: "Asgard, Nine Realms"
-  });
+  // User data state - now connected to MockUsers
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Current request status based on checkup_requests table schema
   const [currentRequest, setCurrentRequest] = useState({
     id: null,
     request_number: null,
-    request_type: null, // enum values could be 'annual_checkup', 'medical_clearance', etc.
-    current_status: "submittedauthorization", // enum: submittedapproval,submittedauthorization, rejected, completed, awaitingbso, awaitingba, awaitingdh, no_request
-    priority_level: "normal", // enum: low, normal, high, urgent
+    request_type: null,
+    current_status: "submittedauthorization",
+    priority_level: "normal",
     hospital_id: null,
     hospital_name: null,
     preferred_date: null,
@@ -133,6 +126,64 @@ export default function ExecutiveEmployeeDashboard() {
     letter_purpose: null,
     medical_requirements: null
   });
+
+  // Load user data from MockUsers or localStorage
+  useEffect(() => {
+    const loadUserData = () => {
+      try {
+        // First, try to get user data from localStorage (from login)
+        const storedUserData = localStorage.getItem('userData');
+        const storedUserId = localStorage.getItem('currentUserId');
+        
+        let currentUser = null;
+
+        if (storedUserData) {
+          currentUser = JSON.parse(storedUserData);
+        } else if (storedUserId) {
+          // Find user by stored ID
+          const userId = parseInt(storedUserId);
+          currentUser = USERS_DATABASE.find(user => user.id === userId);
+        } else {
+          // Default to first executive employee for demo purposes
+          currentUser = USERS_DATABASE.find(user => 
+            user.position?.toLowerCase().includes('executive') || 
+            user.role?.toLowerCase().includes('executive')
+          ) || USERS_DATABASE[2]; // Fallback to Mike Johnson
+        }
+
+        if (currentUser) {
+          setUserData({
+            id: currentUser.id,
+            employeeid: currentUser.employeeid,
+            email: currentUser.email,
+            firstName: currentUser.firstName,
+            lastName: currentUser.lastName,
+            middleName: currentUser.middleName || "",
+            position: currentUser.position,
+            role: currentUser.role,
+            contact_number: currentUser.contact_number,
+            address: currentUser.address || "Not specified",
+            department: currentUser.department,
+            branch: currentUser.branch,
+            birthDate: currentUser.birthDate,
+            profileImage: currentUser.profileImage,
+            created_at: currentUser.created_at
+          });
+        } else {
+          // If no user found, redirect to login
+          console.error('No user data found');
+          navigate('/loginpage');
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        navigate('/loginpage');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, [navigate]);
 
   // Status display configuration
   const getStatusDisplay = (status) => {
@@ -243,6 +294,8 @@ export default function ExecutiveEmployeeDashboard() {
 
   // Handle chevron click - Navigate to LOA status tracker with current data
   const handleChevronClick = () => {
+    if (!userData) return;
+
     // Determine request type based on current status
     let requestType = "Letter of Authorization";
     if (currentRequest.current_status === "submittedapproval") {
@@ -282,7 +335,10 @@ export default function ExecutiveEmployeeDashboard() {
   };
 
   const handleProfileNavigation = () => {
-    navigate('/executive-employee-profile');
+    // Pass user data to profile page
+    navigate('/executive-employee-profile', {
+      state: { userData }
+    });
     setShowProfileModal(false);
   };
 
@@ -299,6 +355,7 @@ export default function ExecutiveEmployeeDashboard() {
     // Clear any stored authentication data
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
+    localStorage.removeItem('currentUserId');
     
     // Navigate to login page
     navigate('/loginpage');
@@ -321,8 +378,6 @@ export default function ExecutiveEmployeeDashboard() {
     };
   }, [showProfileModal]);
 
-  const statusDisplay = getStatusDisplay(currentRequest.current_status);
-
   // ✅ Function to simulate status changes (for testing)
   const changeStatus = (newStatus) => {
     setCurrentRequest(prev => ({
@@ -330,6 +385,37 @@ export default function ExecutiveEmployeeDashboard() {
       current_status: newStatus
     }));
   };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="bg-gray-100 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If no user data, show error
+  if (!userData) {
+    return (
+      <div className="bg-gray-100 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Unable to load user data</p>
+          <button 
+            onClick={() => navigate('/loginpage')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Return to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const statusDisplay = getStatusDisplay(currentRequest.current_status);
 
   return (
     <div className="bg-gray-100 min-h-screen font-sans">
@@ -368,9 +454,12 @@ export default function ExecutiveEmployeeDashboard() {
 
         {/* Top Right - User Profile */}
         <div className="absolute top-4 right-4 flex items-center space-x-2 md:mr-16 sm:mr-4 profile-modal-container">
-          <span className="text-xs">{userData.firstName} {userData.lastName}</span>
+          <div className="text-right mr-2 hidden sm:block">
+            <div className="text-xs font-medium">{userData.firstName} {userData.lastName}</div>
+            {/* <div className="text-xs opacity-75">{userData.position}</div> */}
+          </div>
           <button
-            className="w-8 h-8 rounded-full overflow-hidden border border-white hover:opacity-80 transition"
+            className="w-8 h-8 rounded-full overflow-hidden border border-white hover:opacity-80 transition m-0"
             onClick={handleUserProfile}
           >
             <img
@@ -382,7 +471,7 @@ export default function ExecutiveEmployeeDashboard() {
 
           {/* Profile Modal Dropdown */}
           {showProfileModal && (
-            <div className="absolute top-full right-0 mt-2 w-28 bg-white rounded-2xl shadow-xl border border-gray-200 z-50">
+            <div className="absolute top-full right-0 mt-2 w-26 bg-white rounded-2xl shadow-xl border border-gray-200 z-50">
               <div className="py-1">
                 {/* Profile option */}
                 <button
@@ -417,16 +506,16 @@ export default function ExecutiveEmployeeDashboard() {
               <h3 className="text-lg font-semibold text-gray-800">Confirm Logout</h3>
             </div>
             <p className="text-gray-600 mb-6">Are you sure you want to logout?</p>
-            <div className="flex gap-3">
+            <div className="flex gap-3 justify-center">
               <button
                 onClick={handleCancelLogout}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-2xl hover:bg-gray-300 transition"
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-2xl hover:bg-gray-300 transition"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmLogout}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition"
+                className="px-4 py-2 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition"
               >
                 Logout
               </button>
@@ -446,7 +535,7 @@ export default function ExecutiveEmployeeDashboard() {
           <img src={Approval} alt="approval" className="w-16 h-16 mt-2" />
         </div>
   }
-          backgroundImage={ApprovalBg}   // ✅ background SVG
+          backgroundImage={ApprovalBg}
           onClick={handleapprovalrequest}
         />
 

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import SearchBar from "@/AdminUserPageComponents/SearchBar";
 import UserTable from "@/AdminUserPageComponents/UserTable";
 import UserDetailsModal from "@/AdminUserPageComponents/UserDetailsModal";
@@ -7,17 +8,46 @@ import NavBarSide from "@/ExecutiveEmployeeProfileComponents/NavBarSide";
 import { USERS_DATABASE } from "@/webpages/MockUsers.jsx";
 
 export default function AdminUsersPage() {
-  // Initialize users state with mock data
-  const [users, setUsers] = useState(USERS_DATABASE);
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Get user data from location state or localStorage
+  const [currentUser, setCurrentUser] = useState(() => {
+    if (location.state?.userData) {
+      return location.state.userData;
+    }
+    const storedUserData = localStorage.getItem('userData');
+    return storedUserData ? JSON.parse(storedUserData) : null;
+  });
+
+  // Initialize users state with mock data or from location state
+  const [users, setUsers] = useState(() => {
+    return location.state?.usersDatabase || USERS_DATABASE;
+  });
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [showFormModal, setShowFormModal] = useState(false);
   const [editUser, setEditUser] = useState(null);
   const [filter, setFilter] = useState("all");
-  const [currentBranch, setCurrentBranch] = useState(
-    "Metrobank Fort - Ecoprime Tower" // replace with real logged-in user's branch
-  );
+  const [currentBranch, setCurrentBranch] = useState("");
+
+  // Authentication check and branch setup
+  useEffect(() => {
+    // Check if user is authenticated and has admin role
+    if (!currentUser) {
+      navigate("/");
+      return;
+    }
+
+    if (currentUser.role !== "Admin" && currentUser.position !== "Admin") {
+      navigate("/executive-employee-dashboard");
+      return;
+    }
+
+    // Set the current branch from the logged-in user
+    setCurrentBranch(currentUser.branch || "Metrobank Fort - Ecoprime Tower");
+  }, [currentUser, navigate]);
 
   // Add New User
   const handleAddUser = () => {
@@ -28,39 +58,74 @@ export default function AdminUsersPage() {
   // Save New or Edited User from NewUserFormModal
   const handleSaveUser = (userData) => {
     if (editUser) {
-      setUsers((prev) =>
-        prev.map((u) => (u.id === editUser.id ? userData : u))
-      );
+      const updatedUsers = users.map((u) => (u.id === editUser.id ? userData : u));
+      setUsers(updatedUsers);
+      
+      // Update USERS_DATABASE if needed (for persistence across sessions)
+      const userIndex = USERS_DATABASE.findIndex(u => u.id === editUser.id);
+      if (userIndex !== -1) {
+        USERS_DATABASE[userIndex] = userData;
+      }
     } else {
-      setUsers((prev) => [...prev, userData]);
+      // Generate new ID for new user
+      const newId = Math.max(...users.map(u => parseInt(u.id) || 0), 0) + 1;
+      const newUserData = { ...userData, id: newId.toString() };
+      
+      const updatedUsers = [...users, newUserData];
+      setUsers(updatedUsers);
+      
+      // Add to USERS_DATABASE for persistence
+      USERS_DATABASE.push(newUserData);
     }
   };
 
   // Delete User (no more browser confirm)
   const handleDeleteUser = (userId) => {
-    setUsers((prev) => prev.filter((u) => u.id !== userId));
+    const updatedUsers = users.filter((u) => u.id !== userId);
+    setUsers(updatedUsers);
+    
+    // Remove from USERS_DATABASE for persistence
+    const userIndex = USERS_DATABASE.findIndex(u => u.id === userId);
+    if (userIndex !== -1) {
+      USERS_DATABASE.splice(userIndex, 1);
+    }
+    
     setSelectedUser(null); // close modal after delete
   };
 
   // Update User from UserDetailsModal
   const handleUpdateUser = (updatedUser) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((u) => (u.id === updatedUser.id ? updatedUser : u))
-    );
+    const updatedUsers = users.map((u) => (u.id === updatedUser.id ? updatedUser : u));
+    setUsers(updatedUsers);
+    
+    // Update USERS_DATABASE for persistence
+    const userIndex = USERS_DATABASE.findIndex(u => u.id === updatedUser.id);
+    if (userIndex !== -1) {
+      USERS_DATABASE[userIndex] = updatedUser;
+    }
+    
     setSelectedUser(updatedUser); // optional: keep modal open and updated
   };
 
   // Filtered Users
   const filteredUsers = users.filter((u) => {
+    const userName = u.name || `${u.firstName} ${u.lastName}` || "";
+    const userId = u.id || "";
+    
     const matchesSearch =
-      u.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      u.id.toLowerCase().includes(searchQuery.toLowerCase());
+      userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      userId.toLowerCase().includes(searchQuery.toLowerCase());
 
     const matchesFilter =
       filter === "all" ? true : u.role.toLowerCase() === filter.toLowerCase();
 
     return matchesSearch && matchesFilter;
   });
+
+  // Show loading or redirect if no current user
+  if (!currentUser) {
+    return <div>Redirecting to login...</div>;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">

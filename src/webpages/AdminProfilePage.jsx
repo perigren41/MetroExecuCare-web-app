@@ -3,8 +3,7 @@ import NavBarSide from "@/ExecutiveEmployeeProfileComponents/NavBarSide";
 import { RollerCoaster } from "lucide-react";
 import EyeOpen from "@/assets/eyeopen.svg";
 import EyeClose from "@/assets/eyeclose.svg";
-
-
+import ErrorPass from "@/assets/errorpass.svg";
 
 // CircleButton component
 function CircleButton({ text, color, onClick }) {
@@ -303,7 +302,7 @@ function PasswordChangeCard() {
       {/* Modals */}
       {showModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-lg text-center w-80">
+          <div className="bg-white p-6 rounded-4xl shadow-lg text-center w-80">
             <div className="mb-4">
               {modalType === 'success' && (
                 <>
@@ -332,9 +331,7 @@ function PasswordChangeCard() {
               {modalType === 'passwordMismatch' && (
                 <>
                   <div className="mx-auto w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-3">
-                    <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.99-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                    </svg>
+                    <img src={ErrorPass} alt="Error" className="size-10"></img>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Passwords Don't Match</h3>
                   <p className="text-sm text-gray-600">The new password and confirmation password do not match. Please check and try again.</p>
@@ -343,7 +340,7 @@ function PasswordChangeCard() {
             </div>
             <button 
               onClick={() => setShowModal(false)}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+              className="w-20 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium"
             >
               Close
             </button>

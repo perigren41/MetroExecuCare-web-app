@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import NavBarSide from "@/ExecutiveEmployeeProfileComponents/NavBarSide";
 import { RollerCoaster } from "lucide-react";
 import EyeOpen from "@/assets/eyeopen.svg";
 import EyeClose from "@/assets/eyeclose.svg";
 
-
+// Import MockUsers data - SAME AS DASHBOARD
+import { USERS_DATABASE } from '@/webpages/MockUsers.jsx'; // Adjust path as needed
 
 // CircleButton component
 function CircleButton({ text, color, onClick }) {
@@ -30,15 +32,15 @@ function ProfileCard({ profile, setProfile }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl pt-3 pb-6 px-6 flex flex-col 
+    <div className="bg-white rounded-2xl pt-3 pb-2 px-6 flex flex-col 
       outline outline-2 outline-[#00539F] 
       shadow-lg shadow-[#00539F]/50">
       
-      <h2 className="text-blue-900 font-semibold mb-4 text-left text-base sm:text-base">
+      <h2 className="text-blue-900 font-semibold mb-2 text-left text-base sm:text-base">
         Basic Information
       </h2>
 
-      <div className="flex flex-col md:flex-row md:justify-start items-center md:items-center pb-4 px-4 sm:gap-8 gap-4">
+      <div className="flex flex-col md:flex-row md:justify-start items-center md:items-center pb-6 px-4 sm:gap-8 gap-4">
 
         <div className="flex flex-col md:justify-center items-center pl-0">
           <input
@@ -65,10 +67,10 @@ function ProfileCard({ profile, setProfile }) {
 
         <div className="flex flex-col text-center md:text-left px-8 sm:px-8 space-y-0 pt-0">
           <p className="text-blue-700 font-bold text-2xl sm:text-2xl">{profile.name}</p>
-          <p className="text-gray-600 text-sm sm:text-xs">{profile.position}</p>
-          <p className="text-gray-500 text-xs sm:text-xs mb-2">{profile.location}</p>
+          <p className="text-blue-600 text-sm sm:text-base">{profile.role}</p>
+          <p className="text-gray-500 text-xs sm:text-xs mb-3">{profile.location}</p>
 
-          <div className="sm:text-sm space-y-2">
+          <div className="sm:text-sm space-y-3">
             <p>
               <span className="font-bold text-blue-600 text-sm">Employee ID:</span><br />
               <span className="text-black text-xs">{profile.employeeid}</span>
@@ -132,7 +134,7 @@ function SummaryCard({ notes, setNotes }) {
   return (
     <div className="bg-white rounded-2xl pt-3 pb-6 px-6 flex flex-col 
       outline outline-2 outline-[#00539F] 
-      shadow-lg shadow-[#00539F]/50 gap-2">
+      shadow-lg shadow-[#00539F]/50 gap-4">
 
       <div className="text-left">
         <h2 className="text-blue-900 font-semibold sm:text-base">Summary</h2>
@@ -356,23 +358,177 @@ function PasswordChangeCard() {
   );
 }
 
-// Main AdminProfilePage component
-export default function AdminProfilePage() {
-  const [profile, setProfile] = useState({
-    id: 1,
-    employeeid: "EMP001",
-    name: "John Doe",
-    position: "Admin",
-    role: "Admin",
-    location: "Metrobank Fort - Ecoprime Tower",
-    email: "john.doe@example.com",
-    contact_number: "09171234567",
-    birthDate: "1995-04-15",
-    department: "IT",
-    avatar: "https://i.pravatar.cc/100?img=1",
-  });
-
+// Main ExecutiveEmployeeProfile component - CONNECTED TO MOCKUSERS SAME AS DASHBOARD
+export default function ExecutiveEmployeeProfile() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // User data state - now connected to MockUsers (EXACT same pattern as Dashboard)
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  // State for profile data (derived from userData)
+  const [profile, setProfile] = useState(null);
   const [notes, setNotes] = useState("");
+
+  // Load user data from MockUsers or localStorage - EXACT same logic as Dashboard
+  useEffect(() => {
+    const loadUserData = () => {
+      try {
+        // First, check if user data was passed from navigation state (from dashboard)
+        if (location.state?.userData) {
+          console.log('Loading user data from navigation state:', location.state.userData);
+          const currentUser = location.state.userData;
+          setUserData(currentUser);
+          
+          // Transform user data to profile format
+          setProfile({
+            id: currentUser.id,
+            employeeid: currentUser.employeeid,
+            name: `${currentUser.firstName} ${currentUser.lastName}`,
+            position: currentUser.position,
+            role: currentUser.role,
+            location: currentUser.branch || "Not specified",
+            email: currentUser.email,
+            contact_number: currentUser.contact_number,
+            birthDate: currentUser.birthDate,
+            department: currentUser.department,
+            branch: currentUser.branch,
+            address: currentUser.address,
+            avatar: currentUser.profileImage || "https://i.pravatar.cc/100?img=1",
+          });
+        } else {
+          // EXACT same fallback logic as Dashboard
+          console.log('No navigation state, checking localStorage...');
+          const storedUserData = localStorage.getItem('userData');
+          const storedUserId = localStorage.getItem('currentUserId');
+          
+          console.log('Stored user data:', storedUserData);
+          console.log('Stored user ID:', storedUserId);
+          
+          let currentUser = null;
+
+          if (storedUserData) {
+            currentUser = JSON.parse(storedUserData);
+            console.log('Found user data in localStorage:', currentUser);
+          } else if (storedUserId) {
+            // Find user by stored ID
+            const userId = parseInt(storedUserId);
+            currentUser = USERS_DATABASE.find(user => user.id === userId);
+            console.log('Found user by ID in database:', currentUser);
+          } else {
+            // Default to first executive employee for demo purposes
+            console.log('No stored data, using default user...');
+            currentUser = USERS_DATABASE.find(user => 
+              user.position?.toLowerCase().includes('executive') || 
+              user.role?.toLowerCase().includes('executive')
+            ) || USERS_DATABASE[2]; // Fallback to Mike Johnson
+            console.log('Default user selected:', currentUser);
+          }
+
+          if (currentUser) {
+            // Transform to standard format (same as Dashboard)
+            const standardUser = {
+              id: currentUser.id,
+              employeeid: currentUser.employeeid,
+              email: currentUser.email,
+              firstName: currentUser.firstName,
+              lastName: currentUser.lastName,
+              middleName: currentUser.middleName || "",
+              position: currentUser.position,
+              role: currentUser.role,
+              contact_number: currentUser.contact_number,
+              address: currentUser.address || "Not specified",
+              department: currentUser.department,
+              branch: currentUser.branch,
+              birthDate: currentUser.birthDate,
+              profileImage: currentUser.profileImage,
+              created_at: currentUser.created_at
+            };
+            
+            setUserData(standardUser);
+            console.log('Setting standardized user data:', standardUser);
+            
+            // Transform to profile format for ProfileCard component
+            setProfile({
+              id: standardUser.id,
+              employeeid: standardUser.employeeid,
+              name: `${standardUser.firstName} ${standardUser.lastName}`,
+              position: standardUser.position,
+              role: standardUser.role,
+              location: standardUser.branch || "Not specified",
+              email: standardUser.email,
+              contact_number: standardUser.contact_number,
+              birthDate: standardUser.birthDate,
+              department: standardUser.department,
+              branch: standardUser.branch,
+              address: standardUser.address,
+              avatar: standardUser.profileImage || "https://i.pravatar.cc/100?img=1",
+            });
+          } else {
+            // If no user found, redirect to login (same as Dashboard)
+            console.error('No user data found');
+            navigate('/loginpage');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user data:', error);
+        navigate('/loginpage');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadUserData();
+  }, [navigate, location.state]);
+
+  // Debug effect to log current state
+  useEffect(() => {
+    console.log('Current userData state:', userData);
+    console.log('Current profile state:', profile);
+  }, [userData, profile]);
+
+  // Loading state (same as Dashboard)
+  if (loading) {
+    return (
+      <div className="bg-gray-100 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // If no user data, show error (same as Dashboard)
+  if (!userData || !profile) {
+    return (
+      <div className="bg-gray-100 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Unable to load profile data</p>
+          <div className="text-sm text-gray-600 mb-4">
+            <p>Debug info:</p>
+            <p>userData: {userData ? 'exists' : 'null'}</p>
+            <p>profile: {profile ? 'exists' : 'null'}</p>
+            <p>localStorage userData: {localStorage.getItem('userData') ? 'exists' : 'null'}</p>
+            <p>localStorage currentUserId: {localStorage.getItem('currentUserId') || 'null'}</p>
+          </div>
+          <button 
+            onClick={() => navigate('/executive-employee-dashboard')}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition mr-2"
+          >
+            Return to Dashboard
+          </button>
+          <button 
+            onClick={() => navigate('/loginpage')}
+            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+          >
+            Return to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

@@ -100,7 +100,7 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate }) 
 
           {/* Right Column → Top Info */}
           <div className="text-xs text-blue-900">
-            <div className="font-bold text-base">{formData.name}</div>
+            <div className="font-bold text-lg">{`${user.firstName} ${user.lastName}`}</div>
           </div>
 
           <div className="grid grid-cols-[110px_1fr] text-xs text-blue-900">

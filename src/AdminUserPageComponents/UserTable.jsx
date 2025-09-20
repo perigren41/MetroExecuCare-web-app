@@ -28,7 +28,7 @@ export default function UserTable({ users, onView }) {
                       alt={user.name}
                       className="w-4 h-4 rounded-full object-cover"
                     />
-                    <span>{user.name}</span>
+                    <span>{`${user.firstName} ${user.lastName}`}</span>
                   </div>
                 </td>
                 <td className="px-4 py-2 border-t border-gray-700">{user.employeeid}</td>

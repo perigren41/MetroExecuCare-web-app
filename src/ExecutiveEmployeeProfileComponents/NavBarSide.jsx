@@ -191,7 +191,8 @@ export default function Navbar({ currentUser, onLogout }) {
 
           {/* Dropdown Modal */}
           {showDropdown && shouldShowDropdown() && (
-            <div className="absolute top-full right-0 mt-2 w-28 bg-white rounded-2xl shadow-xl border border-gray-200 z-50">
+            <div className="absolute top-full right-0 mt-2 w-26 bg-white rounded-2xl shadow-xl border border-gray-200 z-50">
+              
               <div className="py-1">
                 {/* Profile option - show on dashboard and submit pages, not on profile pages */}
                 {shouldShowProfileOption() && (
@@ -220,7 +221,7 @@ export default function Navbar({ currentUser, onLogout }) {
       {/* Logout Confirmation Modal */}
       {showLogoutModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-3xl shadow-lg text-center w-80">
+          <div className="bg-white p-6 rounded-3xl shadow-lg text-center w-80 ">
             <div className="flex items-center gap-3 mb-3">
               <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
                 <img src={LogoutRed} alt="Logout" className="w-3 h-3" />
@@ -228,16 +229,16 @@ export default function Navbar({ currentUser, onLogout }) {
               <h3 className="text-sm font-semibold text-gray-900">Confirm Logout</h3>
             </div>
             <p className="text-gray-600 mb-6">Are you sure you want to logout?</p>
-            <div className="flex gap-3 justify-end">
+            <div className="flex gap-3 justify-center">
               <button
                 onClick={cancelLogout}
-                className="px-4 py-2 text-xs font-medium text-gray-700 bg-gray-100 hover:bg-gray-500 rounded-2xl transition"
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-2xl hover:bg-gray-300 transition"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmLogout}
-                className="px-4 py-2 text-xs font-medium text-white bg-red-600 hover:bg-red-700 rounded-2xl transition"
+                className="px-4 py-2 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition"
               >
                 Logout
               </button>
