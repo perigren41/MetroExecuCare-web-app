@@ -3,7 +3,9 @@ import NavBarSide from "@/ExecutiveEmployeeProfileComponents/NavBarSide";
 import { RollerCoaster } from "lucide-react";
 import EyeOpen from "@/assets/eyeopen.svg";
 import EyeClose from "@/assets/eyeclose.svg";
-import ErrorPass from "@/assets/errorpass.svg";
+import ErrorPass from "@/assets/errorpasstriangle.svg";
+import CheckGreen from "@/assets/checkgreen.svg";
+import XIcon from "@/assets/xicon.svg";
 
 // CircleButton component
 function CircleButton({ text, color, onClick }) {
@@ -229,11 +231,17 @@ function PasswordChangeCard() {
           <div className="relative">
             <input
               type={showCurrent ? "text" : "password"}
-              placeholder="Current Password"
+              placeholder=" "
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="h-6 w-full border rounded-lg p-2 pr-10"
+              className="h-6 w-full border rounded-lg p-2 pr-10 peer"
             />
+            <label className="absolute left-2 top-0 text-xs text-gray-500 bg-white px-1 transition-all duration-200 ease-in-out 
+              peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-xs
+              peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:text-blue-600
+              -translate-y-1/2">
+              Current Password
+            </label>
             <button
               type="button"
               onClick={() => setShowCurrent(!showCurrent)}
@@ -251,11 +259,17 @@ function PasswordChangeCard() {
           <div className="relative">
             <input
               type={showNew ? "text" : "password"}
-              placeholder="New Password"
+              placeholder=" "
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="h-6 w-full border rounded-lg p-2 pr-10"
+              className="h-6 w-full border rounded-lg p-2 pr-10 peer"
             />
+            <label className="absolute left-2 top-0 text-xs text-gray-500 bg-white px-1 transition-all duration-200 ease-in-out 
+              peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-xs
+              peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:text-blue-600
+              -translate-y-1/2">
+              New Password
+            </label>
             <button
               type="button"
               onClick={() => setShowNew(!showNew)}
@@ -273,11 +287,17 @@ function PasswordChangeCard() {
           <div className="relative">
             <input
               type={showConfirm ? "text" : "password"}
-              placeholder="Confirm New Password"
+              placeholder=" "
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="h-6 w-full border rounded-lg p-2 pr-10"
+              className="h-6 w-full border rounded-lg p-2 pr-10 peer"
             />
+            <label className="absolute left-2 top-0 text-xs text-gray-500 bg-white px-1 transition-all duration-200 ease-in-out 
+              peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-xs
+              peer-focus:top-0 peer-focus:-translate-y-1/2 peer-focus:text-xs peer-focus:text-blue-600
+              -translate-y-1/2">
+              Confirm New Password
+            </label>
             <button
               type="button"
               onClick={() => setShowConfirm(!showConfirm)}
@@ -307,9 +327,7 @@ function PasswordChangeCard() {
               {modalType === 'success' && (
                 <>
                   <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
+                    <img src={CheckGreen} alt="Success" className="size-10"></img>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Password Updated Successfully!</h3>
                   <p className="text-sm text-gray-600">Your password has been changed successfully.</p>
@@ -319,9 +337,7 @@ function PasswordChangeCard() {
               {modalType === 'wrongPassword' && (
                 <>
                   <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-3">
-                    <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
+                    <img src={XIcon} alt="Close" className="size-8" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Incorrect Current Password</h3>
                   <p className="text-sm text-gray-600">The current password you entered is not correct. Please try again.</p>
