@@ -1,4 +1,4 @@
-// HRDashboard.jsx (with counter helper integration)
+// HRDashboard.jsx (Fully Responsive - Complete)
 import React, { useState, useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { mockUser } from "./mockUser";
@@ -26,19 +26,40 @@ export default function HRDashboard() {
     // Get user from navigation state or fallback to default
     const user = location.state?.user || mockUser;
 
-    const [isMobile, setIsMobile] = useState(false);
+    // Helper function to get user display name
+    const getUserDisplayName = (user) => {
+        return `${user.first_name} ${user.last_name}`;
+    };
+
+    // Helper function to get user initials
+    const getUserInitials = (user) => {
+        return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`;
+    };
+
+    const [screenSize, setScreenSize] = useState('desktop');
     const [showDropdownMenu, setShowDropdownMenu] = useState(false);
     const [showLogoutModal, setShowLogoutModal] = useState(false);
     const dropdownRef = useRef(null);
 
     useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth < 768);
+        const checkScreenSize = () => {
+            const width = window.innerWidth;
+            if (width < 640) {
+                setScreenSize('mobile');
+            } else if (width < 768) {
+                setScreenSize('sm');
+            } else if (width < 1024) {
+                setScreenSize('tablet');
+            } else if (width < 1280) {
+                setScreenSize('laptop');
+            } else {
+                setScreenSize('desktop');
+            }
         };
 
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
+        checkScreenSize();
+        window.addEventListener('resize', checkScreenSize);
+        return () => window.removeEventListener('resize', checkScreenSize);
     }, []);
 
     // Close dropdown when clicking outside
@@ -128,8 +149,73 @@ export default function HRDashboard() {
         });
     };
 
+    // Get responsive styles based on screen size
+    const getResponsiveStyles = () => {
+        switch (screenSize) {
+            case 'mobile':
+                return {
+                    upperHeight: '500px',
+                    logoSize: 'w-24',
+                    titleSize: 'text-4xl',
+                    subtitleSize: 'text-sm',
+                    cardWidth: '280px',
+                    cardHeight: '220px',
+                    padding: 'px-4 pt-12',
+                    margin: 'mb-3'
+                };
+            case 'sm':
+                return {
+                    upperHeight: '550px',
+                    logoSize: 'w-28',
+                    titleSize: 'text-5xl',
+                    subtitleSize: 'text-base',
+                    cardWidth: '320px',
+                    cardHeight: '240px',
+                    padding: 'px-5 pt-14',
+                    margin: 'mb-4'
+                };
+            case 'tablet':
+                return {
+                    upperHeight: '400px',
+                    logoSize: 'w-32',
+                    titleSize: 'text-3xl xl:text-4xl',
+                    subtitleSize: 'text-lg',
+                    cardWidth: '400px',
+                    cardHeight: '280px',
+                    padding: 'px-8 pt-0',
+                    margin: 'mb-1'
+                };
+            case 'laptop':
+                return {
+                    upperHeight: '500px',
+                    logoSize: 'w-36',
+                    titleSize: 'text-4xl xl:text-5xl',
+                    subtitleSize: 'text-xl',
+                    cardWidth: '500px',
+                    cardHeight: '320px',
+                    padding: 'px-12 pt-0',
+                    margin: 'mb-1'
+                };
+            default: // desktop
+                return {
+                    upperHeight: '622px',
+                    logoSize: 'w-32',
+                    titleSize: 'text-6xl',
+                    subtitleSize: 'text-2xl',
+                    cardWidth: '657px',
+                    cardHeight: '380px',
+                    padding: 'px-[229px] pt-0',
+                    margin: 'mb-1'
+                };
+        }
+    };
+
+    const styles = getResponsiveStyles();
+    const isMobileView = screenSize === 'mobile' || screenSize === 'sm';
+    const isTabletView = screenSize === 'tablet';
+
     // Mobile Layout
-    if (isMobile) {
+    if (isMobileView) {
         return (
             <div className="min-h-screen flex flex-col">
                 {/* Upper half with gradient - 624px height on mobile */}
@@ -146,16 +232,16 @@ export default function HRDashboard() {
                             onClick={handleUserClick}
                             className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
                         >
-                            <span className="text-white text-base font-medium">{user.name}</span>
+                            <span className="text-white text-base font-medium">{getUserDisplayName(user)}</span>
                             {user.profilePic ? (
                                 <img
                                     src={user.profilePic}
-                                    alt={`${user.name} profile`}
+                                    alt={`${getUserDisplayName(user)} profile`}
                                     className="w-7 h-7 rounded-full object-cover border border-white"
                                 />
                             ) : (
                                 <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs border border-white">
-                                    {user.name.charAt(0)}
+                                    {getUserInitials(user)}
                                 </div>
                             )}
                         </button>
@@ -185,17 +271,17 @@ export default function HRDashboard() {
                     </div>
 
                     {/* Content container */}
-                    <div className="px-6 pt-16">
-                        {/* Metrobank logo - 19px under name/pfp */}
+                    <div className="px-6 pt-16 flex flex-col items-center text-center">
+                        {/* Metrobank logo - centered */}
                         <img src={metrobankLogo} alt="Metrobank Logo" className="w-32 mb-4 block" />
 
-                        {/* Greeting - two lines */}
-                        <h1 className="text-white text-[64px] font-bold leading-none mb-2 text-left">
-                            Hello,<br />{user.name}!
+                        {/* Greeting - centered */}
+                        <h1 className="text-white text-[64px] font-bold leading-none mb-2">
+                            Hello,<br />{getUserDisplayName(user)}!
                         </h1>
 
-                        {/* Welcome message */}
-                        <p className="text-white text-base mb-8 text-left">
+                        {/* Welcome message - centered */}
+                        <p className="text-white text-base mb-8 max-w-sm">
                             Welcome to the MetroExecuCare Annual Executive Check-up Portal
                         </p>
 
@@ -319,38 +405,36 @@ export default function HRDashboard() {
         );
     }
 
-    // Desktop Layout
+    // Desktop and Laptop Layout (Enhanced)
     return (
         <div className="h-screen flex flex-col overflow-hidden">
             {/* Upper half with diagonal gradient */}
             <div
-                className="h-[622px] w-full flex items-center justify-between px-[229px]"
+                className="flex items-center justify-between"
                 style={{
+                    height: styles.upperHeight,
                     background: "linear-gradient(45deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)",
+                    padding: screenSize === 'laptop' ? '0 3rem' : '0 14rem'
                 }}
             >
-                {/* Left side - Content aligned to the left */}
+                {/* Left side - Content */}
                 <div className="flex flex-col justify-center items-start">
-                    {/* Metrobank logo */}
-                    <img src={metrobankLogo} alt="Metrobank Logo" className="w-32 mb-1 block" />
-
-                    {/* Main greeting */}
-                    <h1 className="text-white text-[64px] font-bold leading-tight mb-0">
-                        Hello, {user.name}!
+                    <img src={metrobankLogo} alt="Metrobank Logo" className={`${styles.logoSize} ${styles.margin} block`} />
+                    <h1 className={`text-white ${styles.titleSize} font-bold leading-tight mb-0`}>
+                        Hello, {getUserDisplayName(user)}!
                     </h1>
-
-                    {/* Welcome message */}
-                    <p className="text-white text-[24px] leading-relaxed max-w-[800px]">
+                    <p className={`text-white ${styles.subtitleSize} leading-relaxed max-w-4xl`}>
                         Welcome to the MetroExecuCare Annual Executive Check-up Portal
                     </p>
                 </div>
 
                 {/* Right side - White card */}
                 <div
-                    className="relative bg-white rounded-[75px] flex flex-col items-center justify-center p-8"
+                    className="relative bg-white flex flex-col items-center justify-center p-8"
                     style={{
-                        width: '657px',
-                        height: '380px',
+                        width: styles.cardWidth,
+                        height: styles.cardHeight,
+                        borderRadius: screenSize === 'laptop' ? '60px' : '75px',
                         boxShadow: '5px 5px 20px rgba(0, 0, 0, 0.25)'
                     }}
                 >
@@ -360,16 +444,16 @@ export default function HRDashboard() {
                             onClick={handleUserClick}
                             className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
                         >
-                            <span className="text-base font-medium text-white">{user.name}</span>
+                            <span className="text-base font-medium text-white">{getUserDisplayName(user)}</span>
                             {user.profilePic ? (
                                 <img
                                     src={user.profilePic}
-                                    alt={`${user.name} profile`}
+                                    alt={`${getUserDisplayName(user)} profile`}
                                     className="w-7 h-7 rounded-full object-cover border border-white"
                                 />
                             ) : (
                                 <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs border border-white">
-                                    {user.name.charAt(0)}
+                                    {getUserInitials(user)}
                                 </div>
                             )}
                         </button>
@@ -404,7 +488,7 @@ export default function HRDashboard() {
                     </div>
 
                     {/* Pending Requests Title */}
-                    <h2 className="text-[36px] font-bold mb-2" style={{ color: '#023184' }}>
+                    <h2 className={`${screenSize === 'laptop' ? 'text-3xl' : 'text-4xl'} font-bold mb-2`} style={{ color: '#023184' }}>
                         Pending Requests
                     </h2>
 
@@ -415,15 +499,13 @@ export default function HRDashboard() {
 
                     {/* Review Now Button */}
                     <button
-                        className="text-[16px] text-white rounded-full flex items-center justify-center gap-2 cursor-pointer"
+                        className="text-base text-white rounded-full flex items-center justify-center gap-2 cursor-pointer hover:opacity-90 transition"
                         style={{
                             backgroundColor: '#023184',
                             width: '130px',
                             height: '29px'
                         }}
-                        onClick={() => {
-                            navigate("/hr-pending-requests", { state: { user } });
-                        }}
+                        onClick={() => navigate("/hr-pending-requests", { state: { user } })}
                     >
                         Review now
                         <img src={RoundArrowIconWhite} alt="Arrow" className="w-5 h-5" />
@@ -435,15 +517,19 @@ export default function HRDashboard() {
             <div className="flex-1 bg-white p-6 flex items-center justify-center">
                 {/* Large centered LOA History card */}
                 <div
-                    className="rounded-[75px] flex flex-col items-center justify-center p-8"
+                    className="flex flex-col items-center justify-center p-8"
                     style={{
-                        width: '1462px',
-                        height: '380px',
+                        width: screenSize === 'laptop' ? '90%' : '1462px',
+                        maxWidth: '95vw',
+                        height: screenSize === 'laptop' ? '320px' : '380px',
+                        borderRadius: screenSize === 'laptop' ? '60px' : '75px',
                         background: "linear-gradient(45deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)"
                     }}
                 >
                     {/* LOA History Title */}
-                    <h2 className="text-white text-[36px] font-bold mb-6 text-center">LOA History</h2>
+                    <h2 className={`text-white ${screenSize === 'laptop' ? 'text-3xl' : 'text-4xl'} font-bold mb-6 text-center`}>
+                        LOA History
+                    </h2>
 
                     {/* Table/Grid - Dynamic rendering based on ERD */}
                     <div className="w-full max-w-5xl mb-6 overflow-y-auto">
@@ -453,40 +539,45 @@ export default function HRDashboard() {
                                 <div className="flex items-center gap-2">
                                     <div className="w-6 h-6 flex items-center justify-center">
                                         {transaction.request_type === 'letter_of_authorization' ? (
-                                            <img src={LOAuthIcon} alt="LOAuth" className="w-24 h-24" />
+                                            <img src={LOAuthIcon} alt="LOAuth" className="w-6 h-6" />
                                         ) : transaction.request_type === 'letter_of_approval' ? (
-                                            <img src={LOAppIcon} alt="LOApp" className="w-24 h-24" />
+                                            <img src={LOAppIcon} alt="LOApp" className="w-6 h-6" />
                                         ) : (
-                                            // Default icon for other request types
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white">
                                                 <circle cx="12" cy="12" r="3" fill="currentColor" />
                                             </svg>
                                         )}
                                     </div>
-                                    <span>{transaction.employee.first_name} {transaction.employee.last_name}</span>
+                                    <span className={screenSize === 'laptop' ? 'text-sm' : 'text-base'}>
+                                        {transaction.employee.first_name} {transaction.employee.last_name}
+                                    </span>
                                 </div>
 
-                                {/* Request Type - from checkup_requests.request_type enum */}
-                                <div>
+                                {/* Request Type */}
+                                <div className={screenSize === 'laptop' ? 'text-sm' : 'text-base'}>
                                     {transaction.request_type === 'letter_of_approval' ? 'LOApp' :
                                         transaction.request_type === 'letter_of_authorization' ? 'LOAuth' :
                                             transaction.request_type}
                                 </div>
 
-                                {/* Created Date - from checkup_requests.created_at */}
-                                <div>{transaction.created_at}</div>
+                                {/* Created Date */}
+                                <div className={screenSize === 'laptop' ? 'text-sm' : 'text-base'}>
+                                    {transaction.created_at}
+                                </div>
 
-                                {/* Status - from checkup_requests.current_status */}
+                                {/* Status */}
                                 <div className="flex items-center gap-2">
                                     <div className="w-6 h-6 flex items-center justify-center">
                                         {transaction.current_status === 'approved' ?
-                                            <img src={approvedIcon} alt="Approved" className="w-24 h-24" /> :
+                                            <img src={approvedIcon} alt="Approved" className="w-6 h-6" /> :
                                             transaction.current_status === 'rejected' ?
-                                                <img src={rejectedIcon} alt="Rejected" className="w-24 h-24" /> :
+                                                <img src={rejectedIcon} alt="Rejected" className="w-6 h-6" /> :
                                                 <span className="text-white">•</span>
                                         }
                                     </div>
-                                    <span className="capitalize">{transaction.current_status}</span>
+                                    <span className={`capitalize ${screenSize === 'laptop' ? 'text-sm' : 'text-base'}`}>
+                                        {transaction.current_status}
+                                    </span>
                                 </div>
                             </div>
                         ))}
@@ -494,7 +585,7 @@ export default function HRDashboard() {
 
                     {/* View full history button */}
                     <button
-                        className="flex items-center justify-center gap-2 bg-white rounded-full cursor-pointer hover:bg-gray-50 transition-colors"
+                        className="flex items-center justify-center gap-2 bg-white rounded-full cursor-pointer hover:bg-gray-50 transition-colors text-base"
                         style={{
                             width: '160px',
                             height: '29px',

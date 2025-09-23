@@ -25,12 +25,22 @@ export default function LOA_RecordSummary() {
     // 2. User from sessionStorage
     // 3. Default mockUser
     const userFromState = location.state?.user;
-    const userFromStorage = sessionStorage.getItem("user") 
+    const userFromStorage = sessionStorage.getItem("user")
       ? JSON.parse(sessionStorage.getItem("user"))
       : null;
-    
+
     return userFromState || userFromStorage || mockUser;
   });
+
+  // Helper function to get user display name
+  const getUserDisplayName = (user) => {
+    return `${user.first_name} ${user.last_name}`;
+  };
+
+  // Helper function to get user initials
+  const getUserInitials = (user) => {
+    return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`;
+  };
 
   // Store user to sessionStorage whenever we have a user from navigation
   useEffect(() => {
@@ -94,9 +104,12 @@ export default function LOA_RecordSummary() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Updated Navbar with proper props */}
+      {/* Updated Navbar with proper user display */}
       <NavBarMain
-        user={user}
+        user={{
+          ...user,
+          name: getUserDisplayName(user)
+        }}
         onLogout={handleLogout}
         showHomeButton={true}
         backButtonIcon={BackSquareIconWhite}
@@ -133,14 +146,15 @@ export default function LOA_RecordSummary() {
                 Employee Information
               </h2>
 
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-6 mb-4 md:mb-6">
+              <div className="flex flex-row flex-wrap items-center gap-4 md:gap-6 mb-4 md:mb-6 w-full">
                 {/* Employee Avatar */}
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-r from-[#3F6EC0] to-[#7940A8] flex items-center justify-center text-white font-bold text-lg md:text-xl flex-shrink-0">
                   {request.employee.first_name[0]}
                   {request.employee.last_name[0]}
                 </div>
 
-                <div className="flex-1 min-w-0">
+                {/* Employee Name and ID */}
+                <div className="flex-1 min-w-0 text-left">
                   <h3 className="text-lg md:text-2xl font-bold text-gray-900 truncate">
                     {request.employee.first_name} {request.employee.last_name}
                   </h3>
@@ -246,7 +260,7 @@ export default function LOA_RecordSummary() {
                 Request Timeline
               </h2>
 
-              <div className="space-y-3 md:space-y-4">
+              <div className="space-y-3 md:space-y-4 w-full text-left">
                 <div className="flex items-start gap-3 md:gap-4 p-3 md:p-4 bg-blue-50 rounded-lg">
                   <div className="w-3 h-3 bg-blue-500 rounded-full mt-1 flex-shrink-0" />
                   <div className="flex flex-col min-w-0 flex-1">
@@ -286,6 +300,7 @@ export default function LOA_RecordSummary() {
                     </div>
                   </div>
                 )}
+
               </div>
             </div>
           </div>

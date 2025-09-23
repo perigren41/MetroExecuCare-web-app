@@ -27,6 +27,16 @@ export default function HR_HistoryPage() {
         return userFromState || userFromStorage || mockUser;
     });
 
+    // Helper function to get user display name
+    const getUserDisplayName = (user) => {
+        return `${user.first_name} ${user.last_name}`;
+    };
+
+    // Helper function to get user initials
+    const getUserInitials = (user) => {
+        return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`;
+    };
+
     // Store user to sessionStorage whenever we have a user from navigation
     useEffect(() => {
         if (location.state?.user) {
@@ -100,9 +110,12 @@ export default function HR_HistoryPage() {
 
     return (
         <div className="min-h-screen bg-white">
-            {/* Updated Navbar */}
+            {/* Updated Navbar with proper user display */}
             <NavBarMain
-                user={user}
+                user={{
+                    ...user,
+                    name: getUserDisplayName(user)
+                }}
                 onLogout={handleLogout}
                 backButtonIcon={BackSquareIconWhite}
                 logo={mainLogo}
