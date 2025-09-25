@@ -272,7 +272,7 @@ export default function LOAStatusTracker() {
   
         {/* Left - Details */}
         <div className="bg-white rounded-3xl shadow-xl shadow-[#00539F]/30 py-4 pb-8 px-20 border border-gray-200 
-        outline outline-2 outline-[#00539F]">
+        outline-2 outline-[#00539F]">
             
           <h2 className="text-base font-bold text-blue-900 mb-4">Details</h2>
           {/* Two-column layout for labels & values */}
@@ -312,7 +312,7 @@ export default function LOAStatusTracker() {
 
         {/* Right - Progress */}
         <div className="bg-white rounded-3xl shadow-xl py-4 md:px-20 sm:px-4 border border-gray-200 shadow-[#00539F]/30
-        outline outline-2 outline-[#00539F]">
+        outline-2 outline-[#00539F]">
           <h2 className="text-base font-bold text-blue-900 mb-4">
             LOA Request Progress
           </h2>
