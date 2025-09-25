@@ -26,6 +26,13 @@ try {
 }
 
 try {
+  const uploadMiddleware = require('../middleware/uploadMiddleware');
+  console.log('✅ uploadMiddleware imported:', Object.keys(uploadMiddleware));
+} catch (error) {
+  console.log('❌ Error importing uploadMiddleware:', error.message);
+}
+
+try {
   const userValidators = require('../validators/userValidators');
   console.log('✅ userValidators imported:', Object.keys(userValidators));
 } catch (error) {
@@ -33,8 +40,8 @@ try {
 }
 
 // Now let's import them properly if they exist
-let getUsers, getUserById, updateUser, updateUserStatus, deleteUser;
-let upload, uploadProfilePicture, deleteProfilePicture;
+let getUsers, getUserById, getUserActivityLogs, updateUser, updateUserStatus, deleteUser, getDeletedUsers, restoreUser, uploadProfilePicture, updateUserNotes, getUserNotes;
+let upload, deleteProfilePicture, uploadProfilePictureMiddleware;
 let authenticateToken;
 let validateUpdateUser, validateUpdateUserStatus;
 
@@ -43,17 +50,26 @@ try {
   ({
     getUsers,
     getUserById,
+    getUserActivityLogs,
     updateUser,
     updateUserStatus,
-    deleteUser
+    deleteUser,
+    getDeletedUsers,
+    restoreUser,
+    uploadProfilePicture,
+    updateUserNotes,
+    getUserNotes
   } = userControllerFunctions);
   
   console.log('User controller functions:', {
     getUsers: typeof getUsers,
     getUserById: typeof getUserById,
+    getUserActivityLogs: typeof getUserActivityLogs,
     updateUser: typeof updateUser,
     updateUserStatus: typeof updateUserStatus,
-    deleteUser: typeof deleteUser
+    deleteUser: typeof deleteUser,
+    getDeletedUsers: typeof getDeletedUsers,
+    restoreUser: typeof restoreUser
   });
 } catch (error) {
   console.log('Error destructuring userController:', error.message);
@@ -89,17 +105,28 @@ try {
 
 try {
   const validatorFunctions = require('../validators/userValidators');
-  ({ 
+  ({
     validateUpdateUser,
-    validateUpdateUserStatus 
+    validateUpdateUserStatus
   } = validatorFunctions);
-  
+
   console.log('Validator functions:', {
     validateUpdateUser: typeof validateUpdateUser,
     validateUpdateUserStatus: typeof validateUpdateUserStatus
   });
 } catch (error) {
   console.log('Error destructuring validators:', error.message);
+}
+
+try {
+  const uploadMiddlewareFunctions = require('../middleware/uploadMiddleware');
+  ({ uploadProfilePicture: uploadProfilePictureMiddleware } = uploadMiddlewareFunctions);
+
+  console.log('Upload middleware functions:', {
+    uploadProfilePictureMiddleware: typeof uploadProfilePictureMiddleware
+  });
+} catch (error) {
+  console.log('Error destructuring uploadMiddleware:', error.message);
 }
 
 
@@ -117,11 +144,26 @@ if (typeof getUsers === 'function') {
   console.log('❌ getUsers is not a function:', typeof getUsers);
 }
 
+// Deleted users management routes - MUST be before /:id route
+if (typeof getDeletedUsers === 'function') {
+  router.get('/deleted', getDeletedUsers);
+  console.log('✅ Added GET /deleted route');
+} else {
+  console.log('❌ getDeletedUsers is not a function:', typeof getDeletedUsers);
+}
+
 if (typeof getUserById === 'function') {
   router.get('/:id', getUserById);
   console.log('✅ Added GET /:id route');
 } else {
   console.log('❌ getUserById is not a function:', typeof getUserById);
+}
+
+if (typeof getUserActivityLogs === 'function') {
+  router.get('/:id/activity-logs', getUserActivityLogs);
+  console.log('✅ Added GET /:id/activity-logs route');
+} else {
+  console.log('❌ getUserActivityLogs is not a function:', typeof getUserActivityLogs);
 }
 
 
@@ -149,6 +191,13 @@ if (typeof deleteUser === 'function') {
   console.log('❌ deleteUser is not a function:', typeof deleteUser);
 }
 
+if (typeof restoreUser === 'function') {
+  router.put('/:id/restore', restoreUser);
+  console.log('✅ Added PUT /:id/restore route');
+} else {
+  console.log('❌ restoreUser is not a function:', typeof restoreUser);
+}
+
 // Profile picture routes
 if (typeof upload === 'object' && typeof uploadProfilePicture === 'function') {
   router.post('/profile/picture', upload.single('profile_picture'), uploadProfilePicture);
@@ -165,6 +214,32 @@ if (typeof deleteProfilePicture === 'function') {
   console.log('✅ Added DELETE /profile/picture route');
 } else {
   console.log('❌ deleteProfilePicture is not a function:', typeof deleteProfilePicture);
+}
+
+// New profile picture upload route
+if (typeof uploadProfilePictureMiddleware === 'function' && typeof uploadProfilePicture === 'function') {
+  router.post('/:id/profile-picture', uploadProfilePictureMiddleware, uploadProfilePicture);
+  console.log('✅ Added POST /:id/profile-picture route');
+} else {
+  console.log('❌ uploadProfilePictureMiddleware or uploadProfilePicture not functions:', {
+    uploadProfilePictureMiddleware: typeof uploadProfilePictureMiddleware,
+    uploadProfilePicture: typeof uploadProfilePicture
+  });
+}
+
+// Notes management routes
+if (typeof getUserNotes === 'function') {
+  router.get('/:id/notes', getUserNotes);
+  console.log('✅ Added GET /:id/notes route');
+} else {
+  console.log('❌ getUserNotes is not a function:', typeof getUserNotes);
+}
+
+if (typeof updateUserNotes === 'function') {
+  router.put('/:id/notes', updateUserNotes);
+  console.log('✅ Added PUT /:id/notes route');
+} else {
+  console.log('❌ updateUserNotes is not a function:', typeof updateUserNotes);
 }
 
 console.log('userRoutes setup complete!');

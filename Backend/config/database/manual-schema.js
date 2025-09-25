@@ -45,6 +45,7 @@ async function createTablesManually() {
         position VARCHAR(100),
         branch VARCHAR(100),
         contact_number VARCHAR(20),
+        birth_date DATE,
         profile_picture VARCHAR(500),
         is_active BOOLEAN DEFAULT TRUE,
         last_login TIMESTAMP NULL,

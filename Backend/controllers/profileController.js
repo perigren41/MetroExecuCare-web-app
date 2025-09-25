@@ -6,8 +6,8 @@ const { pool } = require('../config/database/connection');
 // Configure multer for profile picture upload
 const storage = multer.diskStorage({
   destination: async (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../uploads/profiles');
-    
+    const uploadDir = path.join(__dirname, '../uploads/profile-pictures');
+
     // Create directory if it doesn't exist
     try {
       await fs.mkdir(uploadDir, { recursive: true });
@@ -57,7 +57,7 @@ const uploadProfilePicture = async (req, res) => {
 
     const userId = req.user.id;
     const fileName = req.file.filename;
-    const filePath = `/uploads/profiles/${fileName}`;
+    const filePath = `/uploads/profile-pictures/${fileName}`;
 
     // Get current profile picture to delete old one
     const [currentUser] = await pool.execute(

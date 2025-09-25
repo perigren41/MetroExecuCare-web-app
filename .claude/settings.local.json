@@ -10,7 +10,15 @@
       "Bash(cmd /c:*)",
       "Bash(tasklist)",
       "Bash(git init:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(npm install)",
+      "Bash(node:*)",
+      "Bash(npm run dev:*)",
+      "Bash(tasklist:*)",
+      "Bash(set PORT=5022)",
+      "Bash(set PORT=5023)",
+      "Bash(set PORT=5025)",
+      "Bash(set PORT=5030)"
     ],
     "deny": [],
     "ask": []

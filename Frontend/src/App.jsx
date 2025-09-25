@@ -1,51 +1,93 @@
-import { useState } from 'react'
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute, AdminRoute, ExecutiveRoute } from "@/Components/ProtectedRoute";
+import { NotFound } from "@/NotFound";
+import { LandingPage } from "@/webpages/LandingPage";
+import { LoginPage } from "@/webpages/LoginPage";
+import AdminUserPage from "@/webpages/AdminUserPage";
+import AdminProfilePage from "./webpages/AdminProfilePage.jsx";
+import ExecutiveEmployeeDashboard  from "@/webpages/ExecutiveEmployeeDashboard";
+import ExecutiveEmployeeSubmitLOApproval from "@/webpages/ExecutiveEmployeeSubmitLOApproval.jsx";
+import ExecutiveEmployeeSubmitLOAuthorization from "./webpages/ExecutiveEmployeeSubmitLOAuthorization.jsx";
+import ExecutiveEmployeeProfile from "@/webpages/ExecutiveEmployeeProfile.jsx";
+import LOAStatusTracker from "@/webpages/LoaStatusTracker.jsx";
+
 
 function App() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
-        <header className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-primary-700 mb-4">
-            MetroExecuCare
-          </h1>
-          <p className="text-lg text-gray-600">
-            Web-Based Annual Executive Check Up Benefit System
-          </p>
-        </header>
-        
-        <main className="card max-w-md mx-auto p-6">
-          <div className="text-center">
-            <div className="mb-6">
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">
-                System Ready
-              </h2>
-              <p className="text-gray-600 text-sm">
-                Frontend and Backend are properly configured
-              </p>
-            </div>
-            
-            <div className="space-y-3">
-              <button className="btn-primary w-full">
-                Get Started
-              </button>
-              <button className="btn-secondary w-full">
-                Learn More
-              </button>
-            </div>
-          </div>
-        </main>
-        
-        <footer className="text-center mt-12 text-sm text-gray-500">
-          <p>Built with React + Vite + Tailwind CSS</p>
-        </footer>
-      </div>
-    </div>
-  )
+  return(
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Public Routes */}
+          <Route index element={ <LandingPage /> } />
+          <Route path="/loginpage" element={<LoginPage />} />
+
+          {/* Executive Routes */}
+          <Route
+            path="/executive-employee-dashboard"
+            element={
+              <ExecutiveRoute>
+                <ExecutiveEmployeeDashboard />
+              </ExecutiveRoute>
+            }
+          />
+          <Route
+            path="/executive-employee-submit-loapproval"
+            element={
+              <ExecutiveRoute>
+                <ExecutiveEmployeeSubmitLOApproval />
+              </ExecutiveRoute>
+            }
+          />
+          <Route
+            path="/executive-employee-submit-loauthorization"
+            element={
+              <ExecutiveRoute>
+                <ExecutiveEmployeeSubmitLOAuthorization />
+              </ExecutiveRoute>
+            }
+          />
+          <Route
+            path="/executive-employee-profile"
+            element={
+              <ExecutiveRoute>
+                <ExecutiveEmployeeProfile />
+              </ExecutiveRoute>
+            }
+          />
+          <Route
+            path="/loa-status-tracker"
+            element={
+              <ExecutiveRoute>
+                <LOAStatusTracker />
+              </ExecutiveRoute>
+            }
+          />
+
+          {/* Admin Routes */}
+          <Route
+            path="/admin-users-page"
+            element={
+              <AdminRoute>
+                <AdminUserPage />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin-profile-page"
+            element={
+              <AdminRoute>
+                <AdminProfilePage />
+              </AdminRoute>
+            }
+          />
+
+          {/* 404 Route */}
+          <Route path="*" element={ <NotFound/> } />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
+  );
 }
 
-export default App
+export default App;

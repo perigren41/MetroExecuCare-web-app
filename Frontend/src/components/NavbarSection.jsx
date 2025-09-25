@@ -1,14 +1,12 @@
-import { cn } from "../lib/utils.js";
+import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 
-
 const NavItems = [
-    {name: "Home", href: "#home"},
+    {name: "Home", href: "/"},
     {name: "About us", href: "#about"},
-    {name: "FAQ", href: "#faq"},
     {name: "Contact", href: "#contact"},
-    {name: "Login", href: "#login"},
+    {name: "Login", href: "/loginpage"},
 ]
 
 export const NavbarSection = () => {
@@ -16,6 +14,12 @@ export const NavbarSection = () => {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [animate, setAnimate] = useState(false);
+
+    const currentPath = window.location.pathname; 
+    const isLoginPage = currentPath === "/loginpage"
+    const filteredNavItems = NavItems.filter(
+        (item) => !(item.name === "Login" && currentPath === "/loginpage")
+    );
     
     useEffect(() => {
         const handleScroll = () => {
@@ -33,20 +37,58 @@ export const NavbarSection = () => {
     }, []);
 
     return (
-        <nav className={cn("fixed w-full z-40 transition-all duration-300 ease-in-out", 
-        isScrolled ? `py-5 bg-background/50 backdrop-blur-md shadow-xs ${animate ? 'slide-in-bottom' : 'opacity-0 translate-y-10'}` : `py-5 bg-background/50 backdrop-blur-md ${animate ? 'slide-in-bottom' : 'opacity-0 translate-y-10'}`)}>
+        <nav className={cn(
+            "fixed top-0 w-full z-40 transition-all duration-300 ease-in-out", 
+            isLoginPage
+                ? isScrolled 
+                    ? `py-4 bg-white/20 ${animate ? "slide-in-bottom" : "opacity-0 translate-y-10"}`
+                    : `py-6 bg-transparent ${animate ? "slide-in-bottom" : "opacity-0 translate-y-10"}`
+                        
+                : isScrolled
+                    ? `py-5 bg-background/50 backdrop-blur-md shadow-xs ${animate ? 'slide-in-bottom' : 'opacity-0 translate-y-10'}` 
+                    : `py-5 bg-background/50 backdrop-blur-md ${animate ? 'slide-in-bottom' : 'opacity-0 translate-y-10'}` 
+        )}>
 
+       
             {/*Desktop Navbar*/}
             <div className={`hidden md:flex space-x-8 ${!isScrolled ? "pt-8 transition-all duration-300" : "transition-all duration-300"}`}>
-                <div className="container flex items-center justify-between text-l w-2xl mx-auto">
-                    {NavItems.map((item, key) => (
+                <div className="container flex items-center justify-center text-l mx-auto">
+
+                    <div className="flex space-x-8 justify-center items-center">
+                        {filteredNavItems
+                            .filter(item => item.name !== "Login")
+                            .map((item, key) => (
+                                <a
+                                    key={key}
+                                    href={item.href}
+                                    className={cn("min-w-[120px] font-light border-2 px-15 rounded-full hover:bg-primary hover:text-primary-foreground",
+                                        isLoginPage
+                                            ? `border-white text-white`
+                                            : `border-primary text-primary`
+                                    )}
+                                >
+                                    {item.name}
+                                </a>
+                            ))
+                        }
+                        {filteredNavItems.find(item => item.name === "Login") && (
+                            <a
+                                href="/loginpage"
+                                className="min-w-[120px] font-light border-2 px-15 rounded-full border-primary bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary hover:cursor-pointer transition-colors duration-300"
+                            >
+                                Login
+                            </a>
+                        )}
+                    </div>
+
+                    {/* {filteredNavItems.map((item, key) => (
                         <a key={key} href={item.href} className={
                             item.name === "Login"
-                           ? "font-light border-2 ml-5 px-10 rounded-full border-primary bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary hover:cursor-pointer transition-colors duration-300"
-                           : `font-light border-2 px-6 rounded-full border-primary text-primary hover:bg-primary hover:text-primary-foreground`}>
+                           ? "font-light border-2 ml-50 px-10 rounded-full border-primary bg-primary text-primary-foreground hover:bg-primary-foreground hover:text-primary hover:cursor-pointer transition-colors duration-300"
+                           : `font-light border-2 px-10 rounded-full border-primary text-primary hover:bg-primary hover:text-primary-foreground`}>
                             {item.name}
                         </a>
-                    ))}
+                    ))} */}
                 </div>
             </div>
 

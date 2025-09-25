@@ -1,6 +1,7 @@
 const { pool } = require('../config/database/connection');
 const { hashPassword, comparePassword } = require('../utils/passwordUtils');
 const { generateTokenPair, verifyRefreshToken } = require('../utils/utils/jwtUtils');
+const { logActivity, getRequestInfo, ACTIVITY_TYPES } = require('../utils/activityLogger');
 const {
   validateRegistration,
   validateLogin,
@@ -90,6 +91,22 @@ const register = async (req, res) => {
       [user.id]
     );
 
+    // Log user registration activity
+    await logActivity({
+      userId: user.id,
+      action: ACTIVITY_TYPES.REGISTER,
+      description: `User registered with employee ID: ${user.employee_id}`,
+      newValues: {
+        employee_id: user.employee_id,
+        email: user.email,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        role: user.role,
+        department: user.department
+      },
+      ...getRequestInfo(req)
+    });
+
     res.status(201).json({
       success: true,
       message: 'User registered successfully',
@@ -178,6 +195,14 @@ const login = async (req, res) => {
       'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?',
       [user.id]
     );
+
+    // Log user login activity
+    await logActivity({
+      userId: user.id,
+      action: ACTIVITY_TYPES.LOGIN,
+      description: `User logged in with employee ID: ${user.employee_id}`,
+      ...getRequestInfo(req)
+    });
 
     res.json({
       success: true,
@@ -294,6 +319,16 @@ const refreshToken = async (req, res) => {
  */
 const logout = async (req, res) => {
   try {
+    // Log user logout activity
+    if (req.user) {
+      await logActivity({
+        userId: req.user.id,
+        action: ACTIVITY_TYPES.LOGOUT,
+        description: `User logged out with employee ID: ${req.user.employee_id}`,
+        ...getRequestInfo(req)
+      });
+    }
+
     // In a more advanced implementation, you would add the token to a blacklist
     // For now, we'll just return success and let the client handle token removal
 

@@ -19,6 +19,7 @@ const {
 
 // Import middleware
 const { authenticateToken } = require('../middleware/authMiddleware');
+const { uploadRequestFile } = require('../middleware/uploadMiddleware');
 
 // Import validators
 const {
@@ -44,6 +45,9 @@ router.get('/dashboard', getDashboardStats);
 
 // GET /api/requests/:id - Get specific request details
 router.get('/:id', validateRequestId, getRequestById);
+
+// POST /api/requests/:id/upload-file - Upload file for specific request
+router.post('/:id/upload-file', validateRequestId, uploadRequestFile, require('../controllers/requestController').uploadRequestFileHandler);
 
 // Request Workflow Routes
 // POST /api/requests/:id/assign - Assign request to HR personnel (admin/benefits/welfare only)

@@ -17,16 +17,16 @@ const authenticateToken = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    // Get user from database to ensure they still exist and are active
+    // Get user from database to ensure they still exist, are active, and not soft-deleted
     const [users] = await pool.execute(
-      'SELECT id, email, role, is_active FROM users WHERE id = ?',
+      'SELECT id, email, role, is_active FROM users WHERE id = ? AND deleted_at IS NULL',
       [decoded.id]
     );
 
     if (users.length === 0) {
       return res.status(403).json({
         success: false,
-        error: 'Invalid token - user not found'
+        error: 'Invalid token - user not found or account has been deactivated'
       });
     }
 
@@ -50,7 +50,14 @@ const authenticateToken = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Token authentication error:', error);
-    
+
+    // Log the malformed token for debugging
+    if (error.name === 'JsonWebTokenError') {
+      const authHeader = req.headers['authorization'];
+      const token = authHeader && authHeader.split(' ')[1];
+      console.error('Malformed token received:', token ? token.substring(0, 20) + '...' : 'No token');
+    }
+
     if (error.name === 'TokenExpiredError') {
       return res.status(403).json({
         success: false,
