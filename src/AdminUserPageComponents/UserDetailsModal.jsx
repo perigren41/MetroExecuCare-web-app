@@ -54,7 +54,8 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate }) 
   const newLocal = <span>{formData.id}</span>;
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-3xl shadow-lg w-full max-w-120 relative overflow-hidden">
+      {/* DESKTOP - ORIGINAL CODE */}
+      <div className="hidden md:block bg-white rounded-3xl shadow-lg w-full max-w-120 relative overflow-hidden">
         {/* Header */}
         <div className="flex justify-between items-center bg-[linear-gradient(to_right,#3F6EC0_2%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] text-white px-4 py-1 rounded-t-lg">
           <h2 className="text-sm font-bold">Employee Details</h2>
@@ -218,6 +219,225 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate }) 
           >
             Delete
           </button>
+        </div>
+      </div>
+
+      {/* MOBILE - SEPARATE CODE */}
+      <div className="md:hidden bg-white rounded-3xl shadow-lg w-full mx-4 relative overflow-hidden max-h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="flex justify-between items-center bg-[linear-gradient(to_right,#3F6EC0_2%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] text-white px-4 py-1 rounded-t-lg flex-shrink-0">
+          <h2 className="text-sm font-bold">Employee Details</h2>
+          <button
+            onClick={onClose}
+            className="text-white hover:text-gray-200 text-lg"
+          >
+            ✖
+          </button>
+        </div>
+
+        {/* Scrollable content area with visible scrollbar */}
+        <div className="overflow-y-scroll flex-1 p-5" style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#9CA3AF #E5E7EB'
+        }}>
+          <style jsx>{`
+            .overflow-y-scroll::-webkit-scrollbar {
+              width: 8px;
+            }
+            .overflow-y-scroll::-webkit-scrollbar-track {
+              background: #E5E7EB;
+              border-radius: 4px;
+            }
+            .overflow-y-scroll::-webkit-scrollbar-thumb {
+              background: #9CA3AF;
+              border-radius: 4px;
+            }
+            .overflow-y-scroll::-webkit-scrollbar-thumb:hover {
+              background: #6B7280;
+            }
+          `}</style>
+          
+          {/* Centered Profile Image and Name */}
+          <div className="flex flex-col items-center mb-6">
+            <div className="relative w-24 h-24 mb-3">
+              <img
+                src={formData.profileImage || "https://i.pravatar.cc/100?img=68"}
+                alt="Profile"
+                className="w-24 h-24 rounded-full object-cover border"
+              />
+
+              <input
+                type="file"
+                accept="image/*"
+                id="profileImageInputMobile"
+                className="hidden"
+                onChange={handleImageChange}
+              />
+
+              {isEditing && (
+                <button
+                  onClick={() =>
+                    document.getElementById("profileImageInputMobile").click()
+                  }
+                  className="absolute top-0 left-0 w-24 h-24 flex items-center justify-center rounded-full bg-black/30 hover:bg-black/50"
+                >
+                  <img src={cameraIcon} alt="Camera Icon" className="w-6 h-6" />
+                </button>
+              )}
+            </div>
+            <div className="font-bold text-lg text-blue-900 text-center">
+              {`${user.firstName} ${user.lastName}`}
+            </div>
+          </div>
+
+          {/* List of Details */}
+          <div className="space-y-3 text-xs text-blue-900">
+            <div className="flex flex-col">
+              <span className="font-bold">Employee ID:</span>
+              <span className="text-red-600 mt-1">{formData.employeeid}</span>
+            </div>
+
+            <div className="flex flex-col">
+              <span className="font-bold">Role:</span>
+              <span className="text-red-600 mt-1">{formData.role}</span>
+            </div>
+
+            <div className="flex flex-col">
+              <span className="font-bold">Position:</span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  name="position"
+                  value={formData.position}
+                  onChange={handleChange}
+                  className="border px-2 py-1 text-xs w-full rounded-sm mt-1"
+                />
+              ) : (
+                <span className="mt-1">{formData.position}</span>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <span className="font-bold">Department:</span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  name="department"
+                  value={formData.department}
+                  onChange={handleChange}
+                  className="border px-2 py-1 text-xs w-full rounded-sm mt-1"
+                />
+              ) : (
+                <span className="mt-1">{formData.department}</span>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <span className="font-bold">Branch:</span>
+              {isEditing ? (
+                <select
+                  name="branch"
+                  value={formData.branch}
+                  onChange={handleChange}
+                  className="border px-2 py-1 text-xs w-full rounded-sm mt-1"
+                >
+                  <option value="">Select Branch</option>
+                  <option value="Metrobank Fort - Mckinley Branch">
+                    Metrobank Fort - Mckinley Branch
+                  </option>
+                  <option value="Metrobank Fort - Ecoprime Tower">
+                    Metrobank Fort - Ecoprime Tower
+                  </option>
+                  <option value="Metrobank Taguig - Puregold Branch">
+                    Metrobank Taguig - Puregold Branch
+                  </option>
+                  <option value="Metrobank Taguig - Vista Mall">
+                    Metrobank Fort-Ten West Campus Branch
+                  </option>
+                  <option value="Metrobank Fort - Bayani Road Branch">
+                    Metrobank Fort - Bayani Road Branch
+                  </option>
+                </select>
+              ) : (
+                <span className="mt-1">{formData.branch}</span>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <span className="font-bold">Date Added:</span>
+              <span className="mt-1">{formData.created_at}</span>
+            </div>
+
+            <div className="flex flex-col">
+              <span className="font-bold">Email Address:</span>
+              {isEditing ? (
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="border px-2 py-1 text-xs w-full rounded-sm mt-1"
+                />
+              ) : (
+                <span className="mt-1">{formData.email}</span>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <span className="font-bold">Contact Number:</span>
+              {isEditing ? (
+                <input
+                  type="text"
+                  name="contact_number"
+                  value={formData.contact_number}
+                  onChange={handleChange}
+                  className="border px-2 py-1 text-xs w-full rounded-sm mt-1"
+                />
+              ) : (
+                <span className="mt-1">{formData.contact_number}</span>
+              )}
+            </div>
+
+            <div className="flex flex-col">
+              <span className="font-bold">Birth Date:</span>
+              {isEditing ? (
+                <input
+                  type="date"
+                  name="birthDate"
+                  value={formData.birthDate}
+                  onChange={handleChange}
+                  className="border px-2 py-1 text-xs w-full rounded-sm mt-1"
+                />
+              ) : (
+                <span className="mt-1">{formData.birthDate}</span>
+              )}
+            </div>
+
+            {/* Actions moved inside scrollable area */}
+            <div className="flex justify-center gap-3 pt-6 pb-2">
+              {isEditing ? (
+                <button
+                  onClick={handleSave}
+                  className="px-4 py-1 w-15 h-6 rounded-full bg-green-600 text-white text-xs hover:bg-green-700"
+                >
+                  Save
+                </button>
+              ) : (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="px-4 py-1 w-15 h-6 rounded-full bg-blue-700 text-white text-xs hover:bg-blue-800"
+                >
+                  Edit
+                </button>
+              )}
+              <button
+                onClick={handleDelete}
+                className="px-2 py-1 w-15 h-6 rounded-full bg-red-600 text-white text-xs hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 

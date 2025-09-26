@@ -289,20 +289,46 @@ export default function LOAStatusTracker() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top Navbar */}
       <NavBarSide />
-      <h1 className="text-center text-base font-bold mb-1 pt-6 text-blue-900 table-fixed pb-4">
+      
+      {/* Page Title - Responsive */}
+      <h1 className="text-center text-sm sm:text-base lg:text-lg font-bold mb-2 sm:mb-4 pt-4 sm:pt-6 text-blue-900 px-4">
         LOA Status Tracker
       </h1>
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 md:grid-cols-[41%_59%] px-4 pb-6 gap-6 max-w-6xl mx-auto w-full table-fixed">
+      {/* Main Content - Mobile/Tablet: Column, Desktop: Grid */}
+      <div className="flex flex-col xl:grid xl:grid-cols-[41%_59%] px-4 sm:px-6 pb-6 gap-4 sm:gap-6 max-w-6xl mx-auto w-full">
   
         {/* Left - Details */}
-        <div className="bg-white rounded-3xl shadow-xl shadow-[#00539F]/30 py-4 pb-8 px-20 border border-gray-200 
-        outline outline-2 outline-[#00539F]">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl shadow-[#00539F]/30 py-4 sm:py-6 pb-6 sm:pb-8 
+        px-4 sm:px-8 lg:px-12 xl:px-20 border border-gray-200 outline outline-1 sm:outline-2 outline-[#00539F] 
+        order-2 xl:order-1">
             
-          <h2 className="text-base font-bold text-blue-900 mb-4">Details</h2>
-          {/* Two-column layout for labels & values */}
-          <div className="grid grid-cols-2 text-left text-xs">
+          <h2 className="text-sm sm:text-base font-bold text-blue-900 mb-3 sm:mb-4 text-center xl:text-left">Details</h2>
+          
+          {/* Mobile/Tablet: Centered Details */}
+          <div className="xl:hidden">
+            <div className="flex flex-col space-y-3 items-center text-center text-xs sm:text-sm">
+              <div className="flex flex-col">
+                <span className="font-bold text-blue-900">Type:</span>
+                <span>{requestDetails.request_type}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-blue-900">Requested ID:</span>
+                <span>{requestDetails.request_id}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-blue-900">Requested on:</span>
+                <span>{requestDetails.requested_on}</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="font-bold text-blue-900">Requested by:</span>
+                <span>{requestDetails.requested_by}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop: Two-column layout */}
+          <div className="hidden xl:grid xl:grid-cols-2 text-left text-xs">
             <span className="font-bold text-blue-900">Type:</span>
             <span className="text-left">{requestDetails.request_type}</span>
 
@@ -316,20 +342,20 @@ export default function LOAStatusTracker() {
             <span className="text-left">{requestDetails.requested_by}</span>
           </div>
 
-          {/* Document Icon */}
-          <div className="flex justify-center my-6">
+          {/* Document Icon - Responsive */}
+          <div className="flex justify-center my-4 sm:my-6">
             <img
               src={DocumentIcon}
               alt="Document Icon"
-              className="w-70 h-70 object-contain"
+              className="w-16 h-16 sm:w-24 sm:h-24 lg:w-32 lg:h-32 xl:w-70 xl:h-70 object-contain"
             />
           </div>
 
-          {/* Download Button */}
-          <div className="flex justify-center text-sm">
+          {/* Download Button - Responsive */}
+          <div className="flex justify-center text-xs sm:text-sm">
             <button
               disabled
-              className="px-4 py-2 rounded-full bg-gray-300 text-gray-600 cursor-not-allowed shadow-md"
+              className="px-3 sm:px-4 py-2 rounded-full bg-gray-300 text-gray-600 cursor-not-allowed shadow-md"
             >
               Download
             </button>
@@ -337,57 +363,87 @@ export default function LOAStatusTracker() {
         </div>
 
         {/* Right - Progress */}
-        <div className="bg-white rounded-3xl shadow-xl py-4 md:px-20 sm:px-4 border border-gray-200 shadow-[#00539F]/30
-        outline outline-2 outline-[#00539F]">
-          <h2 className="text-base font-bold text-blue-900 mb-4">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl py-4 sm:py-6 px-4 sm:px-8 lg:px-12 xl:px-20 
+        border border-gray-200 shadow-[#00539F]/30 outline outline-1 sm:outline-2 outline-[#00539F] order-1 xl:order-2">
+          
+          <h2 className="text-sm sm:text-base font-bold text-blue-900 mb-3 sm:mb-4 text-center xl:text-left">
             LOA Request Progress
           </h2>
 
-          {/* Status pill - Same styling as dashboard */}
-          <div className="flex justify-center mb-6">
+          {/* Status pill - Responsive */}
+          <div className="flex justify-center mb-4 sm:mb-6">
             <div
-              className="font-bold rounded-full shadow-xl/20 px-4 pt-2 pb-1 flex flex-col items-center border mx-auto w-60 h-20"
+              className="font-bold rounded-full shadow-xl/20 px-3 sm:px-4 py-2 sm:py-3 
+              flex flex-col items-center border mx-auto 
+              w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[340px] xl:w-60 
+              min-h-[70px] sm:min-h-[80px] xl:h-20"
               style={currentStatusDisplay.pillStyle}
             >
               <div className="flex items-center">
-                <img src={currentStatusDisplay.icon} alt="Status" className="w-10 h-10 mr-1" />
-                <span>{currentStatusDisplay.text}</span>
+                <img src={currentStatusDisplay.icon} alt="Status" 
+                className="w-8 h-8 sm:w-9 sm:h-9 xl:w-10 xl:h-10 mr-1 sm:mr-2" />
+                <span className="text-xs sm:text-sm xl:text-base">{currentStatusDisplay.text}</span>
               </div>
-              <p className="text-xs text-gray-500 flex flex-col">{currentStatusDisplay.note}</p>
+              <p className="text-xs text-gray-500 text-center mt-1">{currentStatusDisplay.note}</p>
             </div>
           </div>
 
-          {/* Steps */}
-          <div className="space-y-3 text-left text-sm mb-6 pl-4">
+          {/* Steps - Responsive */}
+          <div className="space-y-2 sm:space-y-3 text-left text-xs sm:text-sm mb-4 sm:mb-6 pl-2 sm:pl-4">
             {allSteps.map((step) => (
-              <div key={step.id} className={`flex items-start gap-3 ${step.isActive ? 'opacity-100' : step.isCompleted ? 'opacity-80' : 'opacity-40'}`}>
-                <img src={getStepIcon(step)} alt="status" className="w-7 h-7" />
-                <div>
-                  <p className={`font-medium ${step.isActive ? 'text-blue-900' : ''}`}>
+              <div key={step.id} className={`flex items-start gap-2 sm:gap-3 ${step.isActive ? 'opacity-100' : step.isCompleted ? 'opacity-80' : 'opacity-40'}`}>
+                <img src={getStepIcon(step)} alt="status" className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0" />
+                <div className="min-w-0">
+                  <p className={`font-medium leading-tight ${step.isActive ? 'text-blue-900' : ''}`}>
                     {step.label}
                   </p>
-                  <p className="text-xs text-gray-600">Status: {step.status}</p>
+                  <p className="text-xs text-gray-600 leading-tight">Status: {step.status}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Legend */}
-          <div className="grid grid-cols-[.5fr_1fr_1fr_1fr_1fr] mt-6 text-xs text-gray-600 pl-4 text-left">
-            <p className="flex items-center font-bold">Legend:</p>
+          {/* Legend - Mobile Centered, Tablet/Desktop Original */}
+          <div className="mt-4 sm:mt-6 text-xs text-gray-600">
+            {/* Mobile: Centered Legend */}
+            <div className="sm:hidden text-center">
+              <p className="font-bold mb-3">Legend:</p>
+              <div className="flex flex-col space-y-2 items-center">
+                <div className="flex items-center gap-2">
+                  <img src={CheckSquare} className="w-4 h-4" alt="Completed" />
+                  <span>Completed</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <img src={ClockSquare} className="w-4 h-4" alt="Waiting" />
+                  <span>Waiting</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <img src={AddSquare} className="w-4 h-4" alt="No request" />
+                  <span>No request</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <img src={XSquare} className="w-4 h-4" alt="Rejected" />
+                  <span>Rejected</span>
+                </div>
+              </div>
+            </div>
 
-            <p className="flex items-center gap-1">
-              <img src={CheckSquare} className="w-5 h-5" alt="Completed" /> Completed
-            </p>
-            <p className="flex items-center gap-1">
-              <img src={ClockSquare} className="w-5 h-5" alt="Waiting" /> Waiting
-            </p>
-            <p className="flex items-center gap-1">
-              <img src={AddSquare} className="w-5 h-5" alt="No request" /> No request
-            </p>
-            <p className="flex items-center gap-1">
-              <img src={XSquare} className="w-5 h-5" alt="Rejected" /> Rejected
-            </p>
+            {/* Tablet/Desktop: Original Layout */}
+            <div className="hidden sm:grid sm:grid-cols-[.5fr_1fr_1fr_1fr_1fr] pl-4 text-left">
+              <p className="flex items-center font-bold">Legend:</p>
+              <p className="flex items-center gap-1">
+                <img src={CheckSquare} className="w-5 h-5" alt="Completed" /> Completed
+              </p>
+              <p className="flex items-center gap-1">
+                <img src={ClockSquare} className="w-5 h-5" alt="Waiting" /> Waiting
+              </p>
+              <p className="flex items-center gap-1">
+                <img src={AddSquare} className="w-5 h-5" alt="No request" /> No request
+              </p>
+              <p className="flex items-center gap-1">
+                <img src={XSquare} className="w-5 h-5" alt="Rejected" /> Rejected
+              </p>
+            </div>
           </div>
         </div>
       </div>

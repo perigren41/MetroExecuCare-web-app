@@ -35,17 +35,17 @@ function ProfileCard({ profile, setProfile }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl pt-3 pb-2 px-6 flex flex-col 
+    <div className="bg-white rounded-2xl pt-3 pb-6 px-6 flex flex-col 
       outline outline-2 outline-[#00539F] 
       shadow-lg shadow-[#00539F]/50">
       
-      <h2 className="text-blue-900 font-semibold mb-2 text-left text-base sm:text-base">
+      <h2 className="text-blue-900 font-semibold mb-4 text-left text-base">
         Basic Information
       </h2>
 
-      <div className="flex flex-col md:flex-row md:justify-start items-center md:items-center pb-6 px-4 sm:gap-8 gap-4">
+      <div className="flex flex-col md:flex-row md:justify-start items-center md:items-start pb-4 px-4 gap-4 sm:gap-8">
 
-        <div className="flex flex-col md:justify-center items-center pl-0">
+        <div className="flex flex-col md:justify-center items-center pl-0 flex-shrink-0">
           <input
             type="file"
             accept="image/*"
@@ -57,30 +57,30 @@ function ProfileCard({ profile, setProfile }) {
           <img
             src={profile.avatar}
             alt=""
-            className="w-50 h-50 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full border-1 border-purple-400 object-cover"
+            className="w-50 h-50 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full border-2 border-purple-400 object-cover"
           />
 
           <button
             onClick={() => document.getElementById("profileImageInput").click()}
-            className="mt-2 flex items-center gap-2 text-blue-600 hover:underline text-sm sm:text-base"
+            className="mt-2 flex items-center gap-2 text-blue-600 hover:underline text-sm"
           >
             Change Picture
           </button>
         </div>
 
-        <div className="flex flex-col text-center md:text-left px-8 sm:px-8 space-y-0 pt-0">
-          <p className="text-blue-700 font-bold text-2xl sm:text-2xl">{profile.name}</p>
-          <p className="text-blue-600 text-sm sm:text-base">{profile.role}</p>
-          <p className="text-gray-500 text-xs sm:text-xs mb-3">{profile.location}</p>
+        <div className="flex flex-col text-center md:text-left px-8 md:px-0 space-y-2 pt-0 w-full md:w-auto">
+          <p className="text-blue-700 font-bold text-2xl">{profile.name}</p>
+          <p className="text-blue-600 text-xs">{profile.role}</p>
+          <p className="text-gray-500 text-xs mb-2">{profile.location}</p>
 
-          <div className="sm:text-sm space-y-3">
+          <div className="text-sm space-y-2">
             <p>
               <span className="font-bold text-blue-600 text-sm">Employee ID:</span><br />
               <span className="text-black text-xs">{profile.employeeid}</span>
             </p>
             <p>
               <span className="font-bold text-blue-600 text-sm">Email:</span><br />
-              <span className="text-black text-xs">{profile.email}</span>
+              <span className="text-black text-xs break-all">{profile.email}</span>
             </p>
             <p>
               <span className="font-bold text-blue-600 text-sm">Contact Number:</span><br />
@@ -140,44 +140,70 @@ function SummaryCard({ notes, setNotes }) {
       shadow-lg shadow-[#00539F]/50 gap-4">
 
       <div className="text-left">
-        <h2 className="text-blue-900 font-semibold sm:text-base">Summary</h2>
+        <h2 className="text-blue-900 font-semibold text-base">Summary</h2>
         <p className="text-xs">Your activity overview in MetroExecuCare</p>
       </div>
 
       <div className="bg-white shadow-md rounded-2xl pt-2 pb-6 px-6 flex flex-col 
           outline outline-1 outline-[#00539F] 
           shadow-lg shadow-[#00539F]/50 gap-2">
-        <h1 className="text-xs sm:text-xs text-left">
+        <h1 className="text-xs text-left">
           <span className="text-blue-900 font-semibold">Action Log:</span> Your past ten (10) requests
         </h1>
-        <table className="w-full text-xs table-fixed">
-          <thead className="bg-purple-300 text-center p-1">
-            <tr>
-              <th className="p-1">Date</th>
-              <th className="p-1">Package</th>
-              <th className="p-1">Location</th>
-              <th className="p-1">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paddedHistory.map((item, idx) => (
-              <tr key={idx} className="border-t">
-                <td className="p-1 text-blue-600">{item.completed_at}</td>
-                <td className="p-1">{item.request_type}</td>
-                <td className="p-1">{item.hospital_name}</td>
-                <td className="p-1">{item.current_status}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div>
+          <style dangerouslySetInnerHTML={{
+            __html: `
+              .table-scroll-container::-webkit-scrollbar {
+                height: 8px;
+              }
+              .table-scroll-container::-webkit-scrollbar-track {
+                background: #f3f4f6;
+                border-radius: 4px;
+              }
+              .table-scroll-container::-webkit-scrollbar-thumb {
+                background: #9ca3af;
+                border-radius: 4px;
+              }
+              .table-scroll-container::-webkit-scrollbar-thumb:hover {
+                background: #6b7280;
+              }
+              .table-scroll-container {
+                scrollbar-width: thin;
+                scrollbar-color: #9ca3af #f3f4f6;
+              }
+            `
+          }} />
+          <div className="overflow-x-auto table-scroll-container">
+            <table className="w-full text-xs table-fixed min-w-[400px]">
+              <thead className="bg-purple-200 text-center p-1">
+                <tr>
+                  <th className="p-1 w-[25%]">Date</th>
+                  <th className="p-1 w-[25%]">Package</th>
+                  <th className="p-1 w-[32%]">Location</th>
+                  <th className="p-1 w-[18%]">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paddedHistory.map((item, idx) => (
+                  <tr key={idx} className="border-t">
+                    <td className="p-1 text-blue-600 truncate" title={item.completed_at}>{item.completed_at}</td>
+                    <td className="p-1 truncate" title={item.request_type}>{item.request_type}</td>
+                    <td className="p-1 truncate" title={item.hospital_name}>{item.hospital_name}</td>
+                    <td className="p-1 truncate" title={item.current_status}>{item.current_status}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
       <div className="bg-white shadow-md rounded-2xl py-3 px-6 flex flex-col 
           outline outline-1 outline-[#00539F] 
           shadow-lg shadow-[#00539F]/50 text-xs">
-        <h2 className="text-blue-900 text-sm font-semibold mb-2 text-left sm:text-sm">Notes: Write down notes or reminders of yourself ...</h2>
+        <h2 className="text-blue-900 text-sm font-semibold mb-2 text-left">Notes: Write down notes or reminders of yourself ...</h2>
         <textarea
-          className="w-full rounded-lg px-1 h-22 resize-none bg-[repeating-linear-gradient(white,white_23px,#6b7280_24px)]"
+          className="w-full rounded-lg px-1 h-30 md:h-53 xl:h-22 resize-none bg-[repeating-linear-gradient(white,white_23px,#6b7280_24px)]"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           readOnly={!isEditing}
@@ -230,7 +256,7 @@ function PasswordChangeCard() {
         outline outline-2 outline-[#00539F] 
         shadow-lg shadow-[#00539F]/50">
         
-        <h2 className="text-blue-900 text-sm font-semibold mb-4 sm:text-sm text-left">Change Password</h2>
+        <h2 className="text-blue-900 text-sm font-semibold mb-4 text-left">Change Password</h2>
         <div className="space-y-2 text-xs">
 
           {/* Current Password */}
@@ -327,42 +353,42 @@ function PasswordChangeCard() {
 
       {/* Modals */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-4xl shadow-lg text-center w-80">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-4xl shadow-lg text-center w-full max-w-xs sm:max-w-sm">
             <div className="mb-4">
               {modalType === 'success' && (
                 <>
-                  <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
-                    <img src={CheckGreen} alt="Success" className="size-10"></img>
+                  <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+                    <img src={CheckGreen} alt="Success" className="w-8 h-8 sm:w-10 sm:h-10"></img>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Password Updated Successfully!</h3>
-                  <p className="text-sm text-gray-600">Your password has been changed successfully.</p>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Password Updated Successfully!</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">Your password has been changed successfully.</p>
                 </>
               )}
               
               {modalType === 'wrongPassword' && (
                 <>
-                  <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-3">
-                    <img src={XIcon} alt="Close" className="size-8" />
+                  <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center mb-3">
+                    <img src={XIcon} alt="Close" className="w-6 h-6 sm:w-8 sm:h-8" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Incorrect Current Password</h3>
-                  <p className="text-sm text-gray-600">The current password you entered is not correct. Please try again.</p>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Incorrect Current Password</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">The current password you entered is not correct. Please try again.</p>
                 </>
               )}
               
               {modalType === 'passwordMismatch' && (
                 <>
-                  <div className="mx-auto w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-3">
-                    <img src={ErrorPass} alt="Error" className="size-10"></img>
+                  <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-full flex items-center justify-center mb-3">
+                    <img src={ErrorPass} alt="Error" className="w-8 h-8 sm:w-10 sm:h-10"></img>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Passwords Don't Match</h3>
-                  <p className="text-sm text-gray-600">The new password and confirmation password do not match. Please check and try again.</p>
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Passwords Don't Match</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">The new password and confirmation password do not match. Please check and try again.</p>
                 </>
               )}
             </div>
             <button 
               onClick={() => setShowModal(false)}
-              className="w-20 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-medium"
+              className="w-16 sm:w-20 bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-medium"
             >
               Close
             </button>
@@ -551,8 +577,12 @@ export default function ExecutiveEmployeeProfile() {
       <h1 className="text-center text-base font-bold mb-1 pt-6 text-blue-900">
         Employee Profile
       </h1>
-      <div className="min-h-screen bg-gray-50 py-4 px-4 md:py-4 md:px-8 table-fixed">
-        <div className="grid grid-cols-1 lg:grid-cols-[40%_60%] gap-4 md:pr-13 md:pl-10 sm:pr-2 sm:pl-2">
+      <div className="min-h-screen bg-gray-50 py-4 px-4 md:py-4 md:px-8">
+        <div className="grid grid-cols-1 
+                lg:grid-cols-[46%_54%]
+                gap-4 
+                md:gap-4 md:pr-13 md:pl-10 
+                sm:pr-2 sm:pl-2">
           
           <div>
             <ProfileCard profile={profile} setProfile={setProfile} />
