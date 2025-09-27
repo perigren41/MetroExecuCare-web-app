@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { ThemeToggle } from "@/Components/ThemeToggle.jsx"
+// import { ThemeToggle } from "@/Components/ThemeToggle.jsx"
 import { NavbarSection } from "@/Components/NavbarSection.jsx"
 import metrobankicon from "@/assets/metrobank-icon.svg";
 import mainLogo from "@/assets/mainLogo-foreground.svg";
@@ -93,18 +93,13 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen relative overflow-hidden 
+    <div className="flex items-center justify-center min-h-screen relative overflow-hidden 
                     bg-[linear-gradient(to_right,#3F6EC0_2%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)]
                     dark:bg-[linear-gradient(to_right,#1a2332_2%,#0f1419_30%,#2a1f3d_50%,#3a2847_75%)]
-                    transition-colors duration-300">
+                    transition-colors duration-300 px-4 sm:px-6 lg:px-8 py-8">
       
       {/* Navbar always on top */}
       <NavbarSection />
-      
-      {/* Theme Toggle - Higher z-index to ensure it's clickable */}
-      <div className="fixed top-5 right-5 z-[60]">
-        <ThemeToggle />
-      </div>
 
       {/* Background Image Overlay */}
       <div
@@ -114,21 +109,24 @@ export function LoginPage() {
                    transition-all duration-300"
         style={{
           backgroundImage: `url(${metrobankicon})`,
-          backgroundSize: "clamp(500px, 60vw, 1200px)"
+          backgroundSize: "clamp(300px, 50vw, 1200px)"
         }}
       ></div>
 
       {/* Login Card */}
-      <div className="relative z-10 w-150 max-w-200 bg-transparent p-10 rounded-2xl 
-                      text-white dark:text-gray-100 transition-colors duration-300">
+      <div className="relative z-10 w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl
+                      bg-transparent p-6 sm:p-8 md:p-10 rounded-2xl 
+                      text-white dark:text-gray-100 transition-colors duration-300
+                      mx-auto">
         {/* Logo + Heading */}
-        <div className="text-left mb-8">
-          <h1 className="text-2xl font-bold flex items-center gap-0">
-            <img src={mainLogo} alt="MetroExecuCare Logo" className="w-10 h-10" />
-            MetroExecuCare
+        <div className="text-left mb-6 sm:mb-8">
+          <h1 className="text-xl sm:text-2xl font-bold flex items-center gap-0">
+            <img src={mainLogo} alt="MetroExecuCare Logo" className="w-8 h-8 sm:w-10 sm:h-10" />
+            <span className="ml-2">MetroExecuCare</span>
           </h1>
-          <h2 className="text-3xl font-bold mt-2">Welcome to MetroExecuCare!</h2>
-          <p className="text-sm text-gray-200 dark:text-gray-300 mt-2 transition-colors duration-300">
+          <h2 className="text-2xl sm:text-3xl font-bold mt-2">Welcome to MetroExecuCare!</h2>
+          <p className="text-sm text-gray-200 dark:text-gray-300 mt-2 transition-colors duration-300
+                        leading-relaxed">
             Where health meets convenience. Sign in to get started with your Annual Executive Check-up.
           </p>
         </div>
@@ -137,12 +135,13 @@ export function LoginPage() {
           {/* Email */}
           <div className="relative">
             <label className="block mb-1 text-sm text-left">Email Address</label>
-            <div className="flex items-center bg-white dark:bg-gray-800 rounded-full px-3 transition-colors duration-300">
+            <div className="flex items-center bg-white dark:bg-gray-800 rounded-full px-3 
+                           h-10 sm:h-12 transition-colors duration-300">
               <span className="text-gray-500 dark:text-gray-400">
                 <img
                   src={ProfileGray}
                   alt="Profile"
-                  className="w-6 h-6 object-cover dark:filter dark:invert"
+                  className="w-5 h-5 sm:w-6 sm:h-6 object-cover dark:filter dark:invert"
                 />
               </span>
               <input
@@ -151,10 +150,10 @@ export function LoginPage() {
                 value={email}
                 onChange={handleEmailChange}
                 disabled={isLoading}
-                className="flex-1 py-2 bg-transparent focus:outline-none
-                          text-gray-800 dark:text-gray-200 pl-1
+                className="flex-1 py-2 bg-transparent focus:outline-none 
+                          text-gray-800 dark:text-gray-200 pl-1 text-sm sm:text-base
                           placeholder-gray-500 dark:placeholder-gray-400
-                          transition-colors duration-300 disabled:opacity-50"
+                          transition-colors duration-300 border-0"
               />
             </div>
             {/* Custom validation message */}
@@ -172,18 +171,19 @@ export function LoginPage() {
           {/* Password */}
           <div className="relative">
             <label className="block mb-1 text-sm text-left">Password</label>
-            <div className="flex items-center bg-white dark:bg-gray-800 rounded-full px-3 transition-colors duration-300">
-              <img src={lockIcon} alt="Lock Icon" className="w-6 h-6 dark:filter dark:invert" />
+            <div className="flex items-center bg-white dark:bg-gray-800 rounded-full px-3 
+                           h-10 sm:h-12 transition-colors duration-300">
+              <img src={lockIcon} alt="Lock Icon" className="w-5 h-5 sm:w-6 sm:h-6 dark:filter dark:invert" />
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={handlePasswordChange}
                 placeholder="Enter your password"
                 disabled={isLoading}
-                className="flex-1 py-2 bg-transparent focus:outline-none
-                          text-gray-800 dark:text-gray-200 pl-1
+                className="flex-1 py-2 bg-transparent focus:outline-none 
+                          text-gray-800 dark:text-gray-200 pl-1 text-sm sm:text-base
                           placeholder-gray-500 dark:placeholder-gray-400
-                          transition-colors duration-300 disabled:opacity-50"
+                          transition-colors duration-300 border-0"
               />
               <button
                 type="button"
@@ -199,11 +199,10 @@ export function LoginPage() {
             </div>
             {/* Custom validation message */}
             {passwordError && (
-              <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-1 
-                              bg-red-500 dark:bg-red-600 text-white text-sm px-3 py-1 
-                              rounded-full shadow-lg z-10 transition-colors duration-300">
-                <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 
-                               w-2 h-2 bg-red-500 dark:bg-red-600 rotate-45"></div>
+              <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-1 bg-red-500 dark:bg-red-600 
+              text-white text-sm px-3 py-1 rounded-full shadow-lg z-10 transition-colors duration-500">
+              <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-red-500 
+              dark:bg-red-600 rotate-45"></div>
                 {passwordError}
               </div>
             )}
@@ -222,11 +221,11 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-30 bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300
-                      font-semibold py-2 rounded-full
-                      hover:bg-green-300 dark:hover:bg-green-600
-                      disabled:opacity-50 disabled:cursor-not-allowed
-                      transition-colors duration-300 mt-4 flex items-center justify-center"
+            className="w-24 sm:w-28 md:w-30 lg:w-32 bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 
+                      font-semibold py-2 sm:py-2.5 md:py-3 rounded-full text-sm sm:text-base
+                      hover:bg-green-300 dark:hover:bg-green-600 
+                      transition-colors duration-300 mt-4 sm:mt-6
+                      mx-auto block"
           >
             {isLoading ? (
               <>

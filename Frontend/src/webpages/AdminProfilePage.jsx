@@ -75,9 +75,10 @@ function ProfileCard({ profile, setProfile }) {
         Basic Information
       </h2>
 
-      <div className="flex flex-col md:flex-row md:justify-start items-center md:items-center pb-4 px-4 sm:gap-8 gap-4">
+      <div className="flex flex-col md:flex-row md:justify-start 
+      items-center md:items-start pb-4 px-4 gap-4 sm:gap-8">
 
-        <div className="flex flex-col md:justify-center items-center pl-0">
+        <div className="flex flex-col md:justify-center items-center pl-0 flex-shrink-0">
           <input
             type="file"
             accept="image/*"
@@ -103,9 +104,9 @@ function ProfileCard({ profile, setProfile }) {
           </button>
         </div>
 
-        <div className="flex flex-col text-center md:text-left px-8 sm:px-8 space-y-0 pt-0">
+        <div className="flex flex-col text-center md:text-left px-8 md:px-0 space-y-2 pt-0 w-full md:w-auto">
           <p className="text-blue-700 font-bold text-2xl sm:text-2xl">{profile.name}</p>
-          <p className="text-gray-600 text-sm sm:text-xs">{profile.position}</p>
+          <p className="text-blue-600 text-sm sm:text-xs">{profile.position}</p>
           <p className="text-gray-500 text-xs sm:text-xs mb-2">{profile.location}</p>
 
           <div className="sm:text-sm space-y-2">
@@ -239,9 +240,9 @@ function SummaryCard({ notes, setNotes, userId }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl pt-3 pb-6 px-6 flex flex-col
-      border-2 border-[#00539F]
-      shadow-lg shadow-[#00539F]/50 gap-2">
+    <div className="bg-white rounded-2xl pt-3 pb-6 px-6 flex flex-col 
+      outline outline-2 outline-[#00539F] 
+      shadow-lg shadow-[#00539F]/50 gap-4">
 
       <div className="text-left">
         <h2 className="text-blue-900 font-semibold sm:text-base">Summary</h2>
@@ -260,8 +261,31 @@ function SummaryCard({ notes, setNotes, userId }) {
             <span className="ml-2 text-gray-600">Loading activity logs...</span>
           </div>
         ) : (
-          <table className="w-full text-xs table-fixed">
-            <thead className="bg-purple-300 text-center p-1">
+          <div className="overflow-x-auto" style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#9ca3af #f3f4f6'
+        }} 
+        onScroll={(e) => {
+          // Optional: Add scroll indicators here if needed
+        }}
+        css={`
+          &::-webkit-scrollbar {
+            height: 8px;
+          }
+          &::-webkit-scrollbar-track {
+            background: #f3f4f6;
+            border-radius: 4px;
+          }
+          &::-webkit-scrollbar-thumb {
+            background: #9ca3af;
+            border-radius: 4px;
+          }
+          &::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+          }
+        `}>
+          <table className="w-full text-xs table-fixed min-w-[400px]">
+            <thead className="bg-purple-200 text-center p-1">
               <tr>
                 <th className="p-1">Date</th>
                 <th className="p-1">Action</th>
@@ -280,6 +304,7 @@ function SummaryCard({ notes, setNotes, userId }) {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

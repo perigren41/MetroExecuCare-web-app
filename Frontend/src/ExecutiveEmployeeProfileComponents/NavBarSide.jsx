@@ -152,32 +152,42 @@ export default function Navbar() {
   return (
     <>
       <div
-        className="relative flex items-center justify-between px-2 sm:px-4 md:px-6 py-2 md:py-3
-        bg-[linear-gradient(to_right,#3F6EC0_2%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)]
-        text-white"
+        className="relative flex items-center justify-between 
+                   px-2 md:px-4 lg:px-6 
+                   py-2 sm:py-3 md:py-4
+                   bg-[linear-gradient(to_right,#3F6EC0_2%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] 
+                   text-white"
       >
         {/* Left - Back Button or Empty Space */}
-        <div className="relative w-5 h-5 flex items-center justify-center flex-shrink-0">
+        <div className="relative w-6 h-6 md:w-8 md:h-8 flex items-center justify-center flex-shrink-0">
           {shouldShowBackButton() && (
             <button 
-              className="w-5 h-5 flex items-center justify-center rounded-lg bg-white border border-white hover:bg-gray-100 transition" 
+              className="w-6 h-6 md:w-8 md:h-8 
+                        flex items-center justify-center rounded-full 
+                        bg-white border border-white hover:bg-gray-100 
+                        transition-colors duration-200 touch-manipulation" 
               onClick={handleClick}
             >
-              <img src={BackButtonBlue} alt="Back" className="w-3 h-3" />
+              <img src={BackButtonBlue} alt="Back" className="w-3 h-3 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5" />
             </button>
           )}
         </div>
 
         {/* Center - Logo + Text */}
-        <div className="flex-1 flex items-center justify-center">
-          <h1 className="text-sm sm:text-base font-semibold flex items-center gap-1">
-            <img src={mainLogo} alt="MetroExecuCare Logo" className="w-6 h-7 sm:w-8 sm:h-9" />
-            <span className="hidden xs:inline sm:inline">MetroExecuCare</span>
+        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center">
+          <h1 className="text-sm md:text-md lg:text-lg font-semibold 
+                        flex items-center gap-1 sm:gap-2">
+            <img 
+              src={mainLogo} 
+              alt="MetroExecuCare Logo" 
+              className="w-5 h-5 sm:w-6 sm:h-7 md:w-8 md:h-9 flex-shrink-0" 
+            />
+            <span className="whitespace-nowrap">MetroExecuCare</span>
           </h1>
         </div>
 
         {/* Right - Name + Circle Image */}
-        <div className="relative flex items-center space-x-1 flex-shrink-0" ref={dropdownRef}>
+        <div className="relative flex items-center space-x-1 sm:space-x-2 flex-shrink-0" ref={dropdownRef}>
           <span className="text-xs hidden sm:inline truncate max-w-24">{fullName}</span>
           <button
             className="w-6 h-6 rounded-full overflow-hidden border border-white hover:opacity-80 transition m-0"

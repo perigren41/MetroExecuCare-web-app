@@ -1,6 +1,7 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 
+console.log('🌐 Server starting...');
 // Create connection pool for better performance
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
@@ -16,6 +17,7 @@ const pool = mysql.createPool({
   // Remove invalid options for mysql2
   // acquireTimeout, timeout, and reconnect are not valid for mysql2
 });
+
 
 // Test database connection
 async function testConnection() {

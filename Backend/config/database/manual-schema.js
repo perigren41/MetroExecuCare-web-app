@@ -337,3 +337,15 @@ async function createTablesManually() {
 module.exports = {
   createTablesManually
 };
+
+// if (require.main === module) {
+//   createTablesManually()
+//     .then(() => {
+//       console.log("✅ Done creating tables");
+//       process.exit(0);
+//     })
+//     .catch(err => {
+//       console.error("❌ Failed:", err);
+//       process.exit(1);
+//     });
+// }

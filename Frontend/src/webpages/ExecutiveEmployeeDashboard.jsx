@@ -24,14 +24,16 @@ const COLORS = {
 };
 
 // ActionButton Component
-function ActionButton({ label, color, onClick, backgroundImage }) {
+function ActionButton({ label, color, onClick, backgroundImage, hoverText }) {
   return (
     <button
-      className="text-white font-semibold p-4 sm:p-6 rounded-3xl shadow-lg hover:shadow-xl
-      flex flex-col items-center justify-center transition-all duration-200 transform
-      hover:scale-105 active:scale-95 w-full max-w-xs sm:max-w-sm md:max-w-md
-      min-h-[140px] sm:min-h-[160px] md:min-h-[180px]"
-      style={{
+      className="text-white font-semibold rounded-4xl 
+      w-full max-w-xs sm:max-w-sm md:max-w-md lg:w-110 
+      h-24 sm:h-28 md:h-36 lg:h-42 
+      shadow-md flex items-center justify-center 
+      transition transform active:scale-[.98] hover:brightness-105
+      mb-3 sm:mb-4 mx-auto p-3 sm:p-4 md:p-6 group relative overflow-hidden"
+      style={{ 
         backgroundColor: color || "transparent",
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : "none",
         backgroundSize: "cover",
@@ -39,11 +41,20 @@ function ActionButton({ label, color, onClick, backgroundImage }) {
         backgroundPosition: "center",
       }}
       onClick={onClick}
-      onMouseEnter={(e) => (e.currentTarget.style.filter = "brightness(1.05)")}
-      onMouseLeave={(e) => (e.currentTarget.style.filter = "none")}
     >
-      <div className="flex flex-col items-center text-center space-y-2">
-        {label}
+      {/* Original Content - Fades out on hover */}
+      <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 ease-in-out group-hover:opacity-0 p-3 sm:p-4 md:p-6">
+        <div className="w-full h-full flex items-center justify-center">
+          {label}
+        </div>
+      </div>
+
+      {/* Hover Content - Fades in on hover */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100">
+        <span className="text-lg md:text-lg lg:text-xl font-bold text-blue-100 animate-pulse drop-shadow-lg">
+          {hoverText || "Click to Submit"}
+        </span>
+        <div className="mt-2 w-6 h-6 border-2 border-blue-100 rounded-full animate-ping"></div>
       </div>
     </button>
   );
@@ -76,20 +87,22 @@ function GreetingStatusCard({ firstName, lastName, requestStatus, onChevronClick
 
       {/* Status Section - Centered */}
       <div className="order-1 lg:order-2 flex justify-center">
-        <div className="bg-white text-gray-900 rounded-3xl shadow-xl w-full max-w-sm sm:max-w-md lg:max-w-lg
-        flex flex-col items-center py-6 px-8 sm:py-8 sm:px-10">
+        <div className="bg-white text-gray-900 rounded-[2rem] shadow-xl w-full max-w-sm sm:max-w-md lg:max-w-lg
+        flex flex-col items-center py-4 px-8 sm:py-8 sm:px-10">
           {/* Current Request Status Heading */}
-          <h2 className="text-lg sm:text-xl font-semibold text-center mb-6 text-gray-800">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-blue-900 pb-3 sm:pb-4 md:pb-6">
             Current Request Status
           </h2>
 
           {/* Status Pill - Bigger with more padding */}
           <div
-            className="rounded-2xl shadow-lg px-6 py-4 sm:px-8 sm:py-6 flex flex-col items-center
-            border-2 w-full max-w-xs sm:max-w-sm min-h-[100px] sm:min-h-[120px] justify-center space-y-2"
+            className="font-bold rounded-full shadow-xl/20 px-4 sm:px-6 py-2 sm:py-3 md:py-4
+            items-center justify-center border mx-auto 
+            w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px] 
+            min-h-[70px] sm:min-h-[80px] md:min-h-[90px] lg:min-h-[100px] mb-3 sm:mb-4 md:mb-6"
             style={requestStatus.pillStyle}
           >
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 justify-center">
               <img src={requestStatus.icon} alt="Status" className="w-8 h-8 sm:w-10 sm:h-10" />
               <span className="font-semibold text-sm sm:text-base text-center">
                 {requestStatus.text}
@@ -104,7 +117,7 @@ function GreetingStatusCard({ firstName, lastName, requestStatus, onChevronClick
           <button
             onClick={onChevronClick}
             className="bg-blue-700 text-white w-8 h-8 sm:w-10 sm:h-10 rounded-full hover:bg-blue-800
-            transition-colors duration-200 flex items-center justify-center mt-4 sm:mt-6"
+            transition-colors duration-200 flex items-center justify-center mt-2 sm:mt-2"
           >
             <img src={ChevronRight} alt="Chevron Right" className="w-4 h-4" />
           </button>
@@ -484,6 +497,7 @@ export default function ExecutiveEmployeeDashboard() {
               }
               backgroundImage={ApprovalBg}
               onClick={handleapprovalrequest}
+              hoverText="Click To Submit Letter of Approval"
             />
           </div>
 
@@ -498,6 +512,7 @@ export default function ExecutiveEmployeeDashboard() {
               }
               backgroundImage={AuthorizationBg}
               onClick={handlerequestauthorization}
+              hoverText="Click To Submit Letter of Authorization"
             />
           </div>
         </div>
