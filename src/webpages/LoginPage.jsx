@@ -111,7 +111,7 @@ export function LoginPage({ onLogin, setCurrentUser, setUsersData }) {
     <div className="flex items-center justify-center min-h-screen relative overflow-hidden 
                     bg-[linear-gradient(to_right,#3F6EC0_2%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)]
                     dark:bg-[linear-gradient(to_right,#1a2332_2%,#0f1419_30%,#2a1f3d_50%,#3a2847_75%)]
-                    transition-colors duration-300 px-4 sm:px-6 lg:px-8 py-8">
+                    transition-colors duration-300 px-6 sm:px-6 lg:px-8 py-8">
       
       {/* Navbar always on top */}
       <NavbarSection />

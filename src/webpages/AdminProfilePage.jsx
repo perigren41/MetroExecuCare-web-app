@@ -194,12 +194,17 @@ function SummaryCard({ notes, setNotes }) {
           outline outline-1 outline-[#00539F] 
           shadow-lg shadow-[#00539F]/50 text-xs">
         <h2 className="text-blue-900 text-sm font-semibold mb-2 text-left">Notes: Write down notes or reminders of yourself ...</h2>
+        <h4 className="text-blue-900 font-semibold mb-2 text-left">Click your notes to edit.</h4>
         <textarea
-          className="w-full rounded-lg px-1 h-30 md:h-44 xl:h-22  resize-none bg-[repeating-linear-gradient(white,white_23px,#6b7280_24px)]"
+          className="w-full rounded-lg px-4 py-3 h-32 md:h-44 xl:h-24 resize-none border border-gray-300
+          bg-white bg-[repeating-linear-gradient(transparent,_transparent_27px,_#cbd5e1_28px,_transparent_29px)]
+          leading-7 font-mono text-gray-800"
+          placeholder="Click here to write your notes..."
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           readOnly={!isEditing}
           onFocus={() => setIsEditing(true)}
+          style={{ lineHeight: '28px' }}
         ></textarea>
         <div className="flex gap-2 mt-2">
           <CircleButton text="Save" color="bg-blue-600" onClick={handleSave} />

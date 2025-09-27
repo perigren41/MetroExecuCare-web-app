@@ -25,7 +25,7 @@ const COLORS = {
 };
 
 // ActionButton Component
-function ActionButton({ label, color, onClick, backgroundImage }) {
+function ActionButton({ label, color, onClick, backgroundImage, hoverText }) {
   return (
     <button
       className="text-white font-semibold rounded-4xl 
@@ -33,7 +33,7 @@ function ActionButton({ label, color, onClick, backgroundImage }) {
       h-24 sm:h-28 md:h-36 lg:h-42 
       shadow-md flex items-center justify-center 
       transition transform active:scale-[.98] hover:brightness-105
-      mb-3 sm:mb-4 mx-auto p-3 sm:p-4 md:p-6"
+      mb-3 sm:mb-4 mx-auto p-3 sm:p-4 md:p-6 group relative overflow-hidden"
       style={{ 
         backgroundColor: color || "transparent",
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : "none",
@@ -43,8 +43,19 @@ function ActionButton({ label, color, onClick, backgroundImage }) {
       }}
       onClick={onClick}
     >
-      <div className="w-full h-full flex items-center justify-center">
-        {label}
+      {/* Original Content - Fades out on hover */}
+      <div className="absolute inset-0 flex items-center justify-center transition-opacity duration-300 ease-in-out group-hover:opacity-0 p-3 sm:p-4 md:p-6">
+        <div className="w-full h-full flex items-center justify-center">
+          {label}
+        </div>
+      </div>
+
+      {/* Hover Content - Fades in on hover */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 transition-opacity duration-300 ease-in-out group-hover:opacity-100">
+        <span className="text-lg md:text-lg lg:text-xl font-bold text-blue-100 animate-pulse drop-shadow-lg">
+          {hoverText || "Click to Submit"}
+        </span>
+        <div className="mt-2 w-6 h-6 border-2 border-blue-100 rounded-full animate-ping"></div>
       </div>
     </button>
   );
@@ -89,7 +100,7 @@ function GreetingStatusCard({ firstName, lastName, requestStatus, onChevronClick
 
           {/* Status Pill */}
           <div
-            className="font-bold rounded-full shadow-xl/20 px-4 sm:px-6 py-2 sm:py-3 md:py-4
+            className="font-bold rounded-full shadow-xl/20 px-4 sm:px-6 py-2 sm:py-3 md:py-2
             flex flex-col items-center justify-center border mx-auto 
             w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px] 
             min-h-[70px] sm:min-h-[80px] md:min-h-[90px] lg:min-h-[100px] mb-3 sm:mb-4 md:mb-6"
@@ -613,6 +624,7 @@ export default function ExecutiveEmployeeDashboard() {
           }
           backgroundImage={ApprovalBg}
           onClick={handleapprovalrequest}
+          hoverText="Click To Submit Letter of Approval"
         />
 
         <ActionButton
@@ -632,6 +644,7 @@ export default function ExecutiveEmployeeDashboard() {
           }
           backgroundImage={AuthorizationBg}
           onClick={handlerequestauthorization}
+          hoverText="Click To Submit Letter of Authorization"
         />
       </div>
     </div>
