@@ -1,0 +1,29 @@
+{
+  "name": "metroexecucare-workspace",
+  "version": "1.0.0",
+  "description": "MetroExecuCare Development Workspace",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd Backend && npm run dev",
+    "dev:frontend": "cd Frontend && npm run dev",
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd Backend && npm start",
+    "start:frontend": "cd Frontend && npm run dev",
+    "install:all": "npm install && cd Backend && npm install && cd ../Frontend && npm install",
+    "clean": "cd Backend && rmdir /s /q node_modules 2>nul & cd ../Frontend && rmdir /s /q node_modules 2>nul & rmdir /s /q node_modules 2>nul",
+    "build": "cd Frontend && npm run build",
+    "test": "cd Backend && npm test"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "workspaces": [
+    "Backend",
+    "Frontend"
+  ]
+}

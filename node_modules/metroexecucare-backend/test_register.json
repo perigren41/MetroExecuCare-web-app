@@ -1,0 +1,12 @@
+{
+  "employee_id": "EMP00001",
+  "email": "john.doe@metrobank.com",
+  "password": "SecurePass123!",
+  "first_name": "John",
+  "last_name": "Doe",
+  "role": "executive",
+  "department": "Executive Department",
+  "position": "Senior Executive",
+  "branch": "Metrobank BGC",
+  "contact_number": "+639123456789"
+}

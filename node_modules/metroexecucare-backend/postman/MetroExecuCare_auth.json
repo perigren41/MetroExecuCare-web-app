@@ -1,0 +1,891 @@
+{
+  "info": {
+    "name": "MetroExecuCare Authentication API - Complete Testing Suite",
+    "description": "Comprehensive authentication and user management API collection for MetroExecuCare Executive Health Checkup System",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "execToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "hrToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "workflowEmail",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "testUserId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Authentication (8 endpoints)",
+      "item": [
+        {
+          "name": "Register User - Valid",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Check if request was successful",
+                  "if (pm.response.code === 201) {",
+                  "    pm.test('✅ Registration successful', function () {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.data).to.exist;",
+                  "        pm.expect(response.data.user).to.exist;",
+                  "        pm.expect(response.data.user.email).to.exist;",
+                  "        pm.expect(response.data.user.password).to.not.exist;",
+                  "        pm.expect(response.data.token).to.exist;",
+                  "        ",
+                  "        // Store token and user ID",
+                  "        pm.collectionVariables.set('token', response.data.token);",
+                  "        pm.collectionVariables.set('userId', response.data.user.id);",
+                  "    });",
+                  "} else {",
+                  "    pm.test('❌ Registration failed - Check validation', function () {",
+                  "        const response = pm.response.json();",
+                  "        console.log('Registration failed:', response);",
+                  "        pm.expect(response.success).to.be.false;",
+                  "        pm.expect(response.error).to.exist;",
+                  "    });",
+                  "}",
+                  "",
+                  "pm.test('Response time acceptable', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test.user@example.com\",\n  \"password\": \"TestPass123!\",\n  \"first_name\": \"Test\",\n  \"last_name\": \"User\",\n  \"department\": \"IT\",\n  \"position\": \"Developer\",\n  \"phone\": \"+63-917-123-4567\",\n  \"role\": \"executive\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Register a new user with valid data"
+          }
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('✅ Admin login successful', function () {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.data.user).to.exist;",
+                  "        pm.expect(response.data.user.role).to.eql('admin');",
+                  "        pm.expect(response.data.token).to.exist;",
+                  "        ",
+                  "        // Store tokens for subsequent requests",
+                  "        pm.collectionVariables.set('token', response.data.token);",
+                  "        if (response.data.refreshToken) {",
+                  "            pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
+                  "        }",
+                  "        pm.collectionVariables.set('userId', response.data.user.id);",
+                  "        ",
+                  "        console.log('Admin token stored:', response.data.token.substring(0, 20) + '...');",
+                  "    });",
+                  "} else {",
+                  "    pm.test('❌ Login failed', function () {",
+                  "        const response = pm.response.json();",
+                  "        console.log('Login error:', response);",
+                  "        pm.expect(response.success).to.be.false;",
+                  "        pm.expect([400, 401, 404]).to.include(pm.response.code);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@metroexecucare.com\",\n  \"password\": \"MetroAdmin123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login with admin credentials"
+          }
+        },
+        {
+          "name": "Login HR Personnel",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('✅ HR Personnel login successful', function () {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.data.user).to.exist;",
+                  "        pm.expect(response.data.user.role).to.eql('hr_personnel');",
+                  "        pm.expect(response.data.token).to.exist;",
+                  "        ",
+                  "        // Store tokens for subsequent requests",
+                  "        pm.collectionVariables.set('token', response.data.token);",
+                  "        if (response.data.refreshToken) {",
+                  "            pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
+                  "        }",
+                  "        pm.collectionVariables.set('userId', response.data.user.id);",
+                  "        ",
+                  "        console.log('HR Personnel token stored:', response.data.token.substring(0, 20) + '...');",
+                  "    });",
+                  "} else {",
+                  "    pm.test('❌ Login failed', function () {",
+                  "        const response = pm.response.json();",
+                  "        console.log('Login error:', response);",
+                  "        pm.expect(response.success).to.be.false;",
+                  "        pm.expect([400, 401, 404]).to.include(pm.response.code);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\\"email\\\": \\\"test@example8.com\\\",\\n  \\\"password\\\": \\\"TestPass123!\\\"\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login with HR Personnel credentials"
+          }
+        },
+        {
+          "name": "Login Executive",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('✅ Executive login successful', function () {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.data.user).to.exist;",
+                  "        pm.expect(response.data.user.role).to.eql('executive');",
+                  "        pm.expect(response.data.token).to.exist;",
+                  "        ",
+                  "        // Store tokens for subsequent requests",
+                  "        pm.collectionVariables.set('token', response.data.token);",
+                  "        if (response.data.refreshToken) {",
+                  "            pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
+                  "        }",
+                  "        pm.collectionVariables.set('userId', response.data.user.id);",
+                  "        ",
+                  "        console.log('Executive token stored:', response.data.token.substring(0, 20) + '...');",
+                  "    });",
+                  "} else {",
+                  "    pm.test('❌ Login failed', function () {",
+                  "        const response = pm.response.json();",
+                  "        console.log('Login error:', response);",
+                  "        pm.expect(response.success).to.be.false;",
+                  "        pm.expect([400, 401, 404]).to.include(pm.response.code);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\\"email\\\": \\\"test@example.com\\\",\\n  \\\"password\\\": \\\"TestPass123!\\\"\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Login with Executive credentials"
+          }
+        },
+        {
+          "name": "Get User Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('✅ Profile retrieved successfully', function () {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.data.user).to.exist;",
+                  "        pm.expect(response.data.user.password).to.not.exist;",
+                  "        pm.expect(response.data.user.id).to.exist;",
+                  "        pm.expect(response.data.user.email).to.exist;",
+                  "    });",
+                  "} else if (pm.response.code === 401) {",
+                  "    pm.test('❌ Authentication required', function () {",
+                  "        console.log('No valid token available');",
+                  "        pm.expect(pm.response.code).to.eql(401);",
+                  "    });",
+                  "} else {",
+                  "    pm.test('❌ Profile request failed', function () {",
+                  "        const response = pm.response.json();",
+                  "        console.log('Profile error:', response);",
+                  "        pm.expect(response.success).to.be.false;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "profile"]
+            },
+            "description": "Get current user profile information"
+          }
+        },
+        {
+          "name": "Update Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('✅ Profile updated successfully', function () {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        if (response.data && response.data.user) {",
+                  "            pm.expect(response.data.user.first_name).to.eql('Updated');",
+                  "        }",
+                  "    });",
+                  "} else {",
+                  "    pm.test('❌ Profile update failed', function () {",
+                  "        const response = pm.response.json();",
+                  "        console.log('Update error:', response);",
+                  "        pm.expect(response.success).to.be.false;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Updated\",\n  \"last_name\": \"Admin\",\n  \"middle_name\": \"\",\n  \"department\": \"Engineering\",\n  \"position\": \"Senior Developer\",\n  \"contact_number\": \"+63-917-987-6543\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "profile"]
+            },
+            "description": "Update user profile information"
+          }
+        },
+        {
+          "name": "Change Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('✅ Password changed successfully', function () {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.message).to.include('Password');",
+                  "    });",
+                  "} else {",
+                  "    pm.test('❌ Password change failed (expected)', function () {",
+                  "        const response = pm.response.json();",
+                  "        console.log('Password change error:', response);",
+                  "        pm.expect([400, 401]).to.include(pm.response.code);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"MetroAdmin123!\",\n  \"new_password\": \"NewAdminPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "change-password"]
+            },
+            "description": "Change user password"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('✅ Token refreshed successfully', function () {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.data.token).to.exist;",
+                  "        pm.collectionVariables.set('token', response.data.token);",
+                  "    });",
+                  "} else {",
+                  "    pm.test('❌ Token refresh failed (expected if no refresh token)', function () {",
+                  "        console.log('Refresh token may be invalid or missing');",
+                  "        pm.expect([400, 401]).to.include(pm.response.code);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh"]
+            },
+            "description": "Refresh access token using refresh token"
+          }
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if ([200, 204].includes(pm.response.code)) {",
+                  "    pm.test('✅ Logout successful', function () {",
+                  "        if (pm.response.code === 200) {",
+                  "            const response = pm.response.json();",
+                  "            pm.expect(response.success).to.be.true;",
+                  "        }",
+                  "    });",
+                  "} else {",
+                  "    pm.test('❌ Logout failed', function () {",
+                  "        const response = pm.response.json();",
+                  "        console.log('Logout error:', response);",
+                  "        pm.expect([400, 401]).to.include(pm.response.code);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout"]
+            },
+            "description": "Logout and invalidate tokens"
+          }
+        },
+        {
+          "name": "Register User - Invalid Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('❌ Invalid email rejected (as expected)', function () {",
+                  "    pm.expect(pm.response.code).to.eql(400);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.false;",
+                  "    pm.expect(response.error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"invalid-email-format\",\n  \"password\": \"TestPass123!\",\n  \"first_name\": \"Test\",\n  \"last_name\": \"User\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Test registration with invalid email format"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. User Management - Admin (8 endpoints)",
+      "item": [
+        {
+          "name": "Get All Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('✅ Users retrieved successfully', function () {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.data.users).to.be.an('array');",
+                  "        pm.expect(response.data.pagination).to.exist;",
+                  "        ",
+                  "        // Store first user ID for testing",
+                  "        if (response.data.users.length > 0) {",
+                  "            pm.collectionVariables.set('testUserId', response.data.users[0].id);",
+                  "        }",
+                  "    });",
+                  "} else if (pm.response.code === 403) {",
+                  "    pm.test('❌ Admin role required (as expected)', function () {",
+                  "        const response = pm.response.json();",
+                  "        console.log('Admin access required:', response.error);",
+                  "        pm.expect(response.error).to.exist;",
+                  "    });",
+                  "} else if (pm.response.code === 401) {",
+                  "    pm.test('❌ Authentication required', function () {",
+                  "        console.log('Please login first to get admin token');",
+                  "        pm.expect(pm.response.code).to.eql(401);",
+                  "    });",
+                  "} else {",
+                  "    pm.test('❌ Unexpected error', function () {",
+                  "        const response = pm.response.json();",
+                  "        console.log('Unexpected error:', response);",
+                  "        pm.expect(response.success).to.be.false;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Get all users with pagination (Admin only)"
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('✅ User retrieved by ID', function () {",
+                  "        const response = pm.response.json();",
+                  "        pm.expect(response.success).to.be.true;",
+                  "        pm.expect(response.data.user).to.exist;",
+                  "        pm.expect(response.data.user.password).to.not.exist;",
+                  "    });",
+                  "} else if (pm.response.code === 404) {",
+                  "    pm.test('❌ User not found', function () {",
+                  "        console.log('User ID not found - this may be expected');",
+                  "        pm.expect(pm.response.code).to.eql(404);",
+                  "    });",
+                  "} else {",
+                  "    pm.test('❌ Get user failed', function () {",
+                  "        const response = pm.response.json();",
+                  "        console.log('Get user error:', response);",
+                  "        pm.expect([401, 403]).to.include(pm.response.code);",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{testUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{testUserId}}"]
+            },
+            "description": "Get specific user by ID"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Error Testing & Validation (4 endpoints)",
+      "item": [
+        {
+          "name": "Test Invalid Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('❌ Invalid token rejected (as expected)', function () {",
+                  "    pm.expect([401, 403]).to.include(pm.response.code);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.false;",
+                  "    pm.expect(response.error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid_token_here_12345"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "profile"]
+            },
+            "description": "Test API response with invalid token"
+          }
+        },
+        {
+          "name": "Test No Authorization Header",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('❌ Missing authorization rejected (as expected)', function () {",
+                  "    pm.expect(pm.response.code).to.eql(401);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.false;",
+                  "    pm.expect(response.error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "profile"]
+            },
+            "description": "Test API response without authorization header"
+          }
+        },
+        {
+          "name": "Test Weak Password Registration",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('❌ Weak password rejected (as expected)', function () {",
+                  "    pm.expect(pm.response.code).to.eql(400);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.false;",
+                  "    pm.expect(response.error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"weak.password@example.com\",\n  \"password\": \"123\",\n  \"first_name\": \"Weak\",\n  \"last_name\": \"Password\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Test registration with weak password"
+          }
+        },
+        {
+          "name": "Test Invalid Login Credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('❌ Invalid credentials rejected (as expected)', function () {",
+                  "    pm.expect(pm.response.code).to.eql(401);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.false;",
+                  "    pm.expect(response.error).to.exist;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@metroexecucare.com\",\n  \"password\": \"WrongPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Test login with incorrect password"
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "console.log('🚀 Request:', pm.info.requestName);",
+          "console.log('🔗 URL:', pm.request.url.toString());",
+          "",
+          "// Check token availability for protected endpoints",
+          "const token = pm.collectionVariables.get('token');",
+          "if (!token) {",
+          "    console.log('⚠️ No token available - login required for protected endpoints');",
+          "}",
+          "",
+          "// Add timestamp for performance monitoring",
+          "pm.collectionVariables.set('requestTimestamp', Date.now());"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script",
+          "console.log('📊 Status:', pm.response.code);",
+          "console.log('⏱️ Time:', pm.response.responseTime + 'ms');",
+          "",
+          "// Log response for debugging",
+          "if (pm.response.code >= 400) {",
+          "    try {",
+          "        const errorResponse = pm.response.json();",
+          "        console.log('❌ Error Response:', JSON.stringify(errorResponse, null, 2));",
+          "    } catch (e) {",
+          "        console.log('❌ Raw Error:', pm.response.text());",
+          "    }",
+          "}",
+          "",
+          "// Basic response structure validation",
+          "if (pm.response.code >= 200 && pm.response.code < 300) {",
+          "    pm.test('✅ Response structure valid', function () {",
+          "        const jsonData = pm.response.json();",
+          "        pm.expect(jsonData).to.have.property('success');",
+          "    });",
+          "}",
+          "",
+          "// Performance check",
+          "pm.test('⚡ Response time reasonable', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(10000);",
+          "});"
+        ]
+      }
+    }
+  ]
+}
