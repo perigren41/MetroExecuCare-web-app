@@ -1,0 +1,306 @@
+import React, { useState, useEffect } from "react";
+import SearchBar from "@/AdminUserPageComponents/SearchBar";
+import UserTable from "@/AdminUserPageComponents/UserTable";
+import UserDetailsModal from "@/AdminUserPageComponents/UserDetailsModal";
+import NewUserFormModal from "@/AdminUserPageComponents/NewUserFormModal";
+import DeletedUsersModal from "@/AdminUserPageComponents/DeletedUsersModal";
+import NavBarMain from "@/Components/NavBarMain";
+import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
+import MetroBankLogo from "@/assets/mainLogo-foreground.svg";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import apiService from "@/services/api";
+
+export default function AdminUsersPage() {
+  const { user: currentUser, logout } = useAuth();
+  const navigate = useNavigate();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showFormModal, setShowFormModal] = useState(false);
+  const [editUser, setEditUser] = useState(null);
+  const [filter, setFilter] = useState("all");
+  const [showDeletedUsersModal, setShowDeletedUsersModal] = useState(false);
+
+  // Fetch users from API on component mount
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const response = await apiService.getUsers();
+
+      if (response.success) {
+        // API returns { success: true, data: { users: [...], pagination: {...} } }
+        const userData = response.data?.users || [];
+        setUsers(Array.isArray(userData) ? userData : []);
+      } else {
+        setError(response.message || "Failed to fetch users");
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setError("Failed to load users. Please try again.");
+      setUsers([]); // Ensure users is always an array
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Add New User
+  const handleAddUser = () => {
+    setEditUser(null);
+    setShowFormModal(true);
+  };
+
+  // Save New or Edited User from NewUserFormModal
+  const handleSaveUser = async (userData) => {
+    try {
+      if (editUser) {
+        // Update existing user
+        const response = await apiService.updateUser(editUser.id, userData);
+        if (response.success) {
+          await fetchUsers(); // Refresh the users list
+          setSelectedUser(response.data); // Update selected user if modal is open
+        } else {
+          setError(response.message || "Failed to update user");
+        }
+      } else {
+        // Create new user via registration
+        const response = await apiService.register(userData);
+        if (response.success) {
+          await fetchUsers(); // Refresh the users list
+        } else {
+          setError(response.message || "Failed to create user");
+        }
+      }
+    } catch (error) {
+      console.error("Error saving user:", error);
+      setError("Failed to save user. Please try again.");
+    }
+  };
+
+  // Delete User
+  const handleDeleteUser = async (userId, deletionReason) => {
+    try {
+      const response = await apiService.deleteUser(userId, deletionReason);
+      if (response.success) {
+        await fetchUsers(); // Refresh the users list
+        // Don't close modal here - let UserDetailsModal handle its own closing after showing success alert
+        // setSelectedUser(null); // Removed - this was causing the issue
+      } else {
+        setError(response.message || "Failed to delete user");
+      }
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      setError("Failed to delete user. Please try again.");
+    }
+  };
+
+  // Update User from UserDetailsModal
+  const handleUpdateUser = async (updatedUser) => {
+    try {
+      const response = await apiService.updateUser(updatedUser.id, updatedUser);
+
+      if (response.success) {
+        await fetchUsers(); // Refresh the users list
+        // Update the selectedUser with the latest data to ensure modal reflects changes
+        setSelectedUser(response.data || updatedUser); // Keep modal open with updated data
+        return response; // Return the response so UserDetailsModal can use it
+      } else {
+        setError(response.message || "Failed to update user");
+        throw new Error(response.message || "Failed to update user");
+      }
+    } catch (error) {
+      console.error("Error updating user:", error);
+      setError("Failed to update user. Please try again.");
+      throw error; // Re-throw so UserDetailsModal can handle it
+    }
+  };
+
+  // Filtered Users - ensure users is an array
+  const filteredUsers = (Array.isArray(users) ? users : []).filter((u) => {
+    const fullName = `${u.first_name || ""} ${u.last_name || ""}`.trim();
+    const matchesSearch =
+      fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (u.employee_id && u.employee_id.toString().toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (u.email && u.email.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const matchesFilter =
+      filter === "all" ? true : u.role === filter;
+
+    return matchesSearch && matchesFilter;
+  });
+
+  return (
+    <div className="h-screen bg-gray-100 flex flex-col overflow-hidden">
+      <NavBarMain
+        user={{
+          ...currentUser,
+          name: currentUser ? `${currentUser.first_name} ${currentUser.last_name}` : "Loading..."
+        }}
+        onLogout={() => {
+          sessionStorage.removeItem("user");
+          sessionStorage.clear();
+          localStorage.removeItem('authToken');
+          navigate("/login", { replace: true });
+        }}
+        showHomeButton={true}
+        backButtonIcon={BackSquareIconWhite}
+        logo={MetroBankLogo}
+      />
+
+      <h1 className="text-center text-base font-bold mb-1 pt-6 text-blue-900 flex-shrink-0">
+        MetroExecuCare Users
+      </h1>
+
+      <div className="flex-1 py-0 px-2 sm:px-4 md:px-8 lg:px-8 xl:px-16 overflow-auto">
+        {/* SearchBar + Add Button */}
+        <div className="flex flex-col mb-1">
+          <h1 className="text-left text-xs mb-2 pt-2">
+            <span className="font-bold">Branch:</span> {currentUser?.branch || "All Branches"}
+          </h1>
+
+          {/* Mobile Layout */}
+          <div className="block sm:hidden mb-1">
+            {/* Search Bar - Full Width */}
+            <div className="mb-2">
+              <SearchBar
+                search={searchQuery}
+                setSearch={setSearchQuery}
+                filter={filter}
+                setFilter={setFilter}
+              />
+            </div>
+
+            {/* Buttons - Side by Side */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-medium text-gray-700">Deleted</span>
+                <button
+                  onClick={() => setShowDeletedUsersModal(true)}
+                  disabled={loading}
+                  className="px-2 py-1 bg-gray-600 text-white text-xs
+                    rounded-full hover:bg-gray-700 transition
+                    disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  View
+                </button>
+              </div>
+
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-medium text-gray-700">Add</span>
+                <button
+                  onClick={handleAddUser}
+                  disabled={loading}
+                  className="w-8 h-8 bg-blue-700 text-white
+                    rounded-full hover:bg-blue-800 transition
+                    flex items-center justify-center
+                    disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="text-lg font-bold">+</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Desktop Layout */}
+          <div className="hidden sm:flex items-center justify-between gap-2 mb-1">
+            <SearchBar
+              search={searchQuery}
+              setSearch={setSearchQuery}
+              filter={filter}
+              setFilter={setFilter}
+            />
+
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium text-gray-700">Deleted</span>
+                <button
+                  onClick={() => setShowDeletedUsersModal(true)}
+                  disabled={loading}
+                  className="px-3 py-1 bg-gray-600 text-white text-xs
+                    rounded-full hover:bg-gray-700 transition
+                    disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  View
+                </button>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-medium text-gray-700">Add</span>
+                <button
+                  onClick={handleAddUser}
+                  disabled={loading}
+                  className="w-8 h-8 bg-blue-700 text-white
+                    rounded-full hover:bg-blue-800 transition
+                    flex items-center justify-center
+                    disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="text-lg font-bold">+</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {error}
+            <button
+              onClick={() => setError("")}
+              className="ml-2 text-red-900 hover:text-red-700"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex justify-center items-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
+            <span className="ml-2 text-gray-600">Loading users...</span>
+          </div>
+        ) : (
+          /* Users Table */
+          <UserTable users={filteredUsers} onView={setSelectedUser} />
+        )}
+
+        {/* User Details Modal */}
+        {selectedUser && (
+          <UserDetailsModal
+            user={selectedUser}
+            onClose={() => setSelectedUser(null)}
+            onDelete={handleDeleteUser}
+            onUpdate={handleUpdateUser} // ✅ update table after save
+          />
+        )}
+
+        {/* New User Modal */}
+        {showFormModal && (
+          <NewUserFormModal
+            user={editUser}
+            onClose={() => setShowFormModal(false)}
+            onSave={handleSaveUser}
+          />
+        )}
+
+        {/* Deleted Users Modal */}
+        <DeletedUsersModal
+          isOpen={showDeletedUsersModal}
+          onClose={() => setShowDeletedUsersModal(false)}
+          onRestore={() => {
+            // Refresh the main users list when a user is restored
+            fetchUsers();
+          }}
+        />
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,12 @@
+{
+  "employee_id": "ADMIN001",
+  "email": "admin@metrobank.com",
+  "password": "AdminPass123!",
+  "first_name": "System",
+  "last_name": "Administrator",
+  "role": "admin",
+  "department": "IT Department",
+  "position": "System Administrator",
+  "branch": "Metrobank BGC",
+  "contact_number": "+639987654321"
+}
