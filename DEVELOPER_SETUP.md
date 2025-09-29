@@ -99,6 +99,25 @@ UPLOAD_PATH=./uploads
 FRONTEND_URL=http://localhost:3000
 ```
 
+### Frontend env file
+```
+# Frontend Environment Variables for MetroExecuCare
+
+# API Configuration
+VITE_API_BASE_URL=http://localhost:5000/api
+
+# Application Configuration
+VITE_APP_NAME=MetroExecuCare
+VITE_APP_VERSION=1.0.0
+
+# Environment
+VITE_NODE_ENV=development
+
+# Features
+VITE_ENABLE_NOTIFICATIONS=true
+VITE_ENABLE_EMAIL_SYSTEM=true
+```
+
 ### 5. Start the Application
 ```bash
 # Terminal 1: Start Backend
