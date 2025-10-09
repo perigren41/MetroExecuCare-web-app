@@ -12,7 +12,7 @@ import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
 
 // Import API service
 import apiService from "@/services/api";
-import FileRequestModal from "@/components/FileRequestModal";
+import FileRequestModal from "@/Components/FileRequestModal";
 
 export default function LOA_Submit() {
     const navigate = useNavigate();

@@ -5,7 +5,7 @@ import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
 import MetroBankLogo from "@/assets/mainLogo-foreground.svg";
 import { useAuth } from "@/contexts/AuthContext";
 import apiService from "@/services/api";
-import ViewRequestDetailsModal from "@/components/ViewRequestDetailsModal";
+import ViewRequestDetailsModal from "@/Components/ViewRequestDetailsModal";
 
 // ✅ Your imported icons
 import CheckSquare from "@/assets/checksquare.svg";
