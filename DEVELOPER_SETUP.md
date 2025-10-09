@@ -68,6 +68,56 @@ GMAIL_USER_EMAIL=your_email@gmail.com
 GMAIL_APP_PASSWORD=your_app_password
 ```
 
+```
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=metroexecucare_db
+DB_USER=metroexecu_user
+DB_PASSWORD=capstoneDevelopers!01
+
+# JWT Configuration
+JWT_SECRET=ec31b9ea66978015b40ec3c0c88e64aa2608d777483911655ec4dfea22a62d934dedc91a8f23faf86d1e65804e2c6db5e47068d999ca3584d33b2109e85f6501
+JWT_REFRESH_SECRET=ec31b9ea66978015b40ec3c0c88e64aa2608d777483911655ec4dfea22a62d934dedc91a8f23faf86d1e65804e2c6db5e47068d999ca3584d33b2109e85f6501
+JWT_EXPIRE=24h
+JWT_REFRESH_EXPIRE=30d
+
+# Gmail SMTP Configuration with App Password
+GMAIL_USER_EMAIL=metroexecucare@gmail.com
+GMAIL_APP_PASSWORD=jmfh dwyb ouis pxyp
+GMAIL_USE_APP_PASSWORD=true
+
+# File Upload Configuration
+MAX_FILE_SIZE=10485760
+UPLOAD_PATH=./uploads
+
+# Frontend URL (for CORS)
+FRONTEND_URL=http://localhost:3000
+```
+
+### Frontend env file
+```
+# Frontend Environment Variables for MetroExecuCare
+
+# API Configuration
+VITE_API_BASE_URL=http://localhost:5000/api
+
+# Application Configuration
+VITE_APP_NAME=MetroExecuCare
+VITE_APP_VERSION=1.0.0
+
+# Environment
+VITE_NODE_ENV=development
+
+# Features
+VITE_ENABLE_NOTIFICATIONS=true
+VITE_ENABLE_EMAIL_SYSTEM=true
+```
+
 ### 5. Start the Application
 ```bash
 # Terminal 1: Start Backend
