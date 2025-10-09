@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import NavBarMain from "@/Components/NavBarMain";
 import ExclamationPoint from "@/assets/ExclamationPoint.svg";
-import UploadIcon from "@/assets/UploadIcon.svg";
+import UploadIcon from "@/assets/uploadicon.svg";
 import { X, Search, Check, FileText } from "lucide-react";
 
 // Assets

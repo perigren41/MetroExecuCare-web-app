@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import ProfileBlueSolid from "@/assets/profilebluesolid.svg";
 import LogoutBlueSolid from "@/assets/logoutbluesolid.svg";
-import BackButtonBlue from "@/assets/BackButtonBlue.svg";
+import BackButtonBlue from "@/assets/backbuttonblue.svg";
 import LogoutRed from "@/assets/logoutred.svg";
 import ProfileGray from "@/assets/profilegray.svg";
 

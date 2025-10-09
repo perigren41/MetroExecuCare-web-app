@@ -7,7 +7,7 @@ import apiService from "@/services/api";
 
 // Assets
 import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
-import MetroBankLogo from "@/assets/metroBankLogo2.svg";
+import MetroBankLogo from "@/assets/MetrobankLogo2.svg";
 import RoundArrowRightWhiteArrow from "@/assets/RoundArrowRightWhiteArrow.svg";
 import SearchIcon from "@/assets/search.svg";
 

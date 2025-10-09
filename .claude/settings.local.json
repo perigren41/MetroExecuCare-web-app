@@ -20,7 +20,9 @@
       "Bash(set PORT=5025)",
       "Bash(set PORT=5030)",
       "Bash(git add:*)",
-      "Bash(mysql:*)"
+      "Bash(mysql:*)",
+      "Bash(find:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nFix asset filename case sensitivity for Railway deployment\n\nFixed all asset imports to match exact filenames in git repository:\n- metroBankLogo2.svg → MetrobankLogo2.svg\n- approvedIcon.svg → ApprovedIcon.svg\n- rejectedIcon.svg → RejectedIcon.svg\n- BackButtonBlue.svg → backbuttonblue.svg\n- UploadIcon.svg → uploadicon.svg\n\nLinux filesystems are case-sensitive, so imports must match exact filenames.\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []
