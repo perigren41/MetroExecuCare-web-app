@@ -1,22 +1,75 @@
 import React, { useState, useEffect } from "react";
 import NavBarMain from "@/Components/NavBarMain";
-import { RollerCoaster } from "lucide-react";
+import { X } from "lucide-react";
 import EyeOpen from "@/assets/eyeopen.svg";
 import EyeClose from "@/assets/eyeclose.svg";
 import ProfileGray from "@/assets/profilegray.svg";
+import CameraIcon from "@/assets/camera-svgrepo.svg";
 import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
 import MetroBankLogo from "@/assets/mainLogo-foreground.svg";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import apiService from "@/services/api";
+import AlertModal from "@/Components/AlertModal";
 
+/* ---------------- GradientCard wrapper ---------------- */
+function GradientCard({ children, className, style, isMainCard = false }) {
+    const roundedClass = className?.match(/rounded-\[?[\w-]+\]?/)?.[0];
 
+    let outerRounded, innerRadius, borderWidth, innerPadding;
+
+    // Responsive border width and padding
+    if (roundedClass === "rounded-[64px]") {
+        outerRounded = "rounded-[32px] lg:rounded-[64px]";
+        innerRadius = "rounded-[calc(32px-2px)] sm:rounded-[calc(32px-3px)] lg:rounded-[calc(64px-3px)]";
+        borderWidth = "p-[2px] sm:p-[3px] lg:p-[3px]";
+    } else if (roundedClass === "rounded-[32px]") {
+        outerRounded = "rounded-[16px] sm:rounded-[24px] lg:rounded-[32px]";
+        innerRadius = "rounded-[calc(16px-2px)] sm:rounded-[calc(24px-3px)] lg:rounded-[calc(32px-3px)]";
+        borderWidth = "p-[2px] sm:p-[3px] lg:p-[3px]";
+    } else if (roundedClass?.includes("rounded-[24px]")) {
+        outerRounded = "rounded-[12px] sm:rounded-[18px] lg:rounded-[24px]";
+        innerRadius = "rounded-[calc(12px-2px)] sm:rounded-[calc(18px-3px)] lg:rounded-[calc(24px-3px)]";
+        borderWidth = "p-[2px] sm:p-[3px] lg:p-[3px]";
+    } else {
+        outerRounded = "rounded-xl sm:rounded-2xl lg:rounded-3xl";
+        innerRadius = "rounded-[calc(0.75rem-2px)] sm:rounded-[calc(1rem-3px)] lg:rounded-[calc(1.5rem-3px)]";
+        borderWidth = "p-[2px] sm:p-[3px] lg:p-[3px]";
+    }
+
+    // Responsive inner padding
+    if (isMainCard) {
+        innerPadding = "px-4 py-4 sm:px-6 sm:py-5 lg:px-[93px] lg:py-8";
+    } else {
+        innerPadding = "p-3 sm:p-4 lg:p-4";
+    }
+
+    const cleanClassName =
+        className?.replace(/rounded-\[?[\w-]+\]?/g, "").replace(/p-\d+/g, "").trim() || "";
+
+    return (
+        <div
+            className={`${outerRounded} ${borderWidth} shadow-sm ${cleanClassName}`}
+            style={{
+                background:
+                    "linear-gradient(45deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)",
+                ...style,
+            }}
+        >
+            <div
+                className={`bg-white ${innerRadius} h-full w-full ${innerPadding}`}
+            >
+                {children}
+            </div>
+        </div>
+    );
+}
 
 // CircleButton component
 function CircleButton({ text, color, onClick }) {
   return (
     <button
-      className={`${color} text-white px-4 py-2 rounded-full hover:opacity-80 transition`}
+      className={`${color} text-white px-4 py-2 rounded-full hover:opacity-80 transition cursor-pointer`}
       onClick={onClick}
     >
       {text}
@@ -27,6 +80,18 @@ function CircleButton({ text, color, onClick }) {
 // ProfileCard component
 function ProfileCard({ profile, setProfile }) {
   const [uploading, setUploading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [isRemoving, setIsRemoving] = useState(false);
+
+  // Helper function to convert profile picture path to full URL
+  const getProfilePictureUrl = (picturePath) => {
+    if (!picturePath) return ProfileGray;
+    if (picturePath.startsWith('http')) return picturePath;
+    if (picturePath.startsWith('data:')) return picturePath;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL.replace('/api', '');
+    return `${baseUrl}${picturePath}`;
+  };
 
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
@@ -51,12 +116,14 @@ function ProfileCard({ profile, setProfile }) {
         const response = await apiService.uploadProfilePicture(profile.id, file);
 
         if (response.success) {
-          // Update profile with new image URL
-          const imageUrl = `${apiService.baseURL.replace('/api', '')}${response.data.profile_picture_url}`;
-          setProfile({ ...profile, avatar: imageUrl });
-
-          // Also update localStorage for immediate refresh
-          localStorage.setItem(`profile_${profile.id}_picture`, imageUrl);
+          // Update profile with new picture path
+          setProfile(prev => ({
+            ...prev,
+            profile_picture: response.data.profile_picture,
+            avatar: `${apiService.baseURL.replace('/api', '')}${response.data.profile_picture}`
+          }));
+          setSuccessMessage('Profile picture updated successfully!');
+          setShowSuccessModal(true);
         } else {
           alert('Failed to upload profile picture: ' + response.message);
         }
@@ -69,18 +136,41 @@ function ProfileCard({ profile, setProfile }) {
     }
   };
 
+  const handleRemoveProfilePicture = async () => {
+    if (!window.confirm('Are you sure you want to remove your profile picture?')) {
+      return;
+    }
+
+    try {
+      setIsRemoving(true);
+      const response = await apiService.removeProfilePicture(profile.id);
+
+      if (response.success) {
+        setProfile(prev => ({
+          ...prev,
+          profile_picture: null,
+          avatar: null
+        }));
+        setSuccessMessage('Profile picture removed successfully!');
+        setShowSuccessModal(true);
+      }
+    } catch (error) {
+      console.error('Error removing profile picture:', error);
+      alert('Failed to remove profile picture. Please try again.');
+    } finally {
+      setIsRemoving(false);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-2xl pt-3 pb-6 px-6 flex flex-col
-      border-2 border-[#00539F]
-      shadow-lg shadow-[#00539F]/50">
-      
+    <GradientCard className="rounded-[64px]" isMainCard={true}>
       <h2 className="text-blue-900 font-semibold mb-4 text-left text-base sm:text-base">
         Basic Information
       </h2>
 
-      <div className="flex flex-col md:flex-row md:justify-start items-center md:items-center pb-4 px-4 sm:gap-8 gap-4">
+      <div className="flex flex-col lg:flex-row lg:justify-start items-center lg:items-start pb-4 gap-3 sm:gap-4 lg:gap-6">
 
-        <div className="flex flex-col md:justify-center items-center pl-0">
+        <div className="flex flex-col items-center flex-shrink-0">
           <input
             type="file"
             accept="image/*"
@@ -89,24 +179,38 @@ function ProfileCard({ profile, setProfile }) {
             onChange={handleImageChange}
           />
 
-          <div className="relative w-20 h-20 sm:w-40 sm:h-40 md:w-48 md:h-48 flex items-center justify-center">
+          <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden border-4 border-gray-200 shadow-md">
             <img
-              src={profile.avatar || ProfileGray}
-              alt=""
-              className="w-full h-full rounded-full object-cover border-2 border-[#00539F] p-1"
+              src={getProfilePictureUrl(profile.profile_picture)}
+              alt="Profile"
+              className="w-full h-full object-cover"
             />
           </div>
 
-          <button
-            onClick={() => document.getElementById("profileImageInput").click()}
-            disabled={uploading}
-            className="mt-2 flex items-center gap-2 text-blue-600 hover:underline text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {uploading ? 'Uploading...' : 'Change Picture'}
-          </button>
+          <div className="mt-3 flex flex-col sm:flex-row gap-2">
+            <button
+              onClick={() => document.getElementById("profileImageInput").click()}
+              disabled={uploading}
+              className="flex items-center justify-center gap-2 text-blue-600 hover:underline text-xs sm:text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              <img src={CameraIcon} alt="camera" className="w-4 h-4 sm:w-5 sm:h-5" />
+              {uploading ? 'Uploading...' : 'Change Picture'}
+            </button>
+
+            {profile.profile_picture && (
+              <button
+                onClick={handleRemoveProfilePicture}
+                disabled={isRemoving}
+                className="flex items-center justify-center gap-2 text-red-600 hover:underline text-xs sm:text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                {isRemoving ? 'Removing...' : 'Remove Picture'}
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="flex flex-col text-center md:text-left px-8 sm:px-8 space-y-0 pt-0">
+        <div className="flex flex-col text-center lg:text-left flex-grow space-y-3">
           <p className="text-blue-700 font-bold text-2xl sm:text-2xl">{profile.name}</p>
           <p className="text-gray-600 text-sm sm:text-xs">{profile.position}</p>
           <p className="text-gray-500 text-xs sm:text-xs mb-2">{profile.location}</p>
@@ -135,7 +239,16 @@ function ProfileCard({ profile, setProfile }) {
           </div>
         </div>
       </div>
-    </div>
+        {/* Success Alert Modal */}
+        <AlertModal
+          isOpen={showSuccessModal}
+          onClose={() => setShowSuccessModal(false)}
+          title="Success"
+          message={successMessage}
+          type="success"
+          confirmText="OK"
+        />
+    </GradientCard>
   );
 }
 
@@ -146,14 +259,14 @@ function SummaryCard({ notes, setNotes, userId }) {
   const [loadingNotes, setLoadingNotes] = useState(false);
   const [savingNotes, setSavingNotes] = useState(false);
 
-  // Fetch user activity logs
+  // Fetch admin activity logs (user management actions)
   useEffect(() => {
     const fetchActivityLogs = async () => {
       if (!userId) return;
 
       try {
         setLoadingLogs(true);
-        const response = await apiService.getUserActivityLogs(userId, 10);
+        const response = await apiService.getAdminActivityLogs(10);
 
         if (response.success) {
           setActivityLogs(response.data.logs || []);
@@ -198,33 +311,47 @@ function SummaryCard({ notes, setNotes, userId }) {
     fetchUserNotes();
   }, [userId, setNotes]);
 
-  // Create padded history for display (ensure 10 rows)
-  const paddedHistory = [
-    ...activityLogs.map(log => ({
-      created_at: new Date(log.created_at).toLocaleDateString(),
-      description: log.description || log.action,
-      request_title: log.request_title || "-",
-      action_status: log.action
-    })),
-    ...Array.from({ length: Math.max(0, 10 - activityLogs.length) }, () => ({
-      created_at: "-",
-      description: "-",
-      request_title: "-",
-      action_status: "-",
-    })),
-  ].slice(0, 10);
+  // Map all activity logs (show all, scrollable if > 5)
+  const mappedHistory = activityLogs.map(log => {
+    let displayDescription = log.description || "-";
 
-  const [isEditing, setIsEditing] = useState(true);
+    // For user management actions, prepend employee info if available
+    if (log.employee_id && log.employee_id !== '-') {
+      const actionType = log.action_display || log.action;
+      displayDescription = `${actionType} [Employee ID: ${log.employee_id}${log.employee_name && log.employee_name !== '-' ? ` - ${log.employee_name}` : ''}]: ${log.description}`;
+    }
+
+    return {
+      created_at: new Date(log.created_at).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+      }),
+      action_display: log.action_display || "-",
+      description: displayDescription
+    };
+  });
+
+  const [isEditing, setIsEditing] = useState(false);
   const [originalNotes, setOriginalNotes] = useState('');
+  const [tempNotes, setTempNotes] = useState('');
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  const handleEdit = () => {
+    setTempNotes(notes);
+    setIsEditing(true);
+  };
 
   const handleSave = async () => {
     try {
       setSavingNotes(true);
-      const response = await apiService.updateUserNotes(userId, notes);
+      const response = await apiService.updateUserNotes(userId, tempNotes);
 
       if (response.success) {
-        setOriginalNotes(notes);
+        setNotes(tempNotes);
+        setOriginalNotes(tempNotes);
         setIsEditing(false);
+        setShowSuccessModal(true);
       } else {
         alert('Failed to save notes: ' + response.message);
       }
@@ -237,25 +364,21 @@ function SummaryCard({ notes, setNotes, userId }) {
   };
 
   const handleCancel = () => {
-    setNotes(originalNotes);
+    setTempNotes(notes);
     setIsEditing(false);
   };
 
   return (
-    <div className="bg-white rounded-2xl pt-3 pb-6 px-6 flex flex-col
-      border-2 border-[#00539F]
-      shadow-lg shadow-[#00539F]/50 gap-2">
+    <GradientCard className="rounded-[64px]" isMainCard={true}>
+      <div className="space-y-4 sm:space-y-6">
+        <div className="text-left">
+          <h2 className="text-blue-900 font-semibold sm:text-base">Summary</h2>
+          <p className="text-xs">Your activity overview in MetroExecuCare</p>
+        </div>
 
-      <div className="text-left">
-        <h2 className="text-blue-900 font-semibold sm:text-base">Summary</h2>
-        <p className="text-xs">Your activity overview in MetroExecuCare</p>
-      </div>
-
-      <div className="bg-white shadow-md rounded-2xl pt-2 pb-6 px-6 flex flex-col
-          border border-[#00539F]
-          shadow-[#00539F]/50 gap-2">
-        <h1 className="text-xs sm:text-xs text-left">
-          <span className="text-blue-900 font-semibold">Action Log:</span> Your past ten (10) actions made
+        <GradientCard className="rounded-[24px]">
+        <h1 className="text-xs sm:text-xs text-left mb-2">
+          <span className="text-blue-900 font-semibold">Action Log:</span> Your recent actions
         </h1>
         {loadingLogs ? (
           <div className="flex justify-center items-center py-4">
@@ -263,54 +386,123 @@ function SummaryCard({ notes, setNotes, userId }) {
             <span className="ml-2 text-gray-600">Loading activity logs...</span>
           </div>
         ) : (
-          <table className="w-full text-xs table-fixed">
-            <thead className="bg-purple-300 text-center p-1">
-              <tr>
-                <th className="p-1">Date</th>
-                <th className="p-1">Action</th>
-                <th className="p-1">Description</th>
-                <th className="p-1">Request</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paddedHistory.map((item, idx) => (
-                <tr key={idx} className="border-t">
-                  <td className="p-1 text-blue-600">{item.created_at}</td>
-                  <td className="p-1">{item.action_status}</td>
-                  <td className="p-1">{item.description}</td>
-                  <td className="p-1">{item.request_title}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+          <>
+            {/* Desktop Table - 2 Column Layout */}
+            <div className="hidden sm:block overflow-x-auto">
+              <div className={mappedHistory.length > 5 ? "max-h-[200px] overflow-y-auto" : ""}>
+                <table className="w-full text-xs table-auto">
+                  <thead className="bg-purple-300 sticky top-0">
+                    <tr>
+                      <th className="p-2 text-center w-32">Date</th>
+                      <th className="p-2 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {mappedHistory.map((item, idx) => (
+                      <tr key={idx} className="border-t hover:bg-gray-50">
+                        <td className="p-2 text-blue-600 whitespace-nowrap">
+                          {item.created_at}
+                        </td>
+                        <td className="p-2 text-gray-700">
+                          {item.description}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-      <div className="bg-white shadow-md rounded-2xl py-3 px-6 flex flex-col
-        border border-[#00539F]
-        shadow-[#00539F]/50 text-xs">
+            {/* Mobile Card Layout */}
+            <div className="sm:hidden">
+              <div className={mappedHistory.length > 5 ? "max-h-[300px] overflow-y-auto space-y-2" : "space-y-2"}>
+                {mappedHistory.map((item, idx) => (
+                  <div key={idx} className="bg-gray-50 rounded-lg p-3 border">
+                    <div className="text-blue-600 font-medium text-xs mb-2">
+                      {item.created_at}
+                    </div>
+                    <div className="text-xs text-gray-700">
+                      {item.description}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {mappedHistory.length > 5 && (
+                <p className="text-xs text-gray-500 text-center mt-2">
+                  Scroll to view all {mappedHistory.length} actions
+                </p>
+              )}
+              {mappedHistory.length === 0 && (
+                <div className="flex items-center justify-center text-gray-500 text-sm py-4">
+                  No recent actions found
+                </div>
+              )}
+            </div>
+          </>
+        )}
+        </GradientCard>
+
+        <GradientCard className="rounded-[24px]">
         <h2 className="text-blue-900 text-sm font-semibold mb-2 text-left sm:text-sm">Notes: Write down notes or reminders of yourself ...</h2>
         <textarea
-          className="w-full rounded-lg px-1 h-22 resize-none bg-[repeating-linear-gradient(white,white_23px,#6b7280_24px)] border-2 border-[#00539F]"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          className={`w-full rounded-lg px-3 py-2 h-20 sm:h-24 resize-none border text-sm ${
+            isEditing
+              ? "border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-[repeating-linear-gradient(white,white_23px,#e5e7eb_24px)]"
+              : "border-gray-200 bg-gray-50 cursor-default"
+          }`}
+          placeholder={isEditing ? "Write your notes here..." : "No notes yet. Click Edit to add some."}
+          value={isEditing ? tempNotes : notes}
+          onChange={(e) => setTempNotes(e.target.value)}
           readOnly={!isEditing}
-          onFocus={() => setIsEditing(true)}
         ></textarea>
-        <div className="flex gap-2 mt-2">
-          <CircleButton
-            text={savingNotes ? "Saving..." : "Save"}
-            color="bg-blue-600"
-            onClick={handleSave}
-          />
-          <CircleButton
-            text="Cancel"
-            color="bg-gray-400"
-            onClick={handleCancel}
-          />
+        <div className="flex gap-2 mt-2 justify-end">
+          {!isEditing ? (
+            <CircleButton
+              text="Edit"
+              color="bg-blue-600"
+              onClick={handleEdit}
+            />
+          ) : (
+            <>
+              <CircleButton
+                text={savingNotes ? "Saving..." : "Save"}
+                color="bg-blue-600"
+                onClick={handleSave}
+              />
+              <CircleButton
+                text="Cancel"
+                color="bg-gray-400"
+                onClick={handleCancel}
+              />
+            </>
+          )}
         </div>
+        </GradientCard>
       </div>
-    </div>
+
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg text-center w-full max-w-sm sm:max-w-md">
+            <div className="mb-4">
+              <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Notes Saved Successfully!</h3>
+              <p className="text-sm text-gray-600">Your notes have been saved.</p>
+            </div>
+            <button
+              onClick={() => setShowSuccessModal(false)}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </GradientCard>
   );
 }
 
@@ -325,36 +517,56 @@ function PasswordChangeCard() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleUpdate = () => {
-    // Simulate checking current password (replace with actual logic)
-    const correctCurrentPassword = '1234'; // This would come from your backend
-
-    if (currentPassword !== correctCurrentPassword) {
-      setModalType('wrongPassword');
-      setShowModal(true);
-      return;
-    }
-    
+  const handleUpdate = async () => {
+    // Validate passwords match
     if (newPassword !== confirmPassword) {
       setModalType('passwordMismatch');
       setShowModal(true);
       return;
     }
-    
-    // If all validations pass
-    setModalType('success');
-    setShowModal(true);
+
+    // Validate fields are not empty
+    if (!currentPassword || !newPassword) {
+      setModalType('wrongPassword');
+      setShowModal(true);
+      return;
+    }
+
+    try {
+      // Call the backend API to change password
+      const response = await apiService.changePassword(currentPassword, newPassword);
+
+      if (response.success) {
+        // Clear password fields
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+
+        // Show success modal
+        setModalType('success');
+        setShowModal(true);
+      }
+    } catch (error) {
+      console.error('Password change error:', error);
+
+      // Check if it's an incorrect password error
+      if (error.response?.status === 400 || error.message.includes('incorrect')) {
+        setModalType('wrongPassword');
+      } else {
+        setModalType('wrongPassword');
+      }
+      setShowModal(true);
+    }
   };
 
   return (
     <>
-      <div className="bg-white rounded-2xl pt-3 px-6 pb-3 flex flex-col
-        border-2 border-[#00539F]
-        shadow-lg shadow-[#00539F]/50">
-        
-        <h2 className="text-blue-900 text-sm font-semibold mb-4 sm:text-sm text-left">Change Password</h2>
-        <div className="space-y-2 text-xs">
+      <GradientCard className="rounded-[64px]" isMainCard={true}>
+        <h2 className="text-blue-900 text-base sm:text-lg font-semibold mb-4 text-left">
+          Change Password
+        </h2>
 
+        <div className="space-y-4 pb-2">
           {/* Current Password */}
           <div className="relative">
             <input
@@ -362,18 +574,19 @@ function PasswordChangeCard() {
               placeholder="Current Password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="h-6 w-full border-2 border-[#00539F] rounded-lg p-2 pr-10"
+              className="h-10 sm:h-12 w-full border border-gray-300 rounded-lg px-4 pr-12
+              focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             />
             <button
-              type="button"
-              onClick={() => setShowCurrent(!showCurrent)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            type="button"
+            onClick={() => setShowCurrent(!showCurrent)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
             >
-              {showCurrent ? (
-                  <img src={EyeOpen} alt="Hide password" className="size-4" />
-              ) : (
-                <img src={EyeClose} alt="Show password" className="size-4" />
-              )}
+            <img
+            src={showCurrent ? EyeOpen : EyeClose}
+            alt={showCurrent ? "Hide password" : "Show password"}
+            className="w-5 h-5"
+            />
             </button>
           </div>
 
@@ -384,18 +597,19 @@ function PasswordChangeCard() {
               placeholder="New Password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="h-6 w-full border-2 border-[#00539F] rounded-lg p-2 pr-10"
+              className="h-10 sm:h-12 w-full border border-gray-300 rounded-lg px-4 pr-12
+              focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             />
             <button
-              type="button"
-              onClick={() => setShowNew(!showNew)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            type="button"
+            onClick={() => setShowNew(!showNew)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
             >
-              {showNew ? (
-                  <img src={EyeOpen} alt="Hide password" className="size-4" />
-              ) : (
-                <img src={EyeClose} alt="Show password" className="size-4" />
-              )}
+            <img
+            src={showNew ? EyeOpen : EyeClose}
+            alt={showNew ? "Hide password" : "Show password"}
+            className="w-5 h-5"
+            />
             </button>
           </div>
 
@@ -406,28 +620,29 @@ function PasswordChangeCard() {
               placeholder="Confirm New Password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="h-6 w-full border-2 border-[#00539F] rounded-lg p-2 pr-10"
+              className="h-10 sm:h-12 w-full border border-gray-300 rounded-lg px-4 pr-12
+              focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             />
             <button
-              type="button"
-              onClick={() => setShowConfirm(!showConfirm)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            type="button"
+            onClick={() => setShowConfirm(!showConfirm)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 cursor-pointer"
             >
-              {showConfirm ? (
-                  <img src={EyeOpen} alt="Hide password" className="size-4" />
-              ) : (
-                <img src={EyeClose} alt="Show password" className="size-4" />
-              )}
+            <img
+            src={showConfirm ? EyeOpen : EyeClose}
+            alt={showConfirm ? "Hide password" : "Show password"}
+            className="w-5 h-5"
+            />
             </button>
           </div>
 
-        <div className="flex justify-end gap-2 mt-2">
-          <div onClick={handleUpdate}>
-            <CircleButton text="Update" color="bg-blue-600" />
+          <div className="flex justify-end pt-2">
+            <div onClick={handleUpdate}>
+              <CircleButton text="Update" color="bg-blue-600" />
+            </div>
           </div>
         </div>
-        </div>
-      </div>
+      </GradientCard>
 
       {/* Modals */}
       {showModal && (
@@ -470,9 +685,9 @@ function PasswordChangeCard() {
                 </>
               )}
             </div>
-            <button 
+            <button
               onClick={() => setShowModal(false)}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer"
             >
               Close
             </button>
@@ -561,7 +776,7 @@ export default function AdminProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="h-screen flex flex-col bg-gray-50">
       <NavBarMain
         user={{
           ...user,
@@ -572,25 +787,34 @@ export default function AdminProfilePage() {
         backButtonIcon={BackSquareIconWhite}
         logo={MetroBankLogo}
       />
-      <div className="flex justify-center mt-6 px-4">
-        <h1 className="text-[#023184] text-xl lg:text-2xl font-bold text-center">
-          Admin Profile
-        </h1>
+      <div className="flex justify-center py-1 sm:py-2 px-4">
+        <h1 className="text-[#023184] text-base sm:text-lg lg:text-xl font-bold">Admin Profile</h1>
       </div>
-      <div className="min-h-screen bg-gray-50">
-        <div className="pt-6 pb-4 px-4 sm:px-6 lg:px-8">
 
-          {/* Responsive Grid Layout */}
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
-              {/* Left Column - Profile and Password Change */}
-              <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+      {/* 2-Column Grid Layout - Viewport Fitted */}
+      <div className="flex-1 overflow-hidden px-2 sm:px-4 lg:px-6 pb-2 sm:pb-3">
+        <div className="h-full overflow-y-auto">
+          <div className="flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-4 lg:justify-center lg:items-start max-w-7xl mx-auto h-full">
+            {/* Mobile: Stacked Layout */}
+            <div className="lg:hidden flex flex-col gap-2 sm:gap-3">
+              <ProfileCard profile={profile} setProfile={setProfile} />
+              <SummaryCard notes={notes} setNotes={setNotes} userId={profile.id} />
+              <PasswordChangeCard />
+            </div>
+
+            {/* Desktop: Left Column - Profile and Password Change */}
+            <div className="hidden lg:flex flex-col gap-3 lg:w-[45%] xl:w-[40%] h-full">
+              <div className="flex-shrink-0">
                 <ProfileCard profile={profile} setProfile={setProfile} />
+              </div>
+              <div className="flex-shrink-0">
                 <PasswordChangeCard />
               </div>
+            </div>
 
-              {/* Right Column - Summary (spans more space on desktop) */}
-              <div className="lg:col-span-3">
+            {/* Desktop: Right Column - Summary */}
+            <div className="hidden lg:flex lg:w-[55%] xl:w-[60%] h-full">
+              <div className="w-full">
                 <SummaryCard notes={notes} setNotes={setNotes} userId={profile.id} />
               </div>
             </div>

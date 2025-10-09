@@ -34,7 +34,8 @@ export default function AdminUsersPage() {
     try {
       setLoading(true);
       setError("");
-      const response = await apiService.getUsers();
+      // Request all users by setting a large limit
+      const response = await apiService.getUsers({ limit: 1000 });
 
       if (response.success) {
         // API returns { success: true, data: { users: [...], pagination: {...} } }
@@ -42,10 +43,20 @@ export default function AdminUsersPage() {
         setUsers(Array.isArray(userData) ? userData : []);
       } else {
         setError(response.message || "Failed to fetch users");
+        setUsers([]);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
-      setError("Failed to load users. Please try again.");
+
+      // Provide user-friendly error messages
+      if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+        setError("Cannot connect to server. Please check your connection.");
+      } else if (error.message.includes('NetworkError') || error.message.includes('Network')) {
+        setError("Network error. Please check your connection and try again.");
+      } else {
+        setError(error.message || "Failed to load users. Please try again.");
+      }
+
       setUsers([]); // Ensure users is always an array
     } finally {
       setLoading(false);
@@ -68,7 +79,7 @@ export default function AdminUsersPage() {
           await fetchUsers(); // Refresh the users list
           setSelectedUser(response.data); // Update selected user if modal is open
         } else {
-          setError(response.message || "Failed to update user");
+          throw new Error(response.message || "Failed to update user");
         }
       } else {
         // Create new user via registration
@@ -76,12 +87,14 @@ export default function AdminUsersPage() {
         if (response.success) {
           await fetchUsers(); // Refresh the users list
         } else {
-          setError(response.message || "Failed to create user");
+          throw new Error(response.message || "Failed to create user");
         }
       }
     } catch (error) {
       console.error("Error saving user:", error);
-      setError("Failed to save user. Please try again.");
+
+      // Re-throw the error so the modal can display it
+      throw error;
     }
   };
 
@@ -98,7 +111,13 @@ export default function AdminUsersPage() {
       }
     } catch (error) {
       console.error("Error deleting user:", error);
-      setError("Failed to delete user. Please try again.");
+
+      // Provide user-friendly error messages
+      if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+        setError("Cannot connect to server. Please check your connection.");
+      } else {
+        setError(error.message || "Failed to delete user. Please try again.");
+      }
     }
   };
 
@@ -118,13 +137,25 @@ export default function AdminUsersPage() {
       }
     } catch (error) {
       console.error("Error updating user:", error);
-      setError("Failed to update user. Please try again.");
-      throw error; // Re-throw so UserDetailsModal can handle it
+
+      // Provide user-friendly error messages
+      let errorMessage;
+      if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+        errorMessage = "Cannot connect to server. Please check your connection.";
+      } else {
+        errorMessage = error.message || "Failed to update user. Please try again.";
+      }
+
+      setError(errorMessage);
+      throw new Error(errorMessage); // Re-throw so UserDetailsModal can handle it
     }
   };
 
-  // Filtered Users - ensure users is an array
+  // Filtered Users - ensure users is an array and only show active users
   const filteredUsers = (Array.isArray(users) ? users : []).filter((u) => {
+    // Only show active users (is_active = 1)
+    const isActive = u.is_active === 1;
+
     const fullName = `${u.first_name || ""} ${u.last_name || ""}`.trim();
     const matchesSearch =
       fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -134,7 +165,7 @@ export default function AdminUsersPage() {
     const matchesFilter =
       filter === "all" ? true : u.role === filter;
 
-    return matchesSearch && matchesFilter;
+    return isActive && matchesSearch && matchesFilter;
   });
 
   return (
@@ -155,14 +186,14 @@ export default function AdminUsersPage() {
         logo={MetroBankLogo}
       />
 
-      <h1 className="text-center text-base font-bold mb-1 pt-6 text-blue-900 flex-shrink-0">
+      <h1 className="text-center text-base font-bold mb-2 pt-6 text-blue-900 flex-shrink-0">
         MetroExecuCare Users
       </h1>
 
-      <div className="flex-1 py-0 px-2 sm:px-4 md:px-8 lg:px-8 xl:px-16 overflow-auto">
+      <div className="flex-1 flex flex-col px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pb-4 overflow-hidden">
         {/* SearchBar + Add Button */}
-        <div className="flex flex-col mb-1">
-          <h1 className="text-left text-xs mb-2 pt-2">
+        <div className="flex flex-col mb-3 flex-shrink-0">
+          <h1 className="text-left text-xs mb-2">
             <span className="font-bold">Branch:</span> {currentUser?.branch || "All Branches"}
           </h1>
 
@@ -186,7 +217,7 @@ export default function AdminUsersPage() {
                   onClick={() => setShowDeletedUsersModal(true)}
                   disabled={loading}
                   className="px-2 py-1 bg-gray-600 text-white text-xs
-                    rounded-full hover:bg-gray-700 transition
+                    rounded-full hover:bg-gray-700 transition cursor-pointer
                     disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   View
@@ -199,7 +230,7 @@ export default function AdminUsersPage() {
                   onClick={handleAddUser}
                   disabled={loading}
                   className="w-8 h-8 bg-blue-700 text-white
-                    rounded-full hover:bg-blue-800 transition
+                    rounded-full hover:bg-blue-800 transition cursor-pointer
                     flex items-center justify-center
                     disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -225,7 +256,7 @@ export default function AdminUsersPage() {
                   onClick={() => setShowDeletedUsersModal(true)}
                   disabled={loading}
                   className="px-3 py-1 bg-gray-600 text-white text-xs
-                    rounded-full hover:bg-gray-700 transition
+                    rounded-full hover:bg-gray-700 transition cursor-pointer
                     disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   View
@@ -237,7 +268,7 @@ export default function AdminUsersPage() {
                   onClick={handleAddUser}
                   disabled={loading}
                   className="w-8 h-8 bg-blue-700 text-white
-                    rounded-full hover:bg-blue-800 transition
+                    rounded-full hover:bg-blue-800 transition cursor-pointer
                     flex items-center justify-center
                     disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -250,27 +281,30 @@ export default function AdminUsersPage() {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          <div className="mb-3 p-3 bg-red-100 border border-red-400 text-red-700 rounded flex-shrink-0">
             {error}
             <button
               onClick={() => setError("")}
-              className="ml-2 text-red-900 hover:text-red-700"
+              className="ml-2 text-red-900 hover:text-red-700 cursor-pointer"
             >
               ✕
             </button>
           </div>
         )}
 
-        {/* Loading State */}
-        {loading ? (
-          <div className="flex justify-center items-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
-            <span className="ml-2 text-gray-600">Loading users...</span>
-          </div>
-        ) : (
-          /* Users Table */
-          <UserTable users={filteredUsers} onView={setSelectedUser} />
-        )}
+        {/* Table Container - Scrollable */}
+        <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          {/* Loading State */}
+          {loading ? (
+            <div className="flex justify-center items-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
+              <span className="ml-2 text-gray-600">Loading users...</span>
+            </div>
+          ) : (
+            /* Users Table */
+            <UserTable users={filteredUsers} onView={setSelectedUser} />
+          )}
+        </div>
 
         {/* User Details Modal */}
         {selectedUser && (

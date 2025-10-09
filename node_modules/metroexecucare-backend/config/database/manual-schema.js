@@ -4,6 +4,9 @@ async function createTablesManually() {
   console.log('🔄 Creating tables manually...');
   
   try {
+    // Disable foreign key checks to allow dropping tables
+    await pool.execute('SET FOREIGN_KEY_CHECKS = 0');
+
     // Drop tables in reverse order due to foreign key constraints
     const dropQueries = [
       'DROP TABLE IF EXISTS activity_logs',
@@ -12,6 +15,7 @@ async function createTablesManually() {
       'DROP TABLE IF EXISTS notifications',
       'DROP TABLE IF EXISTS request_approvals',
       'DROP TABLE IF EXISTS request_assignments',
+      'DROP TABLE IF EXISTS file_requests',
       'DROP TABLE IF EXISTS request_files',
       'DROP TABLE IF EXISTS checkup_requests',
       'DROP TABLE IF EXISTS hospitals',
@@ -30,6 +34,10 @@ async function createTablesManually() {
       }
     }
 
+    // Re-enable foreign key checks
+    await pool.execute('SET FOREIGN_KEY_CHECKS = 1');
+    console.log('✅ Tables dropped successfully');
+
     // Create users table
     await pool.execute(`
       CREATE TABLE users (
@@ -46,6 +54,7 @@ async function createTablesManually() {
         branch VARCHAR(100),
         contact_number VARCHAR(20),
         birth_date DATE,
+        notes TEXT,
         profile_picture VARCHAR(500),
         is_active BOOLEAN DEFAULT TRUE,
         last_login TIMESTAMP NULL,
@@ -96,10 +105,15 @@ async function createTablesManually() {
         hr_assigned_hospital_id INT,
         preferred_date DATE,
         letter_purpose TEXT,
-        current_status ENUM('pending', 'assigned_to_hr', 'hr_processing', 'benefits_review', 'welfare_review', 'approved', 'rejected', 'letter_generated', 'letter_sent', 'completed') DEFAULT 'pending',
+        current_status ENUM('pending', 'assigned_to_hr', 'hr_processing', 'benefits_review', 'welfare_review', 'hr_final_verification', 'approved', 'rejected', 'letter_generated', 'letter_sent', 'completed', 'cancelled', 'deleted') DEFAULT 'pending',
         priority_level ENUM('normal', 'urgent') DEFAULT 'normal',
         assigned_hr_id INT,
+        assigned_benefits_id INT,
+        assigned_welfare_id INT,
         assigned_at TIMESTAMP NULL,
+        assigned_hr_at TIMESTAMP NULL,
+        assigned_benefits_at TIMESTAMP NULL,
+        assigned_welfare_at TIMESTAMP NULL,
         rejected_at TIMESTAMP NULL,
         rejection_reason TEXT,
         rejected_by INT,
@@ -110,23 +124,54 @@ async function createTablesManually() {
         completed_at TIMESTAMP NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        
+
         FOREIGN KEY (employee_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (hospital_id) REFERENCES hospitals(id) ON DELETE SET NULL,
         FOREIGN KEY (hr_assigned_hospital_id) REFERENCES hospitals(id) ON DELETE SET NULL,
         FOREIGN KEY (assigned_hr_id) REFERENCES users(id) ON DELETE SET NULL,
+        FOREIGN KEY (assigned_benefits_id) REFERENCES users(id) ON DELETE SET NULL,
+        FOREIGN KEY (assigned_welfare_id) REFERENCES users(id) ON DELETE SET NULL,
         FOREIGN KEY (rejected_by) REFERENCES users(id) ON DELETE SET NULL,
         FOREIGN KEY (letter_generated_by) REFERENCES users(id) ON DELETE SET NULL,
-        
+
         INDEX idx_request_number (request_number),
         INDEX idx_employee_id (employee_id),
         INDEX idx_current_status (current_status),
         INDEX idx_request_type (request_type),
         INDEX idx_created_at (created_at),
-        INDEX idx_assigned_hr_id (assigned_hr_id)
+        INDEX idx_assigned_hr_id (assigned_hr_id),
+        INDEX idx_assigned_benefits_id (assigned_benefits_id),
+        INDEX idx_assigned_welfare_id (assigned_welfare_id),
+        INDEX idx_assigned_hr_at (assigned_hr_at),
+        INDEX idx_assigned_benefits_at (assigned_benefits_at),
+        INDEX idx_assigned_welfare_at (assigned_welfare_at)
       )
     `);
     console.log('✅ Checkup requests table created');
+
+    // Create file_requests table (must be before request_files due to foreign key)
+    await pool.execute(`
+      CREATE TABLE file_requests (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        request_id INT NOT NULL,
+        requested_by INT NOT NULL,
+        requested_by_role ENUM('hr_personnel', 'benefits_officer', 'welfare_head') NOT NULL,
+        message TEXT NOT NULL,
+        status ENUM('pending', 'fulfilled', 'cancelled') DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        fulfilled_at TIMESTAMP NULL,
+        cancelled_at TIMESTAMP NULL,
+
+        FOREIGN KEY (request_id) REFERENCES checkup_requests(id) ON DELETE CASCADE,
+        FOREIGN KEY (requested_by) REFERENCES users(id) ON DELETE CASCADE,
+
+        INDEX idx_request_id (request_id),
+        INDEX idx_requested_by (requested_by),
+        INDEX idx_status (status),
+        INDEX idx_created_at (created_at)
+      )
+    `);
+    console.log('✅ File requests table created');
 
     // Create request_files table
     await pool.execute(`
@@ -140,6 +185,8 @@ async function createTablesManually() {
         file_type VARCHAR(100),
         file_extension VARCHAR(10),
         file_category ENUM('supporting_document', 'letter_of_approval', 'letter_of_authorization', 'additional_document') NOT NULL,
+        submission_type ENUM('initial_submission', 'additional_requested') DEFAULT 'initial_submission',
+        file_request_id INT NULL,
         uploaded_by INT,
         generated_by INT,
         is_active BOOLEAN DEFAULT TRUE,
@@ -150,13 +197,16 @@ async function createTablesManually() {
         download_count INT DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        
+
         FOREIGN KEY (request_id) REFERENCES checkup_requests(id) ON DELETE CASCADE,
+        FOREIGN KEY (file_request_id) REFERENCES file_requests(id) ON DELETE SET NULL,
         FOREIGN KEY (uploaded_by) REFERENCES users(id) ON DELETE SET NULL,
         FOREIGN KEY (generated_by) REFERENCES users(id) ON DELETE SET NULL,
-        
+
         INDEX idx_request_id (request_id),
         INDEX idx_file_category (file_category),
+        INDEX idx_file_request_id (file_request_id),
+        INDEX idx_submission_type (submission_type),
         INDEX idx_is_active (is_active),
         INDEX idx_access_token (access_token)
       )
@@ -198,7 +248,7 @@ async function createTablesManually() {
         request_id INT NOT NULL,
         approver_id INT NULL,
         approver_role ENUM('hr_personnel', 'benefits_officer', 'welfare_head') NOT NULL,
-        approval_stage ENUM('hr_stage', 'benefits_stage', 'welfare_stage') NOT NULL,
+        approval_stage ENUM('hr_stage', 'benefits_stage', 'welfare_stage', 'hr_final_stage') NOT NULL,
         action ENUM('approved', 'rejected', 'pending', 'returned_for_revision') DEFAULT 'pending',
         comments TEXT,
         action_date TIMESTAMP NULL,
@@ -208,11 +258,11 @@ async function createTablesManually() {
         approved_date DATE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        
+
         FOREIGN KEY (request_id) REFERENCES checkup_requests(id) ON DELETE CASCADE,
         FOREIGN KEY (approver_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (approved_hospital_id) REFERENCES hospitals(id) ON DELETE SET NULL,
-        
+
         INDEX idx_request_id (request_id),
         INDEX idx_approver_id (approver_id),
         INDEX idx_approval_stage (approval_stage),
@@ -227,7 +277,7 @@ async function createTablesManually() {
       CREATE TABLE notifications (
         id INT PRIMARY KEY AUTO_INCREMENT,
         request_id INT,
-        notification_type ENUM('request_submitted', 'request_assigned', 'hr_processing_started', 'hr_approved', 'benefits_review_started', 'benefits_approved', 'welfare_review_started', 'welfare_approved', 'request_approved_final', 'request_rejected', 'letter_generated', 'letter_sent_to_executive', 'file_uploaded', 'due_date_reminder', 'overdue_alert', 'request_completed') NOT NULL,
+        notification_type ENUM('request_submitted', 'request_assigned', 'hr_processing_started', 'hr_approved', 'benefits_review_started', 'benefits_approved', 'welfare_review_started', 'welfare_approved', 'request_approved_final', 'request_rejected', 'letter_generated', 'letter_sent_to_executive', 'file_uploaded', 'file_requested', 'due_date_reminder', 'overdue_alert', 'request_completed') NOT NULL,
         recipient_email VARCHAR(100) NOT NULL,
         recipient_role VARCHAR(50),
         recipient_id INT,

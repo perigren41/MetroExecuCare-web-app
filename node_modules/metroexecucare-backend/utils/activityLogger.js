@@ -72,6 +72,58 @@ function getRequestInfo(req) {
 }
 
 /**
+ * Format role names to be user-friendly
+ * @param {string} role - Backend role name
+ * @returns {string} - User-friendly role name
+ */
+function formatRoleName(role) {
+  const roleMap = {
+    'hr_personnel': 'Human Resource Personnel',
+    'benefits_officer': 'Benefits Officer',
+    'welfare_head': 'Welfare Head',
+    'admin': 'Admin',
+    'executive': 'Executive'
+  };
+  return roleMap[role] || role;
+}
+
+/**
+ * Format action names to be user-friendly
+ * @param {string} action - Backend action type
+ * @returns {string} - User-friendly action name
+ */
+function formatActionName(action) {
+  const actionMap = {
+    'LOGIN': 'Logged in',
+    'LOGOUT': 'Logged out',
+    'REGISTER': 'Registered',
+    'CREATE_USER': 'Created user',
+    'UPDATE_USER': 'Updated user',
+    'DELETE_USER': 'Deleted user',
+    'RESTORE_USER': 'Restored user',
+    'ACTIVATE_USER': 'Activated user',
+    'DEACTIVATE_USER': 'Deactivated user',
+    'UPDATE_PROFILE': 'Updated profile',
+    'CHANGE_PASSWORD': 'Changed password',
+    'UPLOAD_PROFILE_PICTURE': 'Updated profile picture',
+    'DELETE_PROFILE_PICTURE': 'Removed profile picture',
+    'UPDATE_NOTES': 'Updated personal notes',
+    'CREATE_REQUEST': 'Created request',
+    'UPDATE_REQUEST': 'Updated request',
+    'APPROVE_REQUEST': 'Approved request',
+    'REJECT_REQUEST': 'Rejected request',
+    'CLAIM_REQUEST': 'Claimed request',
+    'ASSIGN_REQUEST': 'Assigned request',
+    'UPLOAD_FILE': 'Uploaded file',
+    'DELETE_FILE': 'Deleted file',
+    'VIEW_PAGE': 'Viewed page',
+    'EXPORT_DATA': 'Exported data',
+    'IMPORT_DATA': 'Imported data'
+  };
+  return actionMap[action] || action.replace(/_/g, ' ').toLowerCase();
+}
+
+/**
  * Common activity types
  */
 const ACTIVITY_TYPES = {
@@ -93,6 +145,7 @@ const ACTIVITY_TYPES = {
   CHANGE_PASSWORD: 'CHANGE_PASSWORD',
   UPLOAD_PROFILE_PICTURE: 'UPLOAD_PROFILE_PICTURE',
   DELETE_PROFILE_PICTURE: 'DELETE_PROFILE_PICTURE',
+  UPDATE_NOTES: 'UPDATE_NOTES',
 
   // Request Management
   CREATE_REQUEST: 'CREATE_REQUEST',
@@ -115,5 +168,7 @@ const ACTIVITY_TYPES = {
 module.exports = {
   logActivity,
   getRequestInfo,
-  ACTIVITY_TYPES
+  ACTIVITY_TYPES,
+  formatRoleName,
+  formatActionName
 };

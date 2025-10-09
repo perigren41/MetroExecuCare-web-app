@@ -57,33 +57,27 @@ async function insertInitialData() {
         '32nd Street and 5th Avenue, Bonifacio Global City',
         'Taguig City',
         '(02) 7789-7700',
-        'info@stluke.com.ph',
-        '{"executive_checkup": true, "laboratory": true, "imaging": true}',
-        '24/7'
+        'info@stluke.com.ph'
       ],
       [
         'Makati Medical Center',
         '2 Amorsolo Street, Legaspi Village',
         'Makati City',
         '(02) 8888-8999',
-        'info@makatimed.net.ph',
-        '{"executive_checkup": true, "laboratory": true, "imaging": true}',
-        '24/7'
+        'info@makatimed.net.ph'
       ],
       [
         'Asian Hospital and Medical Center',
         '2205 Civic Drive, Filinvest Corporate City',
         'Muntinlupa City',
         '(02) 7771-9000',
-        'info@asianhospital.com',
-        '{"executive_checkup": true, "laboratory": true, "imaging": true}',
-        '24/7'
+        'info@asianhospital.com'
       ]
     ];
 
     for (const hospital of sampleHospitals) {
       await pool.execute(
-        'INSERT IGNORE INTO hospitals (name, address, city, contact_number, email, available_services, operating_hours) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        'INSERT IGNORE INTO hospitals (name, address, city, contact_number, email) VALUES (?, ?, ?, ?, ?)',
         hospital
       );
     }

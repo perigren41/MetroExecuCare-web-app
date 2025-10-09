@@ -15,8 +15,23 @@ const {
   approveRequest,
   rejectRequest,
   getDashboardStats,
-  getPendingApprovals
+  getPendingApprovals,
+  getUserActionStats,
+  getUserActionLogs
 } = require('../controllers/requestWorkflowController');
+
+const {
+  checkActiveRequest,
+  editRequest,
+  deleteRequest
+} = require('../controllers/requestManagementController');
+
+const {
+  createFileRequest,
+  getFileRequestsByRequest,
+  getMyPendingFileRequests,
+  respondToFileRequest
+} = require('../controllers/fileRequestController');
 
 // Import middleware
 const { authenticateToken } = require('../middleware/authMiddleware');
@@ -46,6 +61,16 @@ router.get('/dashboard', getDashboardStats);
 
 // GET /api/requests/pending-approvals - Get pending approvals by role
 router.get('/pending-approvals', getPendingApprovals);
+
+// GET /api/requests/user-stats - Get user-specific action statistics
+router.get('/user-stats', getUserActionStats);
+
+// GET /api/requests/user-action-logs - Get user-specific action logs
+router.get('/user-action-logs', getUserActionLogs);
+
+// Request Management Routes (Executive)
+// GET /api/requests/check-active - Check if executive has active request
+router.get('/check-active', checkActiveRequest);
 
 // GET /api/requests/:id - Get specific request details
 router.get('/:id', validateRequestId, getRequestById);
@@ -80,5 +105,24 @@ router.post('/:id/approve', validateRequestId, validateRequestStatusUpdate, appr
 
 // POST /api/requests/:id/reject - Reject request
 router.post('/:id/reject', validateRequestId, validateRequestStatusUpdate, rejectRequest);
+
+// PUT /api/requests/:id/edit - Edit request (Executive only, unclaimed)
+router.put('/:id/edit', validateRequestId, editRequest);
+
+// DELETE /api/requests/:id - Delete request (Executive only, unclaimed)
+router.delete('/:id', validateRequestId, deleteRequest);
+
+// File Request Routes
+// POST /api/requests/file-requests - Create file request (Approvers only)
+router.post('/file-requests', createFileRequest);
+
+// GET /api/requests/file-requests/my-pending - Get pending file requests for current executive
+router.get('/file-requests/my-pending', getMyPendingFileRequests);
+
+// GET /api/requests/file-requests/request/:requestId - Get file requests for specific checkup request
+router.get('/file-requests/request/:requestId', getFileRequestsByRequest);
+
+// POST /api/requests/file-requests/:id/respond - Respond to file request (Executive uploads files)
+router.post('/file-requests/:id/respond', respondToFileRequest);
 
 module.exports = router;

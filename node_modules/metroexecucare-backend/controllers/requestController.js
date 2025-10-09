@@ -252,11 +252,12 @@ const getRequests = async (req, res) => {
     }
 
     // Handle HR roles and other users - use the exact same query structure as executives
-    const { status, limit = 50, sort = 'created_at', order = 'desc', assigned_hr_id } = req.query;
+    const { status, limit = 50, sort = 'created_at', order = 'desc', assigned_hr_id, claimed_by_me } = req.query;
 
     // Build WHERE conditions
     let whereConditions = [];
     let queryParams = [];
+    let needsApprovalJoin = false;
 
     // Apply role-based filtering
     if (!['hr_personnel', 'benefits_officer', 'welfare_head'].includes(userRole)) {
@@ -269,6 +270,22 @@ const getRequests = async (req, res) => {
     if (assigned_hr_id) {
       whereConditions.push('cr.assigned_hr_id = ?');
       queryParams.push(assigned_hr_id);
+    }
+
+    // Apply "claimed by me" filter for Benefits Officer and Welfare Head
+    if (claimed_by_me === 'true') {
+      needsApprovalJoin = true;
+      if (userRole === 'benefits_officer') {
+        whereConditions.push('ra.approval_stage = ? AND ra.approver_id = ?');
+        queryParams.push('benefits_stage', userId);
+      } else if (userRole === 'welfare_head') {
+        whereConditions.push('ra.approval_stage = ? AND ra.approver_id = ?');
+        queryParams.push('welfare_stage', userId);
+      } else if (userRole === 'hr_personnel') {
+        // For HR, use the assigned_hr_id field
+        whereConditions.push('cr.assigned_hr_id = ?');
+        queryParams.push(userId);
+      }
     }
 
     // Apply status filter if provided
@@ -306,6 +323,11 @@ const getRequests = async (req, res) => {
       queryParams.push(parseInt(limit));
     }
 
+    // Build JOIN clause - add request_approvals if needed
+    const joinClause = needsApprovalJoin
+      ? 'LEFT JOIN request_approvals ra ON cr.id = ra.request_id'
+      : '';
+
     const query = `
       SELECT
         cr.id,
@@ -330,6 +352,7 @@ const getRequests = async (req, res) => {
       FROM checkup_requests cr
       JOIN users u ON cr.employee_id = u.id
       LEFT JOIN hospitals h ON cr.hospital_id = h.id
+      ${joinClause}
       ${whereClause}
       ORDER BY ${validSortField} ${validOrder}
       ${limitClause}
@@ -904,11 +927,12 @@ const downloadLatestFile = async (req, res) => {
   }
 };
 
-// Download executive original file
+// Download executive original file(s) - Returns ZIP if multiple files, single file if only one
 const downloadExecutiveFile = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
+    const archiver = require('archiver');
 
     // Get request to verify access
     const [requests] = await pool.execute(
@@ -925,43 +949,80 @@ const downloadExecutiveFile = async (req, res) => {
 
     const request = requests[0];
 
-    // Get the executive file (file uploaded by the request creator)
+    // Get ALL executive files (all files uploaded by the request creator before submission)
     const [files] = await pool.execute(`
       SELECT rf.*
       FROM request_files rf
       WHERE rf.request_id = ?
         AND rf.uploaded_by = ?
       ORDER BY rf.created_at ASC
-      LIMIT 1
     `, [id, request.employee_id]);
 
     if (files.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'No executive file found for this request'
+        error: 'No executive files found for this request'
       });
     }
 
-    const executiveFile = files[0];
-    const filePath = path.join(__dirname, '..', 'uploads', executiveFile.filename);
+    // If only one file, send it directly
+    if (files.length === 1) {
+      const executiveFile = files[0];
+      const filePath = path.join(__dirname, '..', 'uploads', executiveFile.filename);
 
-    // Check if file exists
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({
+          success: false,
+          error: 'File not found on server'
+        });
+      }
+
+      res.setHeader('Content-Disposition', `attachment; filename="${executiveFile.original_file_name}"`);
+      res.setHeader('Content-Type', 'application/octet-stream');
+
+      const fileStream = fs.createReadStream(filePath);
+      fileStream.pipe(res);
+
+      console.log(`📥 Executive file downloaded: ${executiveFile.original_file_name} by user ${userId}`);
+      return;
+    }
+
+    // Multiple files - create a ZIP archive
+    const zipFilename = `Original_Request_${request.request_number || id}.zip`;
+    res.setHeader('Content-Disposition', `attachment; filename="${zipFilename}"`);
+    res.setHeader('Content-Type', 'application/zip');
+
+    const archive = archiver('zip', {
+      zlib: { level: 9 } // Maximum compression
+    });
+
+    // Handle archiver errors
+    archive.on('error', (err) => {
+      console.error('Archive error:', err);
+      res.status(500).json({
         success: false,
-        error: 'File not found on server'
+        error: 'Error creating archive'
       });
+    });
+
+    // Pipe archive to response
+    archive.pipe(res);
+
+    // Add each file to the archive
+    for (const file of files) {
+      const filePath = path.join(__dirname, '..', 'uploads', file.filename);
+
+      if (fs.existsSync(filePath)) {
+        archive.file(filePath, { name: file.original_file_name });
+      } else {
+        console.warn(`⚠️ File not found: ${filePath}`);
+      }
     }
 
-    // Set appropriate headers for download
-    res.setHeader('Content-Disposition', `attachment; filename="${executiveFile.original_file_name}"`);
-    res.setHeader('Content-Type', 'application/octet-stream');
+    // Finalize the archive
+    await archive.finalize();
 
-    // Stream the file
-    const fileStream = fs.createReadStream(filePath);
-    fileStream.pipe(res);
-
-    console.log(`📥 Executive file downloaded: ${executiveFile.original_file_name} by user ${userId}`);
+    console.log(`📥 Executive files (${files.length}) downloaded as ZIP by user ${userId}`);
 
   } catch (error) {
     console.error('Download executive file error:', error);

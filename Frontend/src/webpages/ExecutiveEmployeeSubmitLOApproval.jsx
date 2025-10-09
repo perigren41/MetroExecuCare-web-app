@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {  X, Check, Download, ExternalLink, Eye} from "lucide-react";
 import NavBarMain from "@/Components/NavBarMain";
 import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
@@ -10,45 +10,72 @@ import SuccessIcon from "@/assets/success.svg";
 import ErrorIcon from "@/assets/error.svg";
 import apiService from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 
 export default function SubmitLetterOfAuthorization() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  const [uploadedFile, setUploadedFile] = useState(null);
+  const [uploadedFiles, setUploadedFiles] = useState([]); // Changed to array
   const [showModal, setShowModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [modalState, setModalState] = useState('confirm'); // 'confirm', 'success', 'error'
   const [isDragOver, setIsDragOver] = useState(false);
-  const [tempFile, setTempFile] = useState(null); // Temporary file for confirmation
+  const [tempFiles, setTempFiles] = useState([]); // Changed to array for multiple files
+  const [hasActiveRequest, setHasActiveRequest] = useState(false);
+  const [activeRequest, setActiveRequest] = useState(null);
+  const [isCheckingRequest, setIsCheckingRequest] = useState(true);
+  const [showDuplicateModal, setShowDuplicateModal] = useState(false);
 
-  const handleFileUpload = (file) => {
-    if (file && file.type === 'application/pdf') {
-      setTempFile(file); // Store temporarily until confirmed
+  // Check for active request on component mount
+  useEffect(() => {
+    const checkActiveRequest = async () => {
+      try {
+        const response = await apiService.checkActiveRequest();
+        if (response.success && response.hasActiveRequest) {
+          setHasActiveRequest(true);
+          setActiveRequest(response.activeRequest);
+          setShowDuplicateModal(true);
+        }
+      } catch (error) {
+        console.error('Error checking active request:', error);
+      } finally {
+        setIsCheckingRequest(false);
+      }
+    };
+
+    checkActiveRequest();
+  }, []);
+
+  const handleFileUpload = (files) => {
+    // Filter for PDF files only
+    const pdfFiles = Array.from(files).filter(file => file.type === 'application/pdf');
+    if (pdfFiles.length > 0) {
+      setTempFiles(pdfFiles); // Store all PDF files temporarily until confirmed
+    } else {
+      alert('Please select PDF files only');
     }
   };
 
   const confirmFileUpload = () => {
-    if (tempFile) {
-      setUploadedFile(tempFile);
-      setTempFile(null);
+    if (tempFiles.length > 0) {
+      setUploadedFiles(prev => [...prev, ...tempFiles]); // Add to existing files
+      setTempFiles([]);
       setShowUploadModal(false);
     }
   };
 
   const cancelFileUpload = () => {
-    setTempFile(null);
+    setTempFiles([]);
   };
 
-  const removeUploadedFile = () => {
-    setUploadedFile(null);
-    setTempFile(null);
+  const removeUploadedFile = (index) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleFileInputChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      handleFileUpload(file);
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      handleFileUpload(files);
     }
   };
 
@@ -65,14 +92,14 @@ export default function SubmitLetterOfAuthorization() {
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragOver(false);
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      handleFileUpload(file);
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      handleFileUpload(files);
     }
   };
 
   const handleUploadAreaClick = () => {
-    if (!tempFile) {
+    if (tempFiles.length === 0) {
       document.getElementById('fileInput').click();
     }
   };
@@ -85,17 +112,18 @@ export default function SubmitLetterOfAuthorization() {
   const closeUploadModal = () => {
     setShowUploadModal(false);
     setIsDragOver(false);
-    setTempFile(null); // Clear temp file when closing
+    setTempFiles([]); // Clear temp files when closing
   };
 
   const handleSubmit = async () => {
     try {
-      console.log("Submitting Letter of Approval request with file:", uploadedFile?.name);
+      const fileNames = uploadedFiles.map(f => f.name).join(', ');
+      console.log(`Submitting Letter of Approval request with ${uploadedFiles.length} file(s):`, fileNames);
 
       // Create the checkup request
       const requestData = {
         request_type: 'letter_of_approval',
-        letter_purpose: `Annual executive health checkup - Letter of Approval request submitted via web portal with uploaded document: ${uploadedFile?.name || 'document'}`,
+        letter_purpose: `Annual executive health checkup - Letter of Approval request submitted via web portal with ${uploadedFiles.length} document(s): ${fileNames}`,
         priority_level: 'normal'
       };
 
@@ -106,22 +134,30 @@ export default function SubmitLetterOfAuthorization() {
         console.log('✅ Request created successfully:', response.data.request);
         const requestId = response.data.request.id;
 
-        // Now upload the PDF file to request_files table
-        if (uploadedFile) {
-          console.log('📄 Uploading PDF file to request_files...');
-          try {
-            const uploadResponse = await apiService.uploadRequestFile(requestId, uploadedFile);
-            if (uploadResponse.success) {
-              console.log('✅ File uploaded successfully:', uploadResponse.data);
-              setModalState('success');
-            } else {
-              console.error('❌ Failed to upload file:', uploadResponse);
-              setModalState('success'); // Still success since request was created
+        // Upload all files sequentially
+        if (uploadedFiles.length > 0) {
+          console.log(`📄 Uploading ${uploadedFiles.length} PDF file(s) to request_files...`);
+          let uploadSuccessCount = 0;
+
+          for (let i = 0; i < uploadedFiles.length; i++) {
+            try {
+              const file = uploadedFiles[i];
+              console.log(`Uploading file ${i + 1}/${uploadedFiles.length}: ${file.name}`);
+              const uploadResponse = await apiService.uploadRequestFile(requestId, file);
+
+              if (uploadResponse.success) {
+                console.log(`✅ File ${i + 1} uploaded successfully:`, uploadResponse.data);
+                uploadSuccessCount++;
+              } else {
+                console.error(`❌ Failed to upload file ${i + 1}:`, uploadResponse);
+              }
+            } catch (uploadError) {
+              console.error(`❌ Error uploading file ${i + 1}:`, uploadError);
             }
-          } catch (uploadError) {
-            console.error('❌ Error uploading file:', uploadError);
-            setModalState('success'); // Still success since request was created
           }
+
+          console.log(`✅ Successfully uploaded ${uploadSuccessCount}/${uploadedFiles.length} files`);
+          setModalState('success');
         } else {
           setModalState('success');
         }
@@ -134,6 +170,35 @@ export default function SubmitLetterOfAuthorization() {
       setModalState('error');
     }
   };
+
+  // Show loading while checking for active request
+  if (isCheckingRequest) {
+    return (
+      <>
+        <NavBarMain
+          user={{
+            ...user,
+            name: user ? `${user.first_name} ${user.last_name}` : "Loading..."
+          }}
+          onLogout={() => {
+            sessionStorage.removeItem("user");
+            sessionStorage.clear();
+            localStorage.removeItem('authToken');
+            navigate("/login", { replace: true });
+          }}
+          showHomeButton={true}
+          backButtonIcon={BackSquareIconWhite}
+          logo={MetroBankLogo}
+        />
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900 mx-auto mb-4"></div>
+            <p className="text-gray-600">Checking for active requests...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -154,6 +219,64 @@ export default function SubmitLetterOfAuthorization() {
         logo={MetroBankLogo}
       />
 
+      {/* Duplicate Request Modal */}
+      {showDuplicateModal && hasActiveRequest && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Active Request Exists</h2>
+              <p className="text-gray-600 mb-4">
+                You already have an active request. You can only submit a new request after your current request is completed, approved, or rejected.
+              </p>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 w-full">
+                <p className="text-sm text-gray-700">
+                  <span className="font-semibold">Request Number:</span> {activeRequest?.request_number}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <span className="font-semibold">Type:</span> {activeRequest?.request_type === 'letter_of_approval' ? 'Letter of Approval' : 'Letter of Authorization'}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <span className="font-semibold">Status:</span> <span className="capitalize">{activeRequest?.current_status?.replace('_', ' ')}</span>
+                </p>
+              </div>
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => navigate('/loa-status-tracker', {
+                    state: {
+                      requestDetails: {
+                        ...activeRequest,
+                        // Ensure consistent field mappings
+                        request_type: activeRequest.request_type || "Letter of Approval",
+                        request_id: activeRequest.id,
+                        created_at: activeRequest.created_at,
+                        first_name: user?.first_name,
+                        last_name: user?.last_name,
+                        current_status: activeRequest.current_status,
+                        request_number: activeRequest.request_number,
+                      }
+                    }
+                  })}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 cursor-pointer"
+                >
+                  View Request
+                </button>
+                <button
+                  onClick={() => navigate('/executive-employee-dashboard')}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition duration-200 cursor-pointer"
+                >
+                  Go to Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Page Title */}
       <h1 className="text-center text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-4 pt-4 sm:pt-6 text-blue-900 px-4">
         Submit Letter of Approval
@@ -173,20 +296,27 @@ export default function SubmitLetterOfAuthorization() {
 
             {/* Left Side: Upload Button */}
             <div className="flex flex-col items-center justify-end h-64 sm:h-80 md:h-96 w-32 sm:w-40 md:w-48">
-              {/* File info above button - fixed height container */}
-              <div className="h-12 sm:h-14 md:h-16 flex flex-col justify-end mb-2 sm:mb-3 md:mb-4">
-                {uploadedFile && (
-                  <div className="flex flex-col sm:flex-row items-center space-x-0 sm:space-x-2 space-y-1 sm:space-y-0">
-                    <p className="text-xs text-gray-700 text-center max-w-28 sm:max-w-32">
-                      {uploadedFile.name} successfully uploaded!
+              {/* File info above button - scrollable container for multiple files */}
+              <div className="max-h-32 sm:max-h-36 md:max-h-40 overflow-y-auto flex flex-col justify-end mb-2 sm:mb-3 md:mb-4 w-full">
+                {uploadedFiles.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-green-700 text-center">
+                      {uploadedFiles.length} file{uploadedFiles.length > 1 ? 's' : ''} uploaded!
                     </p>
-                    <button
-                      onClick={removeUploadedFile}
-                      className="text-red-500 hover:text-red-700 p-1 sm:p-2"
-                      title="Remove file"
-                    >
-                      <X className="w-3 h-3 sm:w-4 sm:h-4" />
-                    </button>
+                    {uploadedFiles.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between bg-green-50 rounded px-2 py-1">
+                        <p className="text-xs text-gray-700 truncate flex-1" title={file.name}>
+                          {file.name}
+                        </p>
+                        <button
+                          onClick={() => removeUploadedFile(index)}
+                          className="text-red-500 hover:text-red-700 p-1 ml-1 flex-shrink-0 cursor-pointer"
+                          title="Remove file"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
@@ -194,7 +324,7 @@ export default function SubmitLetterOfAuthorization() {
               <button
                 type="button"
                 onClick={() => setShowUploadModal(true)}
-                className="bg-blue-800 text-white px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 rounded-full shadow-md hover:bg-blue-900 text-xs sm:text-sm md:text-base font-medium mb-2 sm:mb-3 md:mb-4 whitespace-nowrap"
+                className="bg-blue-800 text-white px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 rounded-full shadow-md hover:bg-blue-900 text-xs sm:text-sm md:text-base font-medium mb-2 sm:mb-3 md:mb-4 whitespace-nowrap cursor-pointer"
               >
                 Upload
               </button>
@@ -224,13 +354,13 @@ export default function SubmitLetterOfAuthorization() {
                   <button
                     onClick={() => {
                       const link = document.createElement('a');
-                      link.href = 'http://localhost:5019/uploads/documents/letters/Request%20%20Letter%20of%20Approval.pdf';
+                      link.href = 'http://localhost:3000/uploads/documents/letters/Request%20%20Letter%20of%20Approval.pdf';
                       link.download = 'Request_Letter_of_Approval.pdf';
                       document.body.appendChild(link);
                       link.click();
                       document.body.removeChild(link);
                     }}
-                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
+                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
                     <span>Download PDF</span>
@@ -244,11 +374,20 @@ export default function SubmitLetterOfAuthorization() {
                 </div>
               </div>
 
-              {uploadedFile && (
-                <div className="mt-3 text-center">
-                  <p className="text-xs sm:text-sm text-green-600 font-medium">
-                    ✓ Uploaded: {uploadedFile.name}
+              {uploadedFiles.length > 0 && (
+                <div className="mt-3 text-center w-full px-4">
+                  <p className="text-xs sm:text-sm text-green-600 font-semibold mb-1">
+                    ✓ {uploadedFiles.length} file{uploadedFiles.length > 1 ? 's' : ''} uploaded
                   </p>
+                  <div className="max-h-20 overflow-y-auto space-y-1">
+                    {uploadedFiles.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between bg-green-50 rounded px-2 py-1 text-left">
+                        <p className="text-xs text-gray-700 truncate flex-1" title={file.name}>
+                          {file.name}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -258,9 +397,9 @@ export default function SubmitLetterOfAuthorization() {
               <button
                 type="button"
                 onClick={() => setShowModal(true)}
-                disabled={!uploadedFile}
+                disabled={uploadedFiles.length === 0}
                 className={`px-4 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 rounded-full font-medium shadow-lg text-xs sm:text-sm md:text-base mb-2 sm:mb-3 md:mb-4 whitespace-nowrap transition-colors ${
-                  uploadedFile
+                  uploadedFiles.length > 0
                     ? 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
@@ -291,8 +430,8 @@ export default function SubmitLetterOfAuthorization() {
                 {/* Action Buttons */}
                 <div className="space-y-2">
                   <button
-                    onClick={() => window.open('http://localhost:5019/uploads/documents/letters/Request%20%20Letter%20of%20Approval.pdf', '_blank')}
-                    className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs"
+                    onClick={() => window.open('http://localhost:5019/uploads/documents/letters/Request%20Letter%20of%20Approval.pdf', '_blank')}
+                    className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs cursor-pointer"
                   >
                     <Eye className="w-3 h-3" />
                     <span>View</span>
@@ -307,7 +446,7 @@ export default function SubmitLetterOfAuthorization() {
                       link.click();
                       document.body.removeChild(link);
                     }}
-                    className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs"
+                    className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs cursor-pointer"
                   >
                     <Download className="w-3 h-3" />
                     <span>Download</span>
@@ -315,11 +454,27 @@ export default function SubmitLetterOfAuthorization() {
                 </div>
               </div>
 
-              {uploadedFile && (
-                <div className="mt-2 text-center">
-                  <p className="text-xs text-green-600 font-medium">
-                    ✓ Uploaded: {uploadedFile.name}
+              {uploadedFiles.length > 0 && (
+                <div className="mt-2 text-center w-full px-4">
+                  <p className="text-xs text-green-600 font-semibold mb-1">
+                    ✓ {uploadedFiles.length} file{uploadedFiles.length > 1 ? 's' : ''} uploaded
                   </p>
+                  <div className="max-h-20 overflow-y-auto space-y-1">
+                    {uploadedFiles.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between bg-green-50 rounded px-2 py-1 text-left">
+                        <p className="text-xs text-gray-700 truncate flex-1" title={file.name}>
+                          {file.name}
+                        </p>
+                        <button
+                          onClick={() => removeUploadedFile(index)}
+                          className="text-red-500 hover:text-red-700 p-1 ml-1 cursor-pointer"
+                          title="Remove"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -329,22 +484,31 @@ export default function SubmitLetterOfAuthorization() {
               <button
                 type="button"
                 onClick={() => setShowUploadModal(true)}
-                className="bg-blue-800 text-white px-6 py-2.5 rounded-full shadow-md hover:bg-blue-900 text-sm font-medium min-w-24"
+                className="bg-blue-800 text-white px-6 py-2.5 rounded-full shadow-md hover:bg-blue-900 text-sm font-medium min-w-24 cursor-pointer"
               >
                 Upload
               </button>
-              {uploadedFile && (
-                <div className="flex flex-col items-center space-y-1">
-                  <p className="text-xs text-gray-700 text-center max-w-48">
-                    {uploadedFile.name} successfully uploaded!
+              {uploadedFiles.length > 0 && (
+                <div className="flex flex-col items-center space-y-1 w-full px-4">
+                  <p className="text-xs text-green-600 font-semibold">
+                    {uploadedFiles.length} file{uploadedFiles.length > 1 ? 's' : ''} ready
                   </p>
-                  <button
-                    onClick={removeUploadedFile}
-                    className="text-red-500 hover:text-red-700 p-1.5 rounded-full hover:bg-red-50"
-                    title="Remove file"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                  <div className="max-h-24 overflow-y-auto space-y-1 w-full">
+                    {uploadedFiles.map((file, index) => (
+                      <div key={index} className="flex items-center justify-between bg-green-50 rounded px-2 py-1">
+                        <p className="text-xs text-gray-700 truncate flex-1" title={file.name}>
+                          {file.name}
+                        </p>
+                        <button
+                          onClick={() => removeUploadedFile(index)}
+                          className="text-red-500 hover:text-red-700 p-1 ml-1 cursor-pointer"
+                          title="Remove file"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -354,9 +518,9 @@ export default function SubmitLetterOfAuthorization() {
               <button
                 type="button"
                 onClick={() => setShowModal(true)}
-                disabled={!uploadedFile}
+                disabled={uploadedFiles.length === 0}
                 className={`px-6 py-2.5 rounded-full font-medium shadow-lg text-sm min-w-24 transition-colors ${
-                  uploadedFile
+                  uploadedFiles.length > 0
                     ? 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}
@@ -379,7 +543,7 @@ export default function SubmitLetterOfAuthorization() {
               <h2 className="text-white text-sm sm:text-base font-semibold">Upload</h2>
               <button
                 onClick={closeUploadModal}
-                className="text-white hover:text-gray-200 transition-colors p-1"
+                className="text-white hover:text-gray-200 transition-colors p-1 cursor-pointer"
               >
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
@@ -387,7 +551,7 @@ export default function SubmitLetterOfAuthorization() {
 
             {/* Modal Body */}
             <div className="p-3 sm:p-4">
-              {!tempFile ? (
+              {tempFiles.length === 0 ? (
                 /* Upload Area */
                 <div
                   className={`flex flex-col items-center justify-center rounded-xl sm:rounded-2xl
@@ -412,49 +576,56 @@ export default function SubmitLetterOfAuthorization() {
                     }
                   </p>
 
-                  {/* Hidden File Input */}
+                  {/* Hidden File Input - now accepts multiple files */}
                   <input
                     id="fileInput"
                     type="file"
                     accept=".pdf"
+                    multiple
                     onChange={handleFileInputChange}
                     className="hidden"
                   />
                 </div>
               ) : (
-                /* File Confirmation Area */
+                /* File Confirmation Area - Multiple Files */
                 <div className="px-2 sm:px-4 md:px-6 py-3 sm:py-4">
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 sm:p-4 mb-3 sm:mb-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2 sm:space-x-3">
-                        <img src={DocumentIcon} alt="Document" className="w-6 h-6 sm:w-8 sm:h-8 flex-shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{tempFile.name}</p>
-                          <p className="text-xs text-gray-500">{(tempFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                  <p className="text-xs sm:text-sm font-semibold text-gray-700 mb-2 text-center">
+                    {tempFiles.length} file{tempFiles.length > 1 ? 's' : ''} selected
+                  </p>
+
+                  <div className="max-h-64 overflow-y-auto space-y-2 mb-3 sm:mb-4">
+                    {tempFiles.map((file, index) => (
+                      <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg p-2 sm:p-3">
+                        <div className="flex items-center space-x-2">
+                          <img src={DocumentIcon} alt="Document" className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                            <p className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
 
                   <p className="text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4 text-center">
-                    Is this the correct file you want to upload?
+                    Are these the correct files you want to upload?
                   </p>
 
                   {/* Confirmation Buttons */}
                   <div className="flex justify-center space-x-2 sm:space-x-4">
                     <button
                       onClick={cancelFileUpload}
-                      className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-full border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 text-xs sm:text-sm"
+                      className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-full border border-red-300 bg-red-50 text-red-700 hover:bg-red-100 text-xs sm:text-sm cursor-pointer"
                     >
                       <X className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span>Remove</span>
+                      <span>Cancel</span>
                     </button>
                     <button
                       onClick={confirmFileUpload}
-                      className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-full bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm"
+                      className="flex items-center space-x-1 sm:space-x-2 px-3 sm:px-4 py-2 rounded-full bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm cursor-pointer"
                     >
                       <Check className="w-3 h-3 sm:w-4 sm:h-4" />
-                      <span>Confirm</span>
+                      <span>Confirm All</span>
                     </button>
                   </div>
                 </div>
@@ -502,13 +673,13 @@ export default function SubmitLetterOfAuthorization() {
                   <div className="flex flex-col sm:flex-row justify-center sm:justify-end space-y-2 sm:space-y-0 sm:space-x-3 md:space-x-4">
                     <button
                       onClick={closeModal}
-                      className="px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 rounded-full border border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs sm:text-sm transition-colors"
+                      className="px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 rounded-full border border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 text-xs sm:text-sm transition-colors cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       onClick={handleSubmit}
-                      className="px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 rounded-full bg-blue-900 text-white hover:bg-blue-800 text-xs sm:text-sm transition-colors"
+                      className="px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 rounded-full bg-blue-900 text-white hover:bg-blue-800 text-xs sm:text-sm transition-colors cursor-pointer"
                     >
                       Submit
                     </button>
@@ -530,10 +701,10 @@ export default function SubmitLetterOfAuthorization() {
                     Please wait for an automated notification email from the Human Resource Personnel regarding the acceptance of your request.
                   </p>
                   <button
-                    onClick={closeModal}
-                    className="px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 rounded-full bg-blue-900 hover:bg-blue-800 text-white text-xs sm:text-sm md:text-base transition-colors"
+                    onClick={() => navigate('/executive-employee-dashboard')}
+                    className="px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 rounded-full bg-blue-900 hover:bg-blue-800 text-white text-xs sm:text-sm md:text-base transition-colors cursor-pointer"
                   >
-                    Close
+                    Go to Dashboard
                   </button>
                 </div>
               )}
@@ -549,7 +720,7 @@ export default function SubmitLetterOfAuthorization() {
                   </h3>
                   <button
                     onClick={closeModal}
-                    className="px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 rounded-full bg-blue-900 hover:bg-blue-800 text-white text-xs sm:text-sm md:text-base transition-colors"
+                    className="px-5 sm:px-6 md:px-8 py-2 sm:py-2.5 md:py-3 rounded-full bg-blue-900 hover:bg-blue-800 text-white text-xs sm:text-sm md:text-base transition-colors cursor-pointer"
                   >
                     Close
                   </button>

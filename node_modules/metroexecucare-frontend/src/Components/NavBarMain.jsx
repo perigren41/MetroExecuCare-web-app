@@ -8,7 +8,8 @@ import BackSquareIconWhite from '../assets/BackSquareIconWhite.svg';
 import ProfileIcon from '../assets/ProfileIcon.svg';
 import LogoutIcon from '../assets/LogoutIcon.svg';
 import AlertIcon from '../assets/AlertIcon.svg';
-import HomeIcon from '../assets/HomeIconWhite.svg'; // Add this icon to your assets
+import HomeIcon from '../assets/HomeIconWhite.svg';
+import ProfileGray from '../assets/profilegray.svg';
 
 const Navbar = ({
   user,
@@ -45,6 +46,15 @@ const Navbar = ({
     
     // Default back behavior
     navigate(-1);
+  };
+
+  // Helper function to get profile picture URL
+  const getProfilePictureUrl = (picturePath) => {
+    if (!picturePath) return null;
+    if (picturePath.startsWith('http')) return picturePath;
+    if (picturePath.startsWith('data:')) return picturePath;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
+    return `${baseUrl}${picturePath}`;
   };
 
   const handleHomeClick = () => {
@@ -128,13 +138,13 @@ const Navbar = ({
   return (
     <>
       <header
-        className="w-full h-[56px] flex items-center justify-between px-6 py-1 relative md:px-[162px] sm:px-4"
+        className="w-full h-[56px] flex items-center justify-between px-4 sm:px-6 md:px-8 lg:px-[162px] py-1 relative"
         style={{
           background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
         }}
       >
         {/* Left - Navigation Buttons */}
-        <div className="flex items-center gap-2 min-w-[60px]">
+        <div className="flex items-center gap-1 sm:gap-2 min-w-[60px]">
           {shouldShowBackButton() && (
             <button
               onClick={handleBackClick}
@@ -165,34 +175,36 @@ const Navbar = ({
         </div>
 
         {/* Center - Logo */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center">
+        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center gap-2">
           <img
             src={logo || mainLogo}
             alt="MetroExecuCare Logo"
-            className="h-[60px] w-[60px] object-contain"
+            className="h-[40px] w-[40px] sm:h-[50px] sm:w-[50px] md:h-[60px] md:w-[60px] object-contain"
           />
-          <h1 className="text-white text-lg font-semibold">MetroExecuCare</h1>
+          <h1 className="hidden sm:block text-white text-base md:text-lg font-semibold">MetroExecuCare</h1>
         </div>
 
         {/* Right - User Name + Profile */}
         <div className="relative flex items-center" ref={dropdownRef}>
           <button
             onClick={handleUserClick}
-            className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
+            className="flex items-center gap-1 sm:gap-2 hover:opacity-80 transition cursor-pointer"
           >
-            <span className="text-base font-medium text-white">
+            <span className="hidden sm:block text-sm md:text-base font-medium text-white">
               {user ? `${user.first_name} ${user.last_name}` : 'User'}
             </span>
-            {user?.profilePic ? (
+            {user?.profile_picture || user?.profilePic ? (
               <img
-                src={user.profilePic}
+                src={getProfilePictureUrl(user.profile_picture || user.profilePic) || ProfileGray}
                 alt={`${user.first_name} ${user.last_name} profile`}
                 className="w-7 h-7 rounded-full object-cover border border-white"
               />
             ) : (
-              <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs border border-white">
-                {user ? `${user.first_name.charAt(0)}${user.last_name.charAt(0)}` : 'U'}
-              </div>
+              <img
+                src={ProfileGray}
+                alt="Default profile"
+                className="w-7 h-7 rounded-full object-cover border border-white"
+              />
             )}
           </button>
 

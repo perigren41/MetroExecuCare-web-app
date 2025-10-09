@@ -5,6 +5,20 @@
 
 const EmailTemplates = {
   /**
+   * Helper function to format role names for display
+   */
+  formatRoleName(role) {
+    const roleNames = {
+      'hr_personnel': 'Human Resource Personnel',
+      'benefits_officer': 'Benefits Officer',
+      'welfare_head': 'Division Head',
+      'admin': 'System Administrator',
+      'executive': 'Executive'
+    };
+    return roleNames[role] || role;
+  },
+
+  /**
    * Base template wrapper for all emails
    */
   getBaseTemplate(content, title = 'MetroExecuCare Notification') {
@@ -424,7 +438,7 @@ const EmailTemplates = {
         <span class="detail-value"><span class="status ${status}">${status.toUpperCase()}</span></span>
 
         <span class="detail-label">Updated By:</span>
-        <span class="detail-value">${approver ? `${approver.first_name} ${approver.last_name} (${approver.role || approver.position || 'HR Personnel'})` : 'System Administrator'}</span>
+        <span class="detail-value">${approver ? `${approver.first_name} ${approver.last_name} (${this.formatRoleName(approver.role) || approver.position || 'Human Resource Personnel'})` : 'System Administrator'}</span>
 
         <span class="detail-label">Date:</span>
         <span class="detail-value">${new Date().toLocaleDateString()}</span>
@@ -476,6 +490,16 @@ ${status === 'rejected' ? `
       day: 'numeric'
     });
 
+    // Handle hrPersonnel being undefined, array, or object
+    let approverName = 'HR Personnel';
+    if (hrPersonnel) {
+      if (Array.isArray(hrPersonnel) && hrPersonnel.length > 0) {
+        approverName = `${hrPersonnel[0].first_name} ${hrPersonnel[0].last_name}`;
+      } else if (hrPersonnel.first_name) {
+        approverName = `${hrPersonnel.first_name} ${hrPersonnel.last_name}`;
+      }
+    }
+
     const content = `
 <h2 style="color: #28a745; margin-bottom: 20px;">🎉 Executive Clearance Complete - Request Approved!</h2>
 
@@ -499,7 +523,7 @@ ${status === 'rejected' ? `
         <span class="detail-value">${approvalDate}</span>
 
         <span class="detail-label">Approved By:</span>
-        <span class="detail-value">${hrPersonnel.first_name} ${hrPersonnel.last_name} - Executive Clearance Review</span>
+        <span class="detail-value">${approverName} - Executive Clearance Review</span>
     </div>
 </div>
 
@@ -717,6 +741,162 @@ ${rejectionReason ? `
 <p>Thank you for using the MetroExecuCare system. We wish you good health!</p>`;
 
     return this.getBaseTemplate(content, 'Request Approved - Download Your Letters');
+  },
+
+  /**
+   * HR Final Verification Task Notification
+   */
+  hrFinalVerificationNotification(requestData, executive, hrPersonnel, welfareHead) {
+    const content = `
+<h2 style="color: #2c5aa0; margin-bottom: 20px;">📋 Final Document Verification Required</h2>
+
+<p>Dear ${hrPersonnel.first_name} ${hrPersonnel.last_name},</p>
+
+<p>Request <strong>${requestData.request_number}</strong> has been approved by the <strong>Division Head</strong> and is now ready for your final document verification and clearance.</p>
+
+<div class="info-box">
+    <h3>Request Information</h3>
+    <div class="detail-grid">
+        <span class="detail-label">Request Number:</span>
+        <span class="detail-value"><strong>${requestData.request_number}</strong></span>
+
+        <span class="detail-label">Executive:</span>
+        <span class="detail-value">${executive.first_name} ${executive.last_name}</span>
+
+        <span class="detail-label">Department:</span>
+        <span class="detail-value">${executive.department}</span>
+
+        <span class="detail-label">Request Type:</span>
+        <span class="detail-value">${requestData.request_type === 'letter_of_approval' ? 'Letter of Approval' : 'Letter of Authorization'}</span>
+
+        <span class="detail-label">Approved By:</span>
+        <span class="detail-value">${welfareHead ? `${welfareHead.first_name} ${welfareHead.last_name}` : 'Division Head'}</span>
+    </div>
+</div>
+
+<div class="urgent">
+    <strong>✅ Final Step:</strong> This request has completed all approval stages. Please verify all documents and send the final approval letter to the executive.
+</div>
+
+<p><strong>Your responsibilities for final verification:</strong></p>
+<ul>
+    <li>Review all uploaded documents for completeness</li>
+    <li>Verify all approval signatures are in place</li>
+    <li>Generate and attach the final approval letter</li>
+    <li>Complete the request and notify the executive</li>
+</ul>
+
+<a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}" class="action-button">
+    Complete Final Verification
+</a>
+
+<p><strong>Note:</strong> The executive is waiting for your final clearance to proceed with their scheduled checkup.</p>`;
+
+    return this.getBaseTemplate(content, 'Final Verification Required - MetroExecuCare');
+  },
+
+  /**
+   * File Request Notification - Approver requests additional files from executive
+   * @param {Object} data - { to, executiveName, requesterName, requesterRole, requestId, requestType, message }
+   */
+  fileRequestNotification(data) {
+    const { executiveName, requesterName, requesterRole, requestId, requestType, message } = data;
+
+    const content = `
+<h2 style="color: #2c5aa0; margin-bottom: 20px;">📎 Additional Files Requested</h2>
+
+<p>Dear ${executiveName},</p>
+
+<p>The <strong>${requesterRole}</strong> reviewing your checkup request has requested additional files to complete their review.</p>
+
+<div class="info-box">
+    <h3>Request Information</h3>
+    <div class="detail-grid">
+        <span class="detail-label">Request ID:</span>
+        <span class="detail-value"><strong>${requestId}</strong></span>
+
+        <span class="detail-label">Request Type:</span>
+        <span class="detail-value">${requestType === 'letter_of_approval' ? 'Letter of Approval' : 'Letter of Authorization'}</span>
+
+        <span class="detail-label">Requested By:</span>
+        <span class="detail-value">${requesterName} (${requesterRole})</span>
+    </div>
+</div>
+
+<div class="info-box" style="border-left-color: #f59e0b;">
+    <h3 style="color: #f59e0b;">📝 Message from ${requesterRole}</h3>
+    <p style="margin: 10px 0; font-style: italic; color: #666;">"${message}"</p>
+</div>
+
+<div class="urgent">
+    <strong>⚠️ Action Required:</strong> Please upload the requested files as soon as possible to avoid delays in processing your request.
+</div>
+
+<p><strong>How to upload the requested files:</strong></p>
+<ol>
+    <li>Log in to MetroExecuCare</li>
+    <li>Go to your LOA Status Tracker</li>
+    <li>Click "View Full Details" on your request</li>
+    <li>Upload the requested files in the file request section</li>
+</ol>
+
+<a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}" class="action-button">
+    Upload Files Now
+</a>
+
+<p><strong>Note:</strong> Your request review will resume once the requested files are uploaded.</p>`;
+
+    return this.getBaseTemplate(content, 'Additional Files Requested - MetroExecuCare');
+  },
+
+  /**
+   * File Uploaded Notification - Executive uploaded requested files
+   * @param {Object} data - { to, requesterName, executiveName, requestId }
+   */
+  fileUploadedNotification(data) {
+    const { requesterName, executiveName, requestId } = data;
+
+    const content = `
+<h2 style="color: #2c5aa0; margin-bottom: 20px;">✅ Requested Files Uploaded</h2>
+
+<p>Dear ${requesterName},</p>
+
+<p><strong>${executiveName}</strong> has uploaded the files you requested for their checkup request.</p>
+
+<div class="info-box">
+    <h3>Request Information</h3>
+    <div class="detail-grid">
+        <span class="detail-label">Request ID:</span>
+        <span class="detail-value"><strong>${requestId}</strong></span>
+
+        <span class="detail-label">Executive:</span>
+        <span class="detail-value">${executiveName}</span>
+
+        <span class="detail-label">Status:</span>
+        <span class="detail-value">Files Uploaded</span>
+    </div>
+</div>
+
+<div class="urgent">
+    <strong>📋 Next Steps:</strong> Please review the uploaded files and continue processing the request.
+</div>
+
+<p><strong>To review the files:</strong></p>
+<ol>
+    <li>Log in to MetroExecuCare</li>
+    <li>Navigate to Pending Requests</li>
+    <li>Open request ${requestId}</li>
+    <li>Review the newly uploaded files</li>
+    <li>Continue with the approval process</li>
+</ol>
+
+<a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}" class="action-button">
+    Review Files Now
+</a>
+
+<p><strong>Note:</strong> All requested files have been uploaded. You can now proceed with your review.</p>`;
+
+    return this.getBaseTemplate(content, 'Files Uploaded - MetroExecuCare');
   }
 };
 

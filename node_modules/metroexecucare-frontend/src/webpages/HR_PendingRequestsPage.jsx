@@ -57,32 +57,27 @@ export default function HR_PendingRequestsPage() {
         try {
             setLoading(true);
 
-            // Fetch requests based on what stage needs the current user's action
-            let statusFilter = '';
-
-            if (user?.role === 'hr_personnel') {
-                // HR Personnel: Show requests that need to be claimed (pending) and those assigned to current HR
-                statusFilter = 'pending,hr_processing';
-            } else if (user?.role === 'benefits_officer') {
-                // Benefits Officer: Show requests that HR has approved and now need Benefits Officer's approval
-                statusFilter = 'benefits_review';
-            } else if (user?.role === 'welfare_head') {
-                // Welfare Head: Show requests that have been approved by Benefits Officer and need final approval
-                statusFilter = 'welfare_review';
-            } else {
-                // Fallback: show all workflow stages for debugging
-                statusFilter = 'pending,assigned_to_hr,hr_processing,benefits_review,welfare_review';
-            }
-
-            const response = await apiService.getRequests({
-                status: statusFilter,
-                sort: 'created_at',
-                order: 'desc',
-                limit: 50
-            });
+            // Use getPendingApprovals which properly filters out claimed requests
+            const response = await apiService.getPendingApprovals(user?.role);
 
             if (response.success) {
-                setPendingRequests(response.data.requests || []);
+                // getPendingApprovals returns approvals array with request details
+                const requests = response.data.approvals.map(approval => ({
+                    id: approval.request_id,
+                    request_number: approval.request_number,
+                    request_type: approval.request_type,
+                    current_status: approval.current_status,
+                    priority_level: approval.priority_level,
+                    created_at: approval.request_created_at,
+                    employee: {
+                        first_name: approval.employee_first_name,
+                        last_name: approval.employee_last_name,
+                        employee_id: approval.employee_id
+                    },
+                    assigned_hr_id: approval.approver_id,
+                    hospital_name: approval.hospital_name
+                }));
+                setPendingRequests(requests);
             } else {
                 setError('Failed to fetch pending requests');
             }
@@ -150,12 +145,28 @@ export default function HR_PendingRequestsPage() {
     const handleRecordClick = (requestId) => {
         const request = pendingRequests.find(req => req.id === requestId);
 
-        // If request is pending and user is HR personnel, show claim modal first
-        if (request && request.current_status === 'pending' && user?.role === 'hr_personnel') {
+        if (!request) return;
+
+        // Determine if request needs to be claimed based on role and status
+        let needsClaim = false;
+
+        if (user?.role === 'hr_personnel' && request.current_status === 'pending' && !request.assigned_hr_id) {
+            needsClaim = true;
+        } else if (user?.role === 'benefits_officer' && request.current_status === 'benefits_review') {
+            // Check if not yet claimed by checking if approver_id is null for benefits_stage
+            // For now, show claim modal for all benefits_review requests
+            needsClaim = true;
+        } else if (user?.role === 'welfare_head' && request.current_status === 'welfare_review') {
+            // Check if not yet claimed by checking if approver_id is null for welfare_stage
+            // For now, show claim modal for all welfare_review requests
+            needsClaim = true;
+        }
+
+        if (needsClaim) {
             setSelectedRequest(request);
             setShowClaimModal(true);
         } else {
-            // Direct navigation for already claimed requests or non-HR users
+            // Direct navigation for already claimed requests
             navigate(`/loa-submit/${requestId}`, { state: { user } });
         }
     };
@@ -712,20 +723,20 @@ export default function HR_PendingRequestsPage() {
                 {/* Desktop Table View */}
                 <div className="hidden lg:block">
                     <div
-                        className="p-[2px] rounded-t-[68px]"
+                        className="p-[2px] rounded-t-[68px] overflow-hidden"
                         style={{
                             background:
                                 "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
                         }}
                     >
                         <div
-                            className="bg-white rounded-t-[68px] overflow-hidden w-full"
+                            className="bg-white rounded-t-[68px] w-full"
                             style={{
                                 boxShadow: "0px 4px 28px 0px rgba(0, 0, 0, 0.25)",
                             }}
                         >
-                            <div className="max-h-[900px] overflow-y-auto overflow-x-auto">
-                                <table className="w-full min-w-[1400px] table-fixed border-collapse">
+                            <div className="max-h-[900px] overflow-y-auto overflow-x-auto rounded-t-[68px]">
+                                <table className="w-full border-collapse">
                                     <thead className="sticky top-0 z-10">
                                         <tr
                                             style={{
@@ -734,20 +745,19 @@ export default function HR_PendingRequestsPage() {
                                                     "linear-gradient(90deg, #3F6EC0 0%, #00539F 33%, #5D3EA4 66%, #7940A8 100%)",
                                             }}
                                         >
-                                            <th className="w-20 text-center"></th>
-                                            <th className="w-64 text-white font-semibold text-center">Name</th>
-                                            <th className="w-40 text-white font-semibold text-center">Request Number</th>
-                                            <th className="w-56 text-white font-semibold text-center">Type of Request</th>
-                                            <th className="w-40 text-white font-semibold text-center">Submitted</th>
-                                            <th className="w-56 text-white font-semibold text-center">Status</th>
-                                            <th className="w-20 text-white font-semibold text-center">Files</th>
-                                            <th className="w-28 text-center"></th>
+                                            <th className="w-[8%] text-center px-2"></th>
+                                            <th className="w-[20%] text-white font-semibold text-center px-2">Name</th>
+                                            <th className="w-[15%] text-white font-semibold text-center px-2">Request Number</th>
+                                            <th className="w-[20%] text-white font-semibold text-center px-2">Type of Request</th>
+                                            <th className="w-[15%] text-white font-semibold text-center px-2">Submitted</th>
+                                            <th className="w-[17%] text-white font-semibold text-center px-2">Status</th>
+                                            <th className="w-[5%] text-center px-2"></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {loading ? (
                                             <tr style={{ height: "72px" }}>
-                                                <td colSpan="8" className="text-center">
+                                                <td colSpan="7" className="text-center">
                                                     <div className="flex items-center justify-center py-8">
                                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#023184] mr-3"></div>
                                                         <span className="text-gray-500">Loading pending requests...</span>
@@ -756,7 +766,7 @@ export default function HR_PendingRequestsPage() {
                                             </tr>
                                         ) : error ? (
                                             <tr style={{ height: "72px" }}>
-                                                <td colSpan="8" className="text-center text-red-500">
+                                                <td colSpan="7" className="text-center text-red-500">
                                                     <div className="py-4">
                                                         <p>{error}</p>
                                                         <button
@@ -771,7 +781,7 @@ export default function HR_PendingRequestsPage() {
                                         ) : filteredRequests.map((req, index) => (
                                             <tr
                                                 key={req.id}
-                                                className={`border-b border-gray-200 hover:bg-gray-50 transition-colors cursor-pointer ${
+                                                className={`border-b border-gray-200 hover:bg-blue-50 hover:shadow-md transition-all duration-200 cursor-pointer ${
                                                     index % 2 === 0 ? "bg-white" : "bg-gray-50"
                                                 }`}
                                                 style={{ height: "72px" }}
@@ -807,20 +817,6 @@ export default function HR_PendingRequestsPage() {
                                                     <span className={getStatusStyling(req.current_status)}>
                                                         {formatStatus(req.current_status)}
                                                     </span>
-                                                </td>
-                                                <td className="text-center px-2">
-                                                    {req.files && req.files.length > 0 ? (
-                                                        <div className="flex items-center justify-center">
-                                                            <div className="flex items-center gap-1 text-blue-600">
-                                                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                                                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
-                                                                </svg>
-                                                                <span className="text-sm font-medium">{req.files.length}</span>
-                                                            </div>
-                                                        </div>
-                                                    ) : (
-                                                        <span className="text-gray-400 text-sm">-</span>
-                                                    )}
                                                 </td>
                                                 <td className="text-center">
                                                     <div className="flex justify-center">
@@ -904,7 +900,7 @@ export default function HR_PendingRequestsPage() {
                             <div className="mb-6">
                                 <p className="text-gray-700">
                                     Do you want to claim this request? Once claimed, you will be responsible for processing it
-                                    and other HR personnel will not be able to access it.
+                                    and other {user?.role === 'hr_personnel' ? 'HR personnel' : user?.role === 'benefits_officer' ? 'Benefits Officers' : 'Welfare Heads'} will not be able to access it.
                                 </p>
                             </div>
 

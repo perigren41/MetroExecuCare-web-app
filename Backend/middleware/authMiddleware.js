@@ -17,9 +17,9 @@ const authenticateToken = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
-    // Get user from database to ensure they still exist, are active, and not soft-deleted
+    // Get user from database to ensure they still exist and are active
     const [users] = await pool.execute(
-      'SELECT id, email, role, is_active FROM users WHERE id = ? AND deleted_at IS NULL',
+      'SELECT id, email, role, is_active FROM users WHERE id = ?',
       [decoded.id]
     );
 

@@ -19,7 +19,8 @@
       "Bash(set PORT=5023)",
       "Bash(set PORT=5025)",
       "Bash(set PORT=5030)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(mysql:*)"
     ],
     "deny": [],
     "ask": []

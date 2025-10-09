@@ -9,6 +9,7 @@ import LogoutBlueSolid from "@/assets/logoutbluesolid.svg";
 import LogoutRed from "@/assets/logoutred.svg";
 import ProfileIcon from '@/assets/ProfileIcon.svg';
 import LogoutIcon from '@/assets/LogoutIcon.svg';
+import ProfileGray from '@/assets/profilegray.svg';
 import ApprovalBg from "@/assets/approvalbg.svg";
 import AuthorizationBg from "@/assets/authorizationbg.svg";
 import ChevronRight from "@/assets/chevronright.svg";
@@ -122,7 +123,7 @@ function GreetingStatusCard({
           <button
             onClick={onChevronClick}
             className="bg-blue-700 text-white w-8 h-8 sm:w-10 sm:h-10 rounded-full hover:bg-blue-800
-            transition-colors duration-200 flex items-center justify-center mt-4 sm:mt-6"
+            transition-colors duration-200 flex items-center justify-center mt-4 sm:mt-6 cursor-pointer"
           >
             <img src={ChevronRight} alt="Chevron Right" className="w-4 h-4" />
           </button>
@@ -223,9 +224,9 @@ export default function ExecutiveEmployeeDashboard() {
           boxShadow: "#FCD34D",
         },
       },
-      in_progress: {
-        text: "In Progress",
-        note: "Request being processed by HR",
+      hr_processing: {
+        text: "Human Resource Processing",
+        note: "Request being processed by Human Resource",
         icon: ClockSquare,
         pillStyle: {
           backgroundColor: "#DBEAFE",
@@ -234,37 +235,48 @@ export default function ExecutiveEmployeeDashboard() {
           boxShadow: "#93C5FD",
         },
       },
-      hr_approved: {
-        text: "HR Approved",
-        note: "Waiting for Benefits Officer approval",
+      in_progress: {
+        text: "In Progress",
+        note: "Request being processed",
         icon: ClockSquare,
         pillStyle: {
-          backgroundColor: "#DBECFF",
-          color: COLORS.blue,
-          borderColor: "#B3D6FF",
-          boxShadow: "#B3D6FF",
+          backgroundColor: "#DBEAFE",
+          color: "#2563EB",
+          borderColor: "#93C5FD",
+          boxShadow: "#93C5FD",
         },
       },
-      benefits_approved: {
-        text: "Benefits Approved",
-        note: "Waiting for Welfare Head approval",
+      benefits_review: {
+        text: "Benefits Officer Review",
+        note: "Benefits Officer currently reviewing...",
         icon: ClockSquare,
         pillStyle: {
-          backgroundColor: "#DBECFF",
-          color: COLORS.blue,
-          borderColor: "#B3D6FF",
-          boxShadow: "#B3D6FF",
+          backgroundColor: "#DBEAFE",
+          color: "#2563EB",
+          borderColor: "#93C5FD",
+          boxShadow: "#93C5FD",
         },
       },
-      welfare_approved: {
-        text: "Welfare Approved",
-        note: "Final approvals completed",
+      welfare_review: {
+        text: "Division Head Review",
+        note: "Division Head currently reviewing...",
         icon: ClockSquare,
         pillStyle: {
-          backgroundColor: "#DBECFF",
-          color: COLORS.blue,
-          borderColor: "#B3D6FF",
-          boxShadow: "#B3D6FF",
+          backgroundColor: "#DBEAFE",
+          color: "#2563EB",
+          borderColor: "#93C5FD",
+          boxShadow: "#93C5FD",
+        },
+      },
+      hr_final_verification: {
+        text: "Final Human Resource Verification",
+        note: "Human Resource currently finalizing clearance...",
+        icon: ClockSquare,
+        pillStyle: {
+          backgroundColor: "#DBEAFE",
+          color: "#2563EB",
+          borderColor: "#93C5FD",
+          boxShadow: "#93C5FD",
         },
       },
       approved: {
@@ -372,6 +384,15 @@ export default function ExecutiveEmployeeDashboard() {
     return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`;
   };
 
+  // Helper function to get profile picture URL
+  const getProfilePictureUrl = (picturePath) => {
+    if (!picturePath) return null;
+    if (picturePath.startsWith('http')) return picturePath;
+    if (picturePath.startsWith('data:')) return picturePath;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
+    return `${baseUrl}${picturePath}`;
+  };
+
   // New dropdown handlers for HRDashboard style
   const handleUserClick = () => {
     setShowDropdownMenu(!showDropdownMenu);
@@ -441,16 +462,18 @@ export default function ExecutiveEmployeeDashboard() {
                 <span className="text-white text-xs font-medium sm:hidden">
                   {getUserInitials(user)}
                 </span>
-                {user && user.profilePic ? (
+                {user?.profile_picture || user?.profilePic ? (
                   <img
-                    src={user.profilePic}
+                    src={getProfilePictureUrl(user.profile_picture || user.profilePic) || ProfileGray}
                     alt={`${getUserDisplayName(user)} profile`}
                     className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full object-cover border border-white"
                   />
                 ) : (
-                  <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs border border-white">
-                    {getUserInitials(user)}
-                  </div>
+                  <img
+                    src={ProfileGray}
+                    alt="Default profile"
+                    className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full object-cover border border-white"
+                  />
                 )}
               </button>
 
@@ -460,14 +483,14 @@ export default function ExecutiveEmployeeDashboard() {
                   <div className="py-1">
                     <button
                       onClick={handleProfileClick}
-                      className="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-[#023184] hover:bg-gray-100 hover:rounded-2xl transition flex items-center gap-2 sm:gap-3"
+                      className="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-[#023184] hover:bg-gray-100 hover:rounded-2xl transition flex items-center gap-2 sm:gap-3 cursor-pointer"
                     >
                       <img src={ProfileIcon} alt="" className="w-4 h-4 sm:w-5 sm:h-5" />
                       <span>Profile</span>
                     </button>
                     <button
                       onClick={handleLogoutDropdownClick}
-                      className="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-[#023184] hover:bg-gray-100 hover:rounded-2xl transition flex items-center gap-2 sm:gap-3"
+                      className="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-[#023184] hover:bg-gray-100 hover:rounded-2xl transition flex items-center gap-2 sm:gap-3 cursor-pointer"
                     >
                       <img src={LogoutIcon} alt="" className="w-4 h-4 sm:w-5 sm:h-5" />
                       <span>Logout</span>
@@ -502,13 +525,13 @@ export default function ExecutiveEmployeeDashboard() {
             <div className="flex gap-3">
               <button
                 onClick={handleCancelLogout}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-2xl hover:bg-gray-300 transition"
+                className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-2xl hover:bg-gray-300 transition cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmLogout}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition"
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-2xl hover:bg-red-700 transition cursor-pointer"
               >
                 Logout
               </button>
@@ -523,7 +546,7 @@ export default function ExecutiveEmployeeDashboard() {
           {error}
           <button
             onClick={() => setError("")}
-            className="ml-2 text-red-900 hover:text-red-700"
+            className="ml-2 text-red-900 hover:text-red-700 cursor-pointer"
           >
             ✕
           </button>
@@ -532,15 +555,15 @@ export default function ExecutiveEmployeeDashboard() {
 
       {/* Action Buttons */}
       <div className="py-8 sm:py-12 px-4 sm:px-8">
-        <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-12 max-w-4xl mx-auto">
-          <div className="w-full max-w-xs sm:max-w-sm">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 sm:gap-6 lg:gap-12 max-w-5xl mx-auto">
+          <div className="w-full sm:w-1/2 sm:max-w-xs lg:max-w-sm">
             <ActionButton
               label={
-                <>
+                <div className="flex flex-col items-center justify-center gap-1">
                   <span className="text-sm sm:text-base md:text-lg font-bold">Request</span>
                   <span className="text-sm sm:text-base md:text-lg font-bold">Letter of Approval</span>
                   <img src={Approval} alt="approval" className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16" />
-                </>
+                </div>
               }
               backgroundImage={ApprovalBg}
               onClick={handleapprovalrequest}
@@ -548,14 +571,14 @@ export default function ExecutiveEmployeeDashboard() {
             />
           </div>
 
-          <div className="w-full max-w-xs sm:max-w-sm">
+          <div className="w-full sm:w-1/2 sm:max-w-xs lg:max-w-sm">
             <ActionButton
               label={
-                <>
+                <div className="flex flex-col items-center justify-center gap-1">
                   <span className="text-sm sm:text-base md:text-lg font-bold">Request</span>
                   <span className="text-sm sm:text-base md:text-lg font-bold">Letter of Authorization</span>
                   <img src={Authorization} alt="authorization" className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16" />
-                </>
+                </div>
               }
               backgroundImage={AuthorizationBg}
               onClick={handlerequestauthorization}

@@ -37,18 +37,30 @@ export default function HR_HistoryPage() {
     const [statusFilter, setStatusFilter] = useState("");
     const [typeFilter, setTypeFilter] = useState("");
 
-    // Fetch requests from API
+    // Fetch requests from API - Get only requests processed by current user
     const fetchRequests = async () => {
         try {
             setLoading(true);
-            const response = await apiService.getRequests({
-                status: 'approved,rejected', // Only completed requests for history
-                sort: 'created_at',
-                order: 'desc'
-            });
+            // Use getUserActionLogs to get only requests this user has approved/rejected
+            const response = await apiService.getUserActionLogs(1000); // High limit to get all history
 
             if (response.success) {
-                setRequests(response.data.requests || []);
+                // Transform action logs into request format for the table
+                const transformedRequests = response.data.map(log => ({
+                    id: log.request_id,
+                    request_number: log.request_number,
+                    request_type: log.request_type,
+                    current_status: log.action, // Use the action (approved/rejected) as status
+                    created_at: log.created_at,
+                    employee: {
+                        first_name: log.employee_first_name,
+                        last_name: log.employee_last_name
+                    },
+                    hospital_name: log.hospital_name,
+                    action: log.action,
+                    approval_stage: log.approval_stage
+                }));
+                setRequests(transformedRequests);
             } else {
                 setError('Failed to fetch requests');
             }

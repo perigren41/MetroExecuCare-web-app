@@ -186,9 +186,117 @@ const validateChangePassword = (req, res, next) => {
   next();
 };
 
+// Sanitize object - keep only allowed fields
+const sanitizeObject = (obj, allowedFields) => {
+  const sanitized = {};
+  allowedFields.forEach(field => {
+    if (obj[field] !== undefined) {
+      sanitized[field] = obj[field];
+    }
+  });
+  // Always include password and role if present in original object
+  if (obj.password) sanitized.password = obj.password;
+  if (obj.role) sanitized.role = obj.role;
+  return sanitized;
+};
+
+// Validate registration data (for authController)
+const validateRegistration = (data) => {
+  const errors = [];
+
+  // Required fields
+  if (!data.employee_id || data.employee_id.trim().length < 2) {
+    errors.push('Employee ID must be at least 2 characters');
+  }
+
+  if (!data.email || !validator.isEmail(data.email)) {
+    errors.push('Valid email is required');
+  }
+
+  if (!data.password || data.password.length < 6) {
+    errors.push('Password must be at least 6 characters');
+  }
+
+  if (!data.first_name || data.first_name.trim().length < 2) {
+    errors.push('First name must be at least 2 characters');
+  }
+
+  if (!data.last_name || data.last_name.trim().length < 2) {
+    errors.push('Last name must be at least 2 characters');
+  }
+
+  if (!data.role || !['executive', 'hr_personnel', 'benefits_officer', 'welfare_head', 'admin'].includes(data.role)) {
+    errors.push('Valid role is required');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
+// Validate profile update (for authController)
+const validateProfileUpdate = (data) => {
+  const errors = [];
+
+  if (data.first_name && data.first_name.trim().length < 2) {
+    errors.push('First name must be at least 2 characters');
+  }
+
+  if (data.last_name && data.last_name.trim().length < 2) {
+    errors.push('Last name must be at least 2 characters');
+  }
+
+  if (data.email && !validator.isEmail(data.email)) {
+    errors.push('Valid email required');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
+// Validate password change (for authController)
+const validatePasswordChange = (data) => {
+  const errors = [];
+
+  if (!data.current_password) {
+    errors.push('Current password is required');
+  }
+
+  if (!data.new_password || data.new_password.length < 6) {
+    errors.push('New password must be at least 6 characters');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
+// Validate refresh token (for authController)
+const validateRefreshToken = (data) => {
+  const errors = [];
+
+  if (!data.refreshToken) {
+    errors.push('Refresh token is required');
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};
+
 module.exports = {
   validateRegister,
   validateLogin,
   validateUpdateProfile,
-  validateChangePassword
+  validateChangePassword,
+  validateRegistration,
+  validateProfileUpdate,
+  validatePasswordChange,
+  validateRefreshToken,
+  sanitizeObject
 };

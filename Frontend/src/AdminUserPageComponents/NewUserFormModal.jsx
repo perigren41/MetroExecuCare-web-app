@@ -25,6 +25,9 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [showMissingFields, setShowMissingFields] = useState(false);
   const [missingFields, setMissingFields] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [errorDetails, setErrorDetails] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Generate Employee ID based on role
   const generateEmployeeId = (role) => {
@@ -58,7 +61,23 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
   // Pre-fill form if editing
   useEffect(() => {
     if (user) {
-      setFormData(user);
+      // Map backend fields to form fields
+      setFormData({
+        id: user.id || "",
+        employeeid: user.employee_id || "",
+        FirstName: user.first_name || "",
+        MiddleName: user.middle_name || "",
+        LastName: user.last_name || "",
+        password: "", // Don't pre-fill password for security
+        position: user.position || "",
+        role: user.role || "",
+        branch: user.branch || "",
+        email: user.email || "",
+        contact_number: user.contact_number || "",
+        department: user.department || "",
+        birthDate: user.birth_date || "", // Map birth_date from backend
+        profileImage: user.profile_picture_url || "",
+      });
     } else {
       // For new users, start with default Employee ID
       const defaultEmployeeId = "EMP" + String(Math.floor(100 + Math.random() * 900));
@@ -84,12 +103,17 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
   // Handle input change - Updated to include automatic Employee ID generation
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
+
+    // Debug log for birthDate
+    if (name === "birthDate") {
+      console.log("=== BIRTHDATE CHANGE ===", value);
+    }
+
     // If role is changing, auto-generate new Employee ID
     if (name === "role" && value) {
       const newEmployeeId = generateEmployeeId(value);
-      setFormData((prev) => ({ 
-        ...prev, 
+      setFormData((prev) => ({
+        ...prev,
         [name]: value,
         employeeid: newEmployeeId
       }));
@@ -102,9 +126,9 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Middle name is now optional, removed from required fields
     const requiredFields = [
       "FirstName",
-      "MiddleName",
       "LastName",
       "employeeid",
       "password",
@@ -117,9 +141,15 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
       "birthDate",
     ];
 
-    const missing = requiredFields.filter(
-      (field) => !formData[field] || formData[field].trim() === ""
-    );
+    const missing = requiredFields.filter((field) => {
+      const value = formData[field];
+      // Handle different field types
+      if (field === "birthDate") {
+        return !value; // Just check if birthDate exists
+      }
+      // For string fields, check if empty or whitespace only
+      return !value || (typeof value === 'string' && value.trim() === "");
+    });
 
     if (missing.length > 0) {
       setMissingFields(missing);
@@ -131,36 +161,74 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
   };
 
   // Confirm Save - Updated to use the existing employeeid
-  const confirmSave = () => {
-    // Use the existing employeeid from formData (already generated when role was selected)
-    const employeeId = formData.employeeid || generateEmployeeId(formData.role || "");
-    
-    // Generate numeric internal ID (sequential or fallback)
-    const nextId =
-      typeof confirmSave.lastId === "number"
-        ? confirmSave.lastId + 1
-        : 1; // start at 1 if none yet
-    confirmSave.lastId = nextId; // store for next save
+  const confirmSave = async () => {
+    setIsLoading(true);
+    setErrorMessage("");
+    setErrorDetails([]);
 
-    const userData = {
-      employee_id: employeeId, // Backend expects employee_id
-      first_name: formData.FirstName,
-      middle_name: formData.MiddleName,
-      last_name: formData.LastName,
-      email: formData.email,
-      password: formData.password,
-      role: formData.role,
-      department: formData.department,
-      position: formData.position,
-      contact_number: formData.contact_number,
-      branch: formData.branch,
-      birth_date: formData.birthDate,
-    };
+    try {
+      // Use the existing employeeid from formData (already generated when role was selected)
+      const employeeId = formData.employeeid || generateEmployeeId(formData.role || "");
 
-    console.log("Saving user data:", userData);
-    onSave(userData);
-    setShowConfirm(false);
-    onClose();
+      console.log("=== DEBUG: formData.birthDate ===", formData.birthDate);
+      console.log("=== DEBUG: formData ===", formData);
+
+      const userData = {
+        employee_id: employeeId, // Backend expects employee_id
+        first_name: formData.FirstName,
+        middle_name: formData.MiddleName,
+        last_name: formData.LastName,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+        department: formData.department,
+        position: formData.position,
+        contact_number: formData.contact_number,
+        branch: formData.branch,
+        birth_date: formData.birthDate,
+      };
+
+      console.log("=== DEBUG: Saving user data ===", userData);
+      console.log("=== DEBUG: birth_date value ===", userData.birth_date);
+
+      await onSave(userData);
+
+      setShowConfirm(false);
+      onClose();
+    } catch (error) {
+      console.error("Error saving user:", error);
+
+      // Close confirm modal to show error
+      setShowConfirm(false);
+
+      // Handle different error types
+      if (error.response) {
+        // Server responded with error
+        const errorData = error.response.data;
+
+        if (errorData.details && Array.isArray(errorData.details)) {
+          // Validation errors
+          setErrorMessage(errorData.error || "Validation failed");
+          setErrorDetails(errorData.details);
+        } else if (errorData.error) {
+          // Single error message
+          setErrorMessage(errorData.error);
+        } else {
+          setErrorMessage("An error occurred while saving the user");
+        }
+      } else if (error.message) {
+        // Network or other error
+        if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+          setErrorMessage("Cannot connect to server. Please check your connection.");
+        } else {
+          setErrorMessage(error.message);
+        }
+      } else {
+        setErrorMessage("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Utility to add red border for missing fields
@@ -179,11 +247,41 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
           <h2 className="text-xs sm:text-sm font-bold">New User</h2>
           <button
             onClick={onClose}
-            className="text-white hover:text-gray-200 text-lg"
+            className="text-white hover:text-gray-200 text-lg cursor-pointer"
           >
             ✖
           </button>
         </div>
+
+        {/* Error Alert */}
+        {errorMessage && (
+          <div className="mx-3 sm:mx-5 mt-3 p-3 bg-red-50 border border-red-300 rounded-lg">
+            <div className="flex items-start">
+              <svg className="w-5 h-5 text-red-600 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-red-800 mb-1">{errorMessage}</h3>
+                {errorDetails.length > 0 && (
+                  <ul className="list-disc list-inside text-xs text-red-700 space-y-1">
+                    {errorDetails.map((detail, index) => (
+                      <li key={index}>{detail}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <button
+                onClick={() => {
+                  setErrorMessage("");
+                  setErrorDetails([]);
+                }}
+                className="ml-2 text-red-600 hover:text-red-800 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Form */}
         <form
@@ -258,14 +356,13 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
             />
           </div>
 
-          {/* Middle Name */}
-          <label className="font-medium text-blue-900">Middle Name</label>
+          {/* Middle Name - OPTIONAL */}
+          <label className="font-medium text-blue-900">Middle Name <span className="text-gray-500 text-[10px]">(Optional)</span></label>
           <input
             type="text"
             name="MiddleName"
             value={formData.MiddleName}
             onChange={handleChange}
-            required
             className={`border rounded-sm gap-1 py-0 text-xs w-full px-1 ${borderClass(
               "MiddleName"
             )}`}
@@ -314,7 +411,7 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-2 top-1/2 -translate-y-1/2"
+              className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer"
             >
               {showPassword ? (
                 <img src={EyeOpen} alt="Hide password" className="size-4" />
@@ -432,14 +529,14 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
           <div className="col-span-1 sm:col-span-3 flex flex-col sm:flex-row justify-end gap-2 mt-2 sm:mt-0">
             <button
               type="submit"
-              className="px-3 sm:px-4 py-1 w-full sm:w-15 h-6 rounded-full bg-blue-700 text-white text-xs hover:bg-blue-800"
+              className="px-3 sm:px-4 py-1 w-full sm:w-15 h-6 rounded-full bg-blue-700 text-white text-xs hover:bg-blue-800 cursor-pointer"
             >
               {user ? "Update" : "Save"}
             </button>
             <button
               type="button"
               onClick={onClose}
-              className="px-2 sm:px-2 py-1 w-full sm:w-15 h-6 rounded-full bg-red-600 text-white text-xs hover:bg-red-700"
+              className="px-2 sm:px-2 py-1 w-full sm:w-15 h-6 rounded-full bg-red-600 text-white text-xs hover:bg-red-700 cursor-pointer"
             >
               Cancel
             </button>
@@ -457,13 +554,15 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
             <div className="flex justify-center gap-3">
               <button
                 onClick={confirmSave}
-                className="px-4 py-1 rounded-full bg-blue-700 text-white text-xs hover:bg-blue-800"
+                disabled={isLoading}
+                className="px-4 py-1 rounded-full bg-blue-700 text-white text-xs hover:bg-blue-800 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Yes
+                {isLoading ? "Saving..." : "Yes"}
               </button>
               <button
                 onClick={() => setShowConfirm(false)}
-                className="px-4 py-1 rounded-full bg-gray-400 text-white text-xs hover:bg-gray-500"
+                disabled={isLoading}
+                className="px-4 py-1 rounded-full bg-gray-400 text-white text-xs hover:bg-gray-500 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 No
               </button>
@@ -481,7 +580,7 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
             </h2>
             <button
               onClick={() => setShowMissingFields(false)}
-              className="px-4 py-1 rounded-full bg-blue-700 text-white text-xs hover:bg-blue-800"
+              className="px-4 py-1 rounded-full bg-blue-700 text-white text-xs hover:bg-blue-800 cursor-pointer"
             >
               OK
             </button>

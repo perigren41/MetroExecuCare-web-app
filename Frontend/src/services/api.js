@@ -34,11 +34,32 @@ class ApiService {
   // Helper method to handle API responses
   async handleResponse(response) {
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Network error' }));
-      console.error('API Error Response (Full):', JSON.stringify(error, null, 2));
+      const errorData = await response.json().catch(() => ({ message: 'Network error' }));
+      console.error('API Error Response (Full):', JSON.stringify(errorData, null, 2));
       console.error('API Error Status:', response.status);
       console.error('API Error URL:', response.url);
-      throw new Error(error.error || error.message || `HTTP error! status: ${response.status}`);
+
+      // Provide user-friendly error messages
+      let userMessage = errorData.error || errorData.message;
+
+      if (response.status === 401 && !errorData.details) {
+        userMessage = 'Invalid email or password. Please try again.';
+      } else if (response.status === 403) {
+        userMessage = 'Access denied. Please contact your administrator.';
+      } else if (response.status === 404) {
+        userMessage = 'Service not found. Please check your connection.';
+      } else if (response.status >= 500) {
+        userMessage = 'Server error. Please try again later.';
+      }
+
+      // Create custom error with response data attached
+      const error = new Error(userMessage || `HTTP error! status: ${response.status}`);
+      error.response = {
+        status: response.status,
+        data: errorData
+      };
+
+      throw error;
     }
     return await response.json();
   }
@@ -85,7 +106,7 @@ class ApiService {
     try {
       const response = await fetch(`${this.baseURL}/auth/register`, {
         method: 'POST',
-        headers: this.getHeaders(false),
+        headers: this.getHeaders(true), // Requires authentication (admin creates users)
         body: JSON.stringify(userData),
       });
 
@@ -106,6 +127,24 @@ class ApiService {
       return await this.handleResponse(response);
     } catch (error) {
       console.error('Get profile error:', error);
+      throw error;
+    }
+  }
+
+  async changePassword(currentPassword, newPassword) {
+    try {
+      const response = await fetch(`${this.baseURL}/auth/change-password`, {
+        method: 'PUT',
+        headers: this.getHeaders(true),
+        body: JSON.stringify({
+          current_password: currentPassword,
+          new_password: newPassword
+        }),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Change password error:', error);
       throw error;
     }
   }
@@ -323,6 +362,50 @@ class ApiService {
     }
   }
 
+  // Get user-specific action statistics (for workflow personnel)
+  async getUserActionStats() {
+    try {
+      const response = await fetch(`${this.baseURL}/requests/user-stats`, {
+        method: 'GET',
+        headers: this.getHeaders(true),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Get user action stats error:', error);
+      throw error;
+    }
+  }
+
+  // Get user-specific action logs (for workflow personnel)
+  async getUserActionLogs(limit = 10) {
+    try {
+      const response = await fetch(`${this.baseURL}/requests/user-action-logs?limit=${limit}`, {
+        method: 'GET',
+        headers: this.getHeaders(true),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Get user action logs error:', error);
+      throw error;
+    }
+  }
+
+  async getAdminActivityLogs(limit = 10) {
+    try {
+      const response = await fetch(`${this.baseURL}/users/admin/activity-logs?limit=${limit}`, {
+        method: 'GET',
+        headers: this.getHeaders(true),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Get admin activity logs error:', error);
+      throw error;
+    }
+  }
+
   async updateUser(userId, userData) {
     try {
       const response = await fetch(`${this.baseURL}/users/${userId}`, {
@@ -368,6 +451,38 @@ class ApiService {
     }
   }
 
+  async getDeletedUsers(params = {}) {
+    try {
+      const queryString = new URLSearchParams(params).toString();
+      const url = queryString ? `${this.baseURL}/users/deleted?${queryString}` : `${this.baseURL}/users/deleted`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: this.getHeaders(true),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Get deleted users error:', error);
+      throw error;
+    }
+  }
+
+  async restoreUser(userId, restorationReason = '') {
+    try {
+      const response = await fetch(`${this.baseURL}/users/${userId}/restore`, {
+        method: 'PUT',
+        headers: this.getHeaders(true),
+        body: JSON.stringify({ restored_reason: restorationReason }),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Restore user error:', error);
+      throw error;
+    }
+  }
+
   // Profile Picture APIs
   async uploadProfilePicture(userId, file) {
     try {
@@ -390,6 +505,20 @@ class ApiService {
       return await this.handleResponse(response);
     } catch (error) {
       console.error('Upload profile picture error:', error);
+      throw error;
+    }
+  }
+
+  async removeProfilePicture(userId) {
+    try {
+      const response = await fetch(`${this.baseURL}/users/${userId}/profile-picture`, {
+        method: 'DELETE',
+        headers: this.getHeaders(true),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Remove profile picture error:', error);
       throw error;
     }
   }
@@ -618,6 +747,118 @@ class ApiService {
       throw error;
     }
   }
+
+  // Request Management APIs
+
+  // Check if executive has active request
+  async checkActiveRequest() {
+    try {
+      const response = await fetch(`${this.baseURL}/requests/check-active`, {
+        method: 'GET',
+        headers: this.getHeaders(true),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Check active request error:', error);
+      throw error;
+    }
+  }
+
+  // Edit request (Executive only, unclaimed)
+  async editRequest(requestId, requestData) {
+    try {
+      const response = await fetch(`${this.baseURL}/requests/${requestId}/edit`, {
+        method: 'PUT',
+        headers: this.getHeaders(true),
+        body: JSON.stringify(requestData),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Edit request error:', error);
+      throw error;
+    }
+  }
+
+  // Delete request (Executive only, unclaimed)
+  async deleteRequest(requestId) {
+    try {
+      const response = await fetch(`${this.baseURL}/requests/${requestId}`, {
+        method: 'DELETE',
+        headers: this.getHeaders(true),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Delete request error:', error);
+      throw error;
+    }
+  }
+
+  // File Request APIs
+
+  // Create file request (Approvers only)
+  async createFileRequest(requestId, message) {
+    try {
+      const response = await fetch(`${this.baseURL}/requests/file-requests`, {
+        method: 'POST',
+        headers: this.getHeaders(true),
+        body: JSON.stringify({ request_id: requestId, message }),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Create file request error:', error);
+      throw error;
+    }
+  }
+
+  // Get file requests for specific checkup request
+  async getFileRequestsByRequest(requestId) {
+    try {
+      const response = await fetch(`${this.baseURL}/requests/file-requests/request/${requestId}`, {
+        method: 'GET',
+        headers: this.getHeaders(true),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Get file requests error:', error);
+      throw error;
+    }
+  }
+
+  // Get pending file requests for current executive
+  async getMyPendingFileRequests() {
+    try {
+      const response = await fetch(`${this.baseURL}/requests/file-requests/my-pending`, {
+        method: 'GET',
+        headers: this.getHeaders(true),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Get pending file requests error:', error);
+      throw error;
+    }
+  }
+
+  // Respond to file request (Executive uploads files)
+  async respondToFileRequest(fileRequestId, fileIds) {
+    try {
+      const response = await fetch(`${this.baseURL}/requests/file-requests/${fileRequestId}/respond`, {
+        method: 'POST',
+        headers: this.getHeaders(true),
+        body: JSON.stringify({ file_ids: fileIds }),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Respond to file request error:', error);
+      throw error;
+    }
+  }
 }
 
 // Create and export a singleton instance
@@ -629,6 +870,7 @@ export const {
   login,
   register,
   getProfile,
+  changePassword,
   createRequest,
   getRequests,
   getRequestById,
@@ -640,10 +882,13 @@ export const {
   getUsers,
   getUserById,
   getUserActivityLogs,
+  getUserActionStats,
+  getUserActionLogs,
   updateUser,
   updateUserStatus,
   deleteUser,
   uploadProfilePicture,
+  removeProfilePicture,
   uploadRequestFile,
   getUserNotes,
   updateUserNotes,
@@ -652,5 +897,12 @@ export const {
   sendTestNotification,
   getNotificationHistory,
   setAuthToken,
-  clearAuthToken
+  clearAuthToken,
+  checkActiveRequest,
+  editRequest,
+  deleteRequest,
+  createFileRequest,
+  getFileRequestsByRequest,
+  getMyPendingFileRequests,
+  respondToFileRequest
 } = apiService;

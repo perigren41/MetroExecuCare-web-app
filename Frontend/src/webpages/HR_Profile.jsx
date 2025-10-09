@@ -7,6 +7,9 @@ import apiService from "@/services/api";
 import EyeOpenIcon from "@/assets/eyeopen.svg";
 import EyeCloseIcon from "@/assets/eyeclose.svg";
 import CameraIcon from "@/assets/camera-svgrepo.svg";
+import ProfileGray from "@/assets/profilegray.svg";
+import AlertModal from "@/Components/AlertModal";
+import { X } from "lucide-react";
 
 /* ---------------- GradientCard wrapper ---------------- */
 function GradientCard({ children, className, style, isMainCard = false }) {
@@ -35,7 +38,7 @@ function GradientCard({ children, className, style, isMainCard = false }) {
 
     // Responsive inner padding
     if (isMainCard) {
-        innerPadding = "px-4 py-4 sm:px-8 sm:py-6 lg:px-[93px] lg:py-8";
+        innerPadding = "px-4 py-4 sm:px-6 sm:py-5 lg:px-[93px] lg:py-8";
     } else {
         innerPadding = "p-3 sm:p-4 lg:p-4";
     }
@@ -61,11 +64,11 @@ function GradientCard({ children, className, style, isMainCard = false }) {
     );
 }
 
-/* ---------------- CircleButton ---------------- */
+// CircleButton component
 function CircleButton({ text, color, onClick }) {
     return (
         <button
-            className={`${color} text-white px-6 py-1 rounded-full hover:opacity-80 transition text-sm font-medium`}
+            className={`${color} text-white px-4 py-2 rounded-full hover:opacity-80 transition`}
             onClick={onClick}
         >
             {text}
@@ -75,13 +78,62 @@ function CircleButton({ text, color, onClick }) {
 
 /* ---------------- ProfileCard ---------------- */
 function ProfileCard({ profile, setProfile }) {
-    const handleImageChange = (e) => {
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [isRemoving, setIsRemoving] = useState(false);
+
+    // Helper function to convert profile picture path to full URL
+    const getProfilePictureUrl = (picturePath) => {
+        if (!picturePath) return ProfileGray;
+        if (picturePath.startsWith('http')) return picturePath;
+        if (picturePath.startsWith('data:')) return picturePath;
+        const baseUrl = import.meta.env.VITE_API_BASE_URL.replace('/api', '');
+        return `${baseUrl}${picturePath}`;
+    };
+
+    const handleImageChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onload = () =>
-                setProfile({ ...profile, profilePic: reader.result });
-            reader.readAsDataURL(file);
+            try {
+                const response = await apiService.uploadProfilePicture(profile.id, file);
+                if (response.success) {
+                    // Update profile with new picture path
+                    setProfile(prev => ({
+                        ...prev,
+                        profile_picture: response.data.profile_picture
+                    }));
+                    setSuccessMessage('Profile picture updated successfully!');
+                    setShowSuccessModal(true);
+                }
+            } catch (error) {
+                console.error('Error uploading profile picture:', error);
+                alert('Failed to upload profile picture. Please try again.');
+            }
+        }
+    };
+
+    const handleRemoveProfilePicture = async () => {
+        if (!window.confirm('Are you sure you want to remove your profile picture?')) {
+            return;
+        }
+
+        try {
+            setIsRemoving(true);
+            const response = await apiService.removeProfilePicture(profile.id);
+
+            if (response.success) {
+                setProfile(prev => ({
+                    ...prev,
+                    profile_picture: null
+                }));
+                setSuccessMessage('Profile picture removed successfully!');
+                setShowSuccessModal(true);
+            }
+        } catch (error) {
+            console.error('Error removing profile picture:', error);
+            alert('Failed to remove profile picture. Please try again.');
+        } finally {
+            setIsRemoving(false);
         }
     };
 
@@ -92,32 +144,23 @@ function ProfileCard({ profile, setProfile }) {
 
     // Helper function to get default profile image
     const getProfileImage = (profile) => {
-        if (profile.profilePic) {
-            return profile.profilePic;
+        if (profile.profile_picture) {
+            return getProfilePictureUrl(profile.profile_picture);
         }
-        // Return a default avatar or create one with initials
-        return `data:image/svg+xml;base64,${btoa(`
-            <svg width="305" height="305" xmlns="http://www.w3.org/2000/svg">
-                <rect width="305" height="305" fill="#e5e7eb"/>
-                <text x="50%" y="50%" text-anchor="middle" dy=".1em" font-size="120" fill="#6b7280">
-                    ${profile.first_name.charAt(0)}${profile.last_name.charAt(0)}
-                </text>
-            </svg>
-        `)}`;
+        // Return standard default profile image
+        return ProfileGray;
     };
 
     return (
-        <GradientCard
-            className="rounded-[64px] w-full xl:w-[788px] xl:h-[577px]"
-            isMainCard={true}
-        >
-            <h2 className="text-[#023184] font-semibold mb-4 sm:mb-6 lg:mb-8 text-left text-base sm:text-lg">
+        <GradientCard className="rounded-[64px]" isMainCard={true}>
+            <h2 className="text-blue-900 font-semibold mb-4 text-left text-base sm:text-lg">
                 Basic Information
             </h2>
 
-            <div className="flex flex-col xl:flex-row gap-4 sm:gap-6 lg:gap-8">
-                {/* Left - Profile Picture */}
-                <div className="flex flex-col items-center w-full xl:w-[305px] flex-shrink-0">
+            <div className="flex flex-col lg:flex-row lg:justify-start items-center lg:items-start
+            pb-4 gap-3 sm:gap-4 lg:gap-6">
+                {/* Profile Image Section */}
+                <div className="flex flex-col items-center flex-shrink-0">
                     <input
                         type="file"
                         accept="image/*"
@@ -126,7 +169,7 @@ function ProfileCard({ profile, setProfile }) {
                         onChange={handleImageChange}
                     />
 
-                    <div className="w-32 h-32 sm:w-48 sm:h-48 xl:w-[305px] xl:h-[305px] rounded-full overflow-hidden border-4 border-gray-200 shadow-md">
+                    <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden border-4 border-gray-200 shadow-md">
                         <img
                             src={getProfileImage(profile)}
                             alt="Profile"
@@ -134,62 +177,68 @@ function ProfileCard({ profile, setProfile }) {
                         />
                     </div>
 
-                    <button
-                        onClick={() =>
-                            document.getElementById("profileImageInput").click()
-                        }
-                        className="mt-2 sm:mt-4 text-[#023184] hover:underline text-sm flex items-center gap-2"
-                    >
-                        <img src={CameraIcon} alt="camera" className="w-4 h-4 sm:w-5 sm:h-5" />
-                        Change Picture
-                    </button>
+                    <div className="mt-3 flex flex-col sm:flex-row gap-2">
+                        <button
+                            onClick={() => document.getElementById("profileImageInput").click()}
+                            className="flex items-center justify-center gap-2 text-blue-600 hover:underline text-xs sm:text-sm font-medium transition-colors cursor-pointer"
+                        >
+                            <img src={CameraIcon} alt="camera" className="w-4 h-4 sm:w-5 sm:h-5" />
+                            Change Picture
+                        </button>
+
+                        {profile.profile_picture && (
+                            <button
+                                onClick={handleRemoveProfilePicture}
+                                disabled={isRemoving}
+                                className="flex items-center justify-center gap-2 text-red-600 hover:underline text-xs sm:text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer"
+                            >
+                                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                                {isRemoving ? 'Removing...' : 'Remove Picture'}
+                            </button>
+                        )}
+                    </div>
                 </div>
 
-                {/* Right - Info & Details */}
-                <div className="flex-1 flex flex-col space-y-3 sm:space-y-4 items-start text-left">
-                    <div>
-                        <h3 className="text-2xl sm:text-3xl xl:text-4xl font-bold text-blue-900">
-                            {getDisplayName(profile)}
-                        </h3>
-                        <p className="text-[#023184] font-semibold text-base sm:text-lg">
-                            {profile.position}
+                {/* Profile Details Section */}
+                <div className="flex flex-col text-center lg:text-left flex-grow space-y-3">
+                    <p className="text-blue-700 font-bold text-2xl sm:text-2xl">{getDisplayName(profile)}</p>
+                    <p className="text-gray-600 text-sm sm:text-xs">{profile.position}</p>
+                    <p className="text-gray-500 text-xs sm:text-xs mb-2">{profile.location || 'Not specified'}</p>
+
+                    <div className="sm:text-sm space-y-2">
+                        <p>
+                            <span className="font-bold text-blue-600 text-sm">Employee ID:</span><br />
+                            <span className="text-black text-xs">{profile.employee_id}</span>
                         </p>
-                        <p className="text-gray-600 text-sm sm:text-base">{profile.location}</p>
-                    </div>
-
-                    <div className="space-y-3 sm:space-y-4 text-sm">
-                        <div>
-                            <span className="font-semibold text-[#023184]">Employee ID:</span>
-                            <br />
-                            <span className="text-gray-700 break-words">{profile.employee_id}</span>
-                        </div>
-
-                        <div>
-                            <span className="font-semibold text-[#023184]">Email Address:</span>
-                            <br />
-                            <span className="text-gray-700 break-words">{profile.email}</span>
-                        </div>
-
-                        <div>
-                            <span className="font-semibold text-[#023184]">Contact Number:</span>
-                            <br />
-                            <span className="text-gray-700 break-words">{profile.contact_number}</span>
-                        </div>
-
-                        <div>
-                            <span className="font-semibold text-[#023184]">Birth Date:</span>
-                            <br />
-                            <span className="text-gray-700 break-words">{profile.birth_date}</span>
-                        </div>
-
-                        <div>
-                            <span className="font-semibold text-[#023184]">Department:</span>
-                            <br />
-                            <span className="text-gray-700 break-words">{profile.department}</span>
-                        </div>
+                        <p>
+                            <span className="font-bold text-blue-600 text-sm">Email:</span><br />
+                            <span className="text-black text-xs break-words">{profile.email}</span>
+                        </p>
+                        <p>
+                            <span className="font-bold text-blue-600 text-sm">Contact Number:</span><br />
+                            <span className="text-black text-xs">{profile.contact_number}</span>
+                        </p>
+                        <p>
+                            <span className="font-bold text-blue-600 text-sm">Birth Date:</span><br />
+                            <span className="text-black text-xs">{profile.birth_date ? new Date(profile.birth_date).toLocaleDateString() : 'Not provided'}</span>
+                        </p>
+                        <p>
+                            <span className="font-bold text-blue-600 text-sm">Department:</span><br />
+                            <span className="text-black text-xs">{profile.department}</span>
+                        </p>
                     </div>
                 </div>
             </div>
+
+            {/* Success Alert Modal */}
+            <AlertModal
+                isOpen={showSuccessModal}
+                onClose={() => setShowSuccessModal(false)}
+                title="Success"
+                message={successMessage}
+                type="success"
+                confirmText="OK"
+            />
         </GradientCard>
     );
 }
@@ -205,53 +254,56 @@ function PasswordChangeCard({ user }) {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
 
-    const handleUpdate = () => {
-        const correctCurrentPassword = user?.password || "1234";
-        
-        if (currentPassword !== correctCurrentPassword) {
-            setModalType("wrongPassword");
-            setShowModal(true);
-            return;
-        }
-
+    const handleUpdate = async () => {
+        // Validate passwords match
         if (newPassword !== confirmPassword) {
             setModalType("passwordMismatch");
             setShowModal(true);
             return;
         }
 
-        if (!newPassword.trim()) {
+        // Validate fields are not empty
+        if (!currentPassword || !newPassword.trim()) {
             setModalType("emptyPassword");
             setShowModal(true);
             return;
         }
 
-        setModalType("success");
-        setShowModal(true);
-        
-        setCurrentPassword("");
-        setNewPassword("");
-        setConfirmPassword("");
-    };
+        try {
+            // Call the backend API to change password
+            const response = await apiService.changePassword(currentPassword, newPassword);
 
-    const toggleVisibility = (field) => {
-        if (field === "current") setShowCurrent(!showCurrent);
-        if (field === "new") setShowNew(!showNew);
-        if (field === "confirm") setShowConfirm(!showConfirm);
+            if (response.success) {
+                // Clear password fields
+                setCurrentPassword("");
+                setNewPassword("");
+                setConfirmPassword("");
+
+                // Show success modal
+                setModalType("success");
+                setShowModal(true);
+            }
+        } catch (error) {
+            console.error('Password change error:', error);
+
+            // Check if it's an incorrect password error
+            if (error.response?.status === 400 || error.message.includes('incorrect')) {
+                setModalType("wrongPassword");
+            } else {
+                setModalType("wrongPassword");
+            }
+            setShowModal(true);
+        }
     };
 
     return (
         <>
-            <GradientCard
-                className="rounded-[64px] w-full xl:w-[788px] xl:h-[222px]"
-                isMainCard={true}
-            >
-                <h2 className="text-left text-[#023184] text-base sm:text-lg font-semibold mb-3 sm:mb-4">
+            <GradientCard className="rounded-[64px]" isMainCard={true}>
+                <h2 className="text-blue-900 text-base sm:text-lg font-semibold mb-4 text-left">
                     Change Password
                 </h2>
 
-                {/* Fixed spacing and height for better alignment */}
-                <div className="space-y-2 xl:space-y-1">
+                <div className="space-y-4 pb-2">
                     {/* Current Password */}
                     <div className="relative">
                         <input
@@ -259,18 +311,19 @@ function PasswordChangeCard({ user }) {
                             placeholder="Current Password"
                             value={currentPassword}
                             onChange={(e) => setCurrentPassword(e.target.value)}
-                            className="w-full border border-gray-300 rounded-md h-8 sm:h-10 xl:h-[26px] px-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                            className="h-10 sm:h-12 w-full border border-gray-300 rounded-lg px-4 pr-12
+                            focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                         />
                         <button
-                            type="button"
-                            onClick={() => toggleVisibility("current")}
-                            className="absolute inset-y-0 right-0 flex items-center pr-3 xl:pr-2"
+                        type="button"
+                        onClick={() => setShowCurrent(!showCurrent)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                         >
-                            <img
-                                src={showCurrent ? EyeOpenIcon : EyeCloseIcon}
-                                alt={showCurrent ? "Hide password" : "Show password"}
-                                className="w-4 h-4"
-                            />
+                        <img
+                        src={showCurrent ? EyeOpenIcon : EyeCloseIcon}
+                        alt={showCurrent ? "Hide password" : "Show password"}
+                        className="w-5 h-5"
+                        />
                         </button>
                     </div>
 
@@ -281,18 +334,19 @@ function PasswordChangeCard({ user }) {
                             placeholder="New Password"
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            className="w-full border border-gray-300 rounded-md h-8 sm:h-10 xl:h-[26px] px-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                            className="h-10 sm:h-12 w-full border border-gray-300 rounded-lg px-4 pr-12
+                            focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                         />
                         <button
-                            type="button"
-                            onClick={() => toggleVisibility("new")}
-                            className="absolute inset-y-0 right-0 flex items-center pr-3 xl:pr-2"
+                        type="button"
+                        onClick={() => setShowNew(!showNew)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                         >
-                            <img
-                                src={showNew ? EyeOpenIcon : EyeCloseIcon}
-                                alt={showNew ? "Hide password" : "Show password"}
-                                className="w-4 h-4"
-                            />
+                        <img
+                        src={showNew ? EyeOpenIcon : EyeCloseIcon}
+                        alt={showNew ? "Hide password" : "Show password"}
+                        className="w-5 h-5"
+                        />
                         </button>
                     </div>
 
@@ -303,23 +357,23 @@ function PasswordChangeCard({ user }) {
                             placeholder="Confirm New Password"
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            className="w-full border border-gray-300 rounded-md h-8 sm:h-10 xl:h-[26px] px-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
+                            className="h-10 sm:h-12 w-full border border-gray-300 rounded-lg px-4 pr-12
+                            focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                         />
                         <button
-                            type="button"
-                            onClick={() => toggleVisibility("confirm")}
-                            className="absolute inset-y-0 right-0 flex items-center pr-3 xl:pr-2"
+                        type="button"
+                        onClick={() => setShowConfirm(!showConfirm)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
                         >
-                            <img
-                                src={showConfirm ? EyeOpenIcon : EyeCloseIcon}
-                                alt={showConfirm ? "Hide password" : "Show password"}
-                                className="w-4 h-4"
-                            />
+                        <img
+                        src={showConfirm ? EyeOpenIcon : EyeCloseIcon}
+                        alt={showConfirm ? "Hide password" : "Show password"}
+                        className="w-5 h-5"
+                        />
                         </button>
                     </div>
 
-                    {/* Update Button - Better positioning */}
-                    <div className="flex justify-end pt-2 xl:pt-1">
+                    <div className="flex justify-end pt-2">
                         <CircleButton
                             text="Update"
                             color="bg-[#023184]"
@@ -329,10 +383,10 @@ function PasswordChangeCard({ user }) {
                 </div>
             </GradientCard>
 
-            {/* Modal remains the same */}
+            {/* Modals */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4">
-                    <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-lg text-center w-full max-w-sm sm:max-w-md xl:w-96">
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg text-center w-full max-w-sm sm:max-w-md">
                         <div className="mb-4">
                             {modalType === 'success' && (
                                 <>
@@ -345,7 +399,7 @@ function PasswordChangeCard({ user }) {
                                     <p className="text-sm text-gray-600">Your password has been changed successfully.</p>
                                 </>
                             )}
-                            
+
                             {modalType === 'wrongPassword' && (
                                 <>
                                     <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-3">
@@ -357,34 +411,22 @@ function PasswordChangeCard({ user }) {
                                     <p className="text-sm text-gray-600">The current password you entered is not correct. Please try again.</p>
                                 </>
                             )}
-                            
+
                             {modalType === 'passwordMismatch' && (
                                 <>
                                     <div className="mx-auto w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mb-3">
                                         <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 14.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.99-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                                         </svg>
                                     </div>
                                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Passwords Don't Match</h3>
                                     <p className="text-sm text-gray-600">The new password and confirmation password do not match. Please check and try again.</p>
                                 </>
                             )}
-
-                            {modalType === 'emptyPassword' && (
-                                <>
-                                    <div className="mx-auto w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center mb-3">
-                                        <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 14.5c-.77.833.192 2.5 1.732 2.5z"></path>
-                                        </svg>
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Password Required</h3>
-                                    <p className="text-sm text-gray-600">Please enter a new password.</p>
-                                </>
-                            )}
                         </div>
-                        <button 
+                        <button
                             onClick={() => setShowModal(false)}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
                         >
                             Close
                         </button>
@@ -411,13 +453,30 @@ function RequestsSummaryCard({ user }) {
         const fetchStats = async () => {
             try {
                 if (!user) return;
-                const response = await apiService.getDashboardStats();
-                if (response.success) {
-                    setStats({
-                        totalRequests: response.data.totalRequests || 0,
-                        approvedRequests: response.data.approvedRequests || 0,
-                        rejectedRequests: response.data.rejectedRequests || 0
-                    });
+
+                // Check if user is a workflow role (Human Resource, Benefits Officer, Division Head)
+                const isWorkflowRole = ['hr_personnel', 'benefits_officer', 'welfare_head'].includes(user.role);
+
+                if (isWorkflowRole) {
+                    // Use the new user-specific stats endpoint
+                    const response = await apiService.getUserActionStats();
+                    if (response.success) {
+                        setStats({
+                            totalRequests: response.data.totalRequests || 0,
+                            approvedRequests: response.data.approvedRequests || 0,
+                            rejectedRequests: response.data.rejectedRequests || 0
+                        });
+                    }
+                } else {
+                    // For other roles, use the old dashboard stats
+                    const response = await apiService.getDashboardStats();
+                    if (response.success) {
+                        setStats({
+                            totalRequests: response.data.totalRequests || 0,
+                            approvedRequests: response.data.approvedRequests || 0,
+                            rejectedRequests: response.data.rejectedRequests || 0
+                        });
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching stats:', error);
@@ -431,38 +490,38 @@ function RequestsSummaryCard({ user }) {
     const { totalRequests, approvedRequests, rejectedRequests } = stats;
 
     return (
-        <GradientCard className="rounded-[24px] h-full bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200 shadow-sm">
+        <GradientCard className="rounded-[24px]">
             {/* Total Requests */}
-            <div className="flex flex-col items-center mb-4 xl:mb-8">
-                <h3 className="text-[#023184] font-semibold text-sm xl:text-base text-center max-w-[280px] mb-2">
+            <div className="flex flex-col items-center mb-2">
+                <h3 className="text-blue-900 font-semibold text-xs sm:text-sm text-center mb-1">
                     Total Requests Reviewed This Year
                 </h3>
-                <div className="text-3xl xl:text-5xl font-bold text-gray-700 leading-none">
+                <div className="text-2xl sm:text-3xl font-bold text-gray-700 leading-none">
                     {loading ? '...' : totalRequests}
                 </div>
             </div>
 
             {/* Divider */}
-            <hr className="border-t border-gray-300 mb-3 xl:mb-4" />
+            <hr className="border-t border-gray-300 mb-2" />
 
             {/* Approved vs Rejected */}
             <div className="flex">
                 <div className="flex-1 text-center">
-                    <div className="flex items-center justify-center gap-1 mb-1 xl:mb-2">
-                        <CheckCircle className="w-4 h-4 text-green-600" />
-                        <p className="text-[#023184] font-semibold text-sm">Approved</p>
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" />
+                        <p className="text-blue-900 font-semibold text-xs sm:text-sm">Approved</p>
                     </div>
-                    <p className="text-2xl xl:text-3xl font-bold text-gray-700">{loading ? '...' : approvedRequests}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-700">{loading ? '...' : approvedRequests}</p>
                 </div>
 
-                <div className="w-px bg-gray-300 mx-3 xl:mx-4 self-stretch"></div>
+                <div className="w-px bg-gray-300 mx-2 sm:mx-3 self-stretch"></div>
 
                 <div className="flex-1 text-center">
-                    <div className="flex items-center justify-center gap-1 mb-1 xl:mb-2">
-                        <XCircle className="w-4 h-4 text-red-600" />
-                        <p className="text-[#023184] font-semibold text-sm">Rejected</p>
+                    <div className="flex items-center justify-center gap-1 mb-1">
+                        <XCircle className="w-3 h-3 sm:w-4 sm:h-4 text-red-600" />
+                        <p className="text-blue-900 font-semibold text-xs sm:text-sm">Rejected</p>
                     </div>
-                    <p className="text-2xl xl:text-3xl font-bold text-gray-700">{loading ? '...' : rejectedRequests}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-700">{loading ? '...' : rejectedRequests}</p>
                 </div>
             </div>
         </GradientCard>
@@ -478,9 +537,12 @@ function ActionLogCard({ user }) {
         const fetchActivityLogs = async () => {
             try {
                 if (!user?.id) return;
-                const response = await apiService.getUserActivityLogs(user.id, 3);
+
+                // Use the comprehensive activity logs endpoint for all users
+                const response = await apiService.getUserActivityLogs(user.id, 10);
                 if (response.success) {
-                    setRecentActions(response.data || []);
+                    const logs = response.data || [];
+                    setRecentActions(logs);
                 }
             } catch (error) {
                 console.error('Error fetching activity logs:', error);
@@ -495,64 +557,125 @@ function ActionLogCard({ user }) {
 
     if (loading) {
         return (
-            <GradientCard className="rounded-[32px] h-full flex flex-col">
-                <h3 className="text-[#023184] font-semibold mb-3 xl:mb-4 text-sm xl:text-base text-left">
-                    Action Log: Last three (3) actions made
+            <GradientCard className="rounded-[24px]">
+                <h3 className="text-xs sm:text-sm text-left mb-2">
+                    <span className="text-blue-900 font-semibold">Action Log:</span> Recent actions
                 </h3>
-                <div className="flex-1 flex items-center justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#023184]"></div>
+                <div className="flex-1 flex items-center justify-center py-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
             </GradientCard>
         );
     }
 
     return (
-        <GradientCard className="rounded-[32px] h-full flex flex-col">
-            <h3 className="text-[#023184] font-semibold mb-3 xl:mb-4 text-sm xl:text-base text-left">
-                Action Log: Last three (3) actions made
+        <GradientCard className="rounded-[24px]">
+            <h3 className="text-xs sm:text-sm text-left mb-3">
+                <span className="text-blue-900 font-semibold">Action Log:</span> Your recent actions
             </h3>
 
-            <div className="space-y-2 xl:space-y-3 flex-1">
-                {recentActions.length > 0 ? (
-                    recentActions.map((item, idx) => (
-                        <div
-                            key={idx}
-                            className="flex flex-col xl:grid xl:grid-cols-5 gap-2 xl:gap-4 pb-2 xl:pb-3 border-b border-gray-200 last:border-b-0"
-                        >
-                            {/* Date column */}
-                            <div className="xl:col-span-1 text-[#023184] font-medium text-sm text-left xl:border-r border-gray-300 xl:pr-4">
-                                {new Date(item.created_at || item.date).toLocaleDateString()}
-                            </div>
-
-                            {/* Action column */}
-                            <div className="xl:col-span-4 text-gray-700 text-sm leading-relaxed text-left xl:truncate xl:pl-2">
-                                {item.action_description || item.action}
-                            </div>
+            {recentActions.length === 0 ? (
+                <div className="text-center py-4 text-gray-500 text-sm">
+                    No activity logs found
+                </div>
+            ) : (
+                <>
+                    {/* Desktop Table - 2 Column Layout */}
+                    <div className="hidden sm:block overflow-x-auto">
+                        <div className={recentActions.length > 5 ? "max-h-[200px] overflow-y-auto" : ""}>
+                            <table className="w-full text-xs table-auto">
+                                <thead className="bg-purple-300 sticky top-0">
+                                    <tr>
+                                        <th className="p-2 text-center w-32">Date</th>
+                                        <th className="p-2 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {recentActions.map((item, idx) => (
+                                        <tr key={idx} className="border-t hover:bg-gray-50">
+                                            <td className="p-2 text-blue-600 whitespace-nowrap">
+                                                {new Date(item.created_at).toLocaleDateString('en-US', {
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                    year: 'numeric'
+                                                })}
+                                            </td>
+                                            <td className="p-2 text-gray-700">
+                                                {item.description}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
-                    ))
-                ) : (
-                    <div className="flex-1 flex items-center justify-center text-gray-500 text-sm">
-                        No recent actions found
                     </div>
-                )}
-            </div>
+
+                    {/* Mobile Card Layout */}
+                    <div className="sm:hidden">
+                        <div className={recentActions.length > 5 ? "max-h-[300px] overflow-y-auto space-y-2" : "space-y-2"}>
+                            {recentActions.map((item, idx) => (
+                                <div key={idx} className="bg-gray-50 rounded-lg p-3 border">
+                                    <div className="text-blue-600 font-medium text-xs mb-2">
+                                        {new Date(item.created_at).toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            day: 'numeric',
+                                            year: 'numeric'
+                                        })}
+                                    </div>
+                                    <div className="text-xs text-gray-700">
+                                        {item.description}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        {recentActions.length > 5 && (
+                            <p className="text-xs text-gray-500 text-center mt-2">
+                                Scroll to view all {recentActions.length} actions
+                            </p>
+                        )}
+                    </div>
+                </>
+            )}
         </GradientCard>
     );
 }
 
 // NotesCard component
-function NotesCard({ notes, setNotes }) {
+function NotesCard({ notes, setNotes, user }) {
     const [isEditing, setIsEditing] = useState(false);
     const [tempNotes, setTempNotes] = useState(notes);
+    const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [saving, setSaving] = useState(false);
+
+    // Update tempNotes when notes prop changes
+    useEffect(() => {
+        setTempNotes(notes);
+    }, [notes]);
 
     const handleEdit = () => {
         setTempNotes(notes);
         setIsEditing(true);
     };
 
-    const handleSave = () => {
-        setNotes(tempNotes);
-        setIsEditing(false);
+    const handleSave = async () => {
+        if (!user?.id) return;
+
+        setSaving(true);
+        try {
+            // Save notes to database
+            const response = await apiService.updateUserNotes(user.id, tempNotes);
+
+            if (response.success) {
+                setNotes(tempNotes);
+                setIsEditing(false);
+                setShowSuccessModal(true);
+            }
+        } catch (error) {
+            console.error('Error saving notes:', error);
+            alert('Failed to save notes. Please try again.');
+        } finally {
+            setSaving(false);
+        }
     };
 
     const handleCancel = () => {
@@ -561,83 +684,80 @@ function NotesCard({ notes, setNotes }) {
     };
 
     return (
-        <GradientCard className="rounded-[32px] h-full flex flex-col">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 xl:mb-4 gap-2">
-                <h3 className="text-[#023184] font-semibold text-sm xl:text-base text-left">
-                    Notes / Reminders
+        <>
+            <GradientCard className="rounded-[24px]">
+                <h3 className="text-blue-900 text-xs sm:text-sm font-semibold mb-2 text-left">
+                    Notes: Write down notes or reminders...
                 </h3>
-                {!isEditing && (
-                    <CircleButton 
-                        text="Edit" 
-                        color="bg-[#023184]" 
-                        onClick={handleEdit} 
-                    />
-                )}
-            </div>
+                <textarea
+                    className={`w-full rounded-lg px-3 py-2 h-16 sm:h-20 resize-none border text-sm ${
+                        isEditing
+                            ? "border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-[repeating-linear-gradient(white,white_23px,#e5e7eb_24px)]"
+                            : "border-gray-200 bg-gray-50 cursor-default"
+                    }`}
+                    placeholder={isEditing ? "Write your notes here..." : "No notes yet. Click Edit to add some."}
+                    value={isEditing ? tempNotes : notes}
+                    onChange={(e) => setTempNotes(e.target.value)}
+                    readOnly={!isEditing}
+                />
+                <div className="flex gap-2 mt-2 justify-end">
+                    {!isEditing ? (
+                        <CircleButton
+                            text="Edit"
+                            color="bg-blue-600"
+                            onClick={handleEdit}
+                        />
+                    ) : (
+                        <>
+                            <CircleButton
+                                text={saving ? "Saving..." : "Save"}
+                                color="bg-blue-600"
+                                onClick={handleSave}
+                            />
+                            <CircleButton text="Cancel" color="bg-gray-400" onClick={handleCancel} />
+                        </>
+                    )}
+                </div>
+            </GradientCard>
 
-            <textarea
-                className={`flex-1 w-full border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-300 min-h-[100px] xl:min-h-0 ${
-                    isEditing 
-                        ? "border-gray-300 bg-white" 
-                        : "border-gray-200 bg-gray-50 cursor-default"
-                }`}
-                style={{
-                    fontSize: '14px',
-                    lineHeight: '20px',
-                    padding: '8px 12px',
-                    paddingTop: '6px',
-                    backgroundImage: isEditing
-                        ? "repeating-linear-gradient(transparent 0px, transparent 18px, #e5e7eb 18px, #e5e7eb 19px)"
-                        : "none",
-                    backgroundSize: "100% 20px",
-                    backgroundAttachment: "local",
-                    backgroundPosition: "0 6px"
-                }}
-                value={isEditing ? tempNotes : notes}
-                onChange={(e) => isEditing && setTempNotes(e.target.value)}
-                readOnly={!isEditing}
-                placeholder={isEditing ? "Write your notes..." : "No notes yet. Click Edit to add some."}
-            />
-
-            {isEditing && (
-                <div className="flex gap-2 mt-3 xl:mt-4 justify-end">
-                    <CircleButton 
-                        text="Save" 
-                        color="bg-[#023184]" 
-                        onClick={handleSave} 
-                    />
-                    <CircleButton 
-                        text="Cancel" 
-                        color="bg-gray-400" 
-                        onClick={handleCancel} 
-                    />
+            {/* Success Modal */}
+            {showSuccessModal && (
+                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg text-center w-full max-w-sm sm:max-w-md">
+                        <div className="mb-4">
+                            <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
+                                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                            </div>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2">Notes Saved Successfully!</h3>
+                            <p className="text-sm text-gray-600">Your notes have been saved.</p>
+                        </div>
+                        <button
+                            onClick={() => setShowSuccessModal(false)}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium"
+                        >
+                            Close
+                        </button>
+                    </div>
                 </div>
             )}
-        </GradientCard>
+        </>
     );
 }
 
 function SummaryCard({ notes, setNotes, user }) {
     return (
-        <GradientCard
-            className="rounded-[64px] flex flex-col w-full xl:w-[788px] xl:h-[831px]"
-            isMainCard={true}
-        >
-            <div className="text-left mb-4 sm:mb-6">
-                <h2 className="text-[#023184] font-semibold text-base sm:text-lg mb-1">Summary</h2>
-                <p className="text-gray-600 text-sm">Your activity overview in MetroExecuCare</p>
-            </div>
+        <GradientCard className="rounded-[64px]" isMainCard={true}>
+            <div className="space-y-3 sm:space-y-4">
+                <div className="text-left">
+                    <h2 className="text-blue-900 font-semibold text-base sm:text-lg">Summary</h2>
+                    <p className="text-xs sm:text-sm text-gray-600">Your activity overview in MetroExecuCare</p>
+                </div>
 
-            <div className="flex flex-col gap-4 sm:gap-6 flex-1">
-                <div className="flex-1">
-                    <RequestsSummaryCard user={user} />
-                </div>
-                <div className="flex-1">
-                    <ActionLogCard user={user} />
-                </div>
-                <div className="flex-1">
-                    <NotesCard notes={notes} setNotes={setNotes} />
-                </div>
+                <RequestsSummaryCard user={user} />
+                <ActionLogCard user={user} />
+                <NotesCard notes={notes} setNotes={setNotes} user={user} />
             </div>
         </GradientCard>
     );
@@ -658,6 +778,24 @@ export default function HRProfilePage() {
         }
     }, [user]);
 
+    // Load user notes from database
+    useEffect(() => {
+        const fetchNotes = async () => {
+            if (!user?.id) return;
+
+            try {
+                const response = await apiService.getUserNotes(user.id);
+                if (response.success && response.data?.notes) {
+                    setNotes(response.data.notes);
+                }
+            } catch (error) {
+                console.error('Error fetching notes:', error);
+            }
+        };
+
+        fetchNotes();
+    }, [user]);
+
     const handleBackClick = () => {
         navigate(-1);
     };
@@ -672,7 +810,7 @@ export default function HRProfilePage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="h-screen overflow-hidden bg-gray-50">
             <NavBarMain
                 user={user}
                 onBackClick={handleBackClick}
@@ -683,22 +821,37 @@ export default function HRProfilePage() {
                 showDropdown={true}
             />
 
-            <div className="flex justify-center mt-6 sm:mt-8 xl:mt-[43px] px-4">
-                <h1 className="text-[#023184] text-xl sm:text-2xl xl:text-[28px] font-bold">Profile</h1>
+            <div className="flex justify-center mt-2 sm:mt-3 lg:mt-4 px-4">
+                <h1 className="text-[#023184] text-lg sm:text-xl lg:text-2xl font-bold">Profile</h1>
             </div>
 
-            {/* Properly centered container */}
-            <div className="flex justify-center py-4 sm:py-6 xl:py-8 px-4 sm:px-6">
-                <div className="w-full max-w-sm sm:max-w-2xl xl:max-w-none">
-                    <div className="flex flex-col xl:flex-row gap-4 sm:gap-6 xl:gap-8 xl:justify-center">
-                        {/* Left Column */}
-                        <div className="flex flex-col gap-4 sm:gap-6 xl:gap-8">
+            {/* 2-Column Grid Layout - Matching Screenshot */}
+            <div className="flex justify-center py-2 sm:py-3 lg:py-3 px-3 sm:px-4 lg:px-6 overflow-hidden">
+                <div className="w-full h-[calc(100vh-130px)] overflow-y-auto">
+                    <div className="flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-5 lg:justify-center lg:items-start max-w-7xl mx-auto">
+                        {/* Mobile: Basic Info */}
+                        <div className="lg:hidden">
+                            <ProfileCard profile={profile} setProfile={setProfile} />
+                        </div>
+
+                        {/* Mobile: Summary */}
+                        <div className="lg:hidden w-full">
+                            <SummaryCard notes={notes} setNotes={setNotes} user={user} />
+                        </div>
+
+                        {/* Mobile: Change Password */}
+                        <div className="lg:hidden">
+                            <PasswordChangeCard user={user} />
+                        </div>
+
+                        {/* Desktop: Left Column - Profile and Password Change */}
+                        <div className="hidden lg:flex flex-col gap-3 lg:w-[480px] xl:w-[520px]">
                             <ProfileCard profile={profile} setProfile={setProfile} />
                             <PasswordChangeCard user={user} />
                         </div>
 
-                        {/* Right Column */}
-                        <div>
+                        {/* Desktop: Right Column - Summary */}
+                        <div className="hidden lg:flex lg:w-[640px] xl:w-[720px]">
                             <SummaryCard notes={notes} setNotes={setNotes} user={user} />
                         </div>
                     </div>

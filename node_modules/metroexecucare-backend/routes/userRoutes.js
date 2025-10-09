@@ -40,7 +40,7 @@ try {
 }
 
 // Now let's import them properly if they exist
-let getUsers, getUserById, getUserActivityLogs, updateUser, updateUserStatus, deleteUser, getDeletedUsers, restoreUser, uploadProfilePicture, updateUserNotes, getUserNotes;
+let getUsers, getUserById, getUserActivityLogs, updateUser, updateUserStatus, deleteUser, getDeletedUsers, restoreUser, uploadProfilePicture, removeProfilePicture, updateUserNotes, getUserNotes, getAdminActivityLogs;
 let upload, deleteProfilePicture, uploadProfilePictureMiddleware;
 let authenticateToken;
 let validateUpdateUser, validateUpdateUserStatus;
@@ -57,8 +57,10 @@ try {
     getDeletedUsers,
     restoreUser,
     uploadProfilePicture,
+    removeProfilePicture,
     updateUserNotes,
-    getUserNotes
+    getUserNotes,
+    getAdminActivityLogs
   } = userControllerFunctions);
   
   console.log('User controller functions:', {
@@ -152,6 +154,14 @@ if (typeof getDeletedUsers === 'function') {
   console.log('❌ getDeletedUsers is not a function:', typeof getDeletedUsers);
 }
 
+// Admin activity logs route - MUST be before /:id route
+if (typeof getAdminActivityLogs === 'function') {
+  router.get('/admin/activity-logs', getAdminActivityLogs);
+  console.log('✅ Added GET /admin/activity-logs route');
+} else {
+  console.log('❌ getAdminActivityLogs is not a function:', typeof getAdminActivityLogs);
+}
+
 if (typeof getUserById === 'function') {
   router.get('/:id', getUserById);
   console.log('✅ Added GET /:id route');
@@ -225,6 +235,14 @@ if (typeof uploadProfilePictureMiddleware === 'function' && typeof uploadProfile
     uploadProfilePictureMiddleware: typeof uploadProfilePictureMiddleware,
     uploadProfilePicture: typeof uploadProfilePicture
   });
+}
+
+// Remove profile picture route
+if (typeof removeProfilePicture === 'function') {
+  router.delete('/:id/profile-picture', removeProfilePicture);
+  console.log('✅ Added DELETE /:id/profile-picture route');
+} else {
+  console.log('❌ removeProfilePicture not a function:', typeof removeProfilePicture);
 }
 
 // Notes management routes

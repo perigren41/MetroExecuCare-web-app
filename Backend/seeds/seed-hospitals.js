@@ -1,4 +1,4 @@
-const { pool } = require('./config/database/connection');
+const { pool } = require('../config/database/connection');
 
 async function seedHospitals() {
   try {

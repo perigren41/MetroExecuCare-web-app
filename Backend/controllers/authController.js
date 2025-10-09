@@ -18,11 +18,19 @@ const {
  */
 const register = async (req, res) => {
   try {
+    console.log('\n========================================');
+    console.log('=== REGISTRATION - CODE VERSION 2 WITH BIRTHDATE FIX ===');
+    console.log('========================================\n');
+    console.log('Request body:', req.body);
+
     // Sanitize input data
     const sanitizedData = sanitizeObject(req.body, [
       'employee_id', 'email', 'first_name', 'last_name', 'middle_name',
-      'department', 'position', 'contact_number'
+      'department', 'position', 'contact_number', 'birth_date', 'branch'
     ]);
+
+    console.log('Sanitized data:', sanitizedData);
+    console.log('birth_date value:', sanitizedData.birth_date);
 
     // Validate input data
     const validation = validateRegistration(sanitizedData);
@@ -44,7 +52,9 @@ const register = async (req, res) => {
       role,
       department,
       position,
-      contact_number
+      contact_number,
+      birth_date,
+      branch
     } = sanitizedData;
 
     // Check if user already exists
@@ -64,19 +74,38 @@ const register = async (req, res) => {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
+    // Convert birth_date to MySQL date format (YYYY-MM-DD) if provided
+    const mysqlBirthDate = birth_date ? new Date(birth_date).toISOString().split('T')[0] : null;
+
+    console.log('About to INSERT with values:', {
+      employee_id,
+      email,
+      first_name,
+      last_name,
+      middle_name,
+      role,
+      department,
+      position,
+      contact_number,
+      birth_date,
+      mysqlBirthDate,
+      branch
+    });
+
     // Insert new user
     const [result] = await pool.execute(
-      `INSERT INTO users 
-       (employee_id, email, password_hash, first_name, last_name, middle_name, 
-        role, department, position, contact_number) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO users
+       (employee_id, email, password_hash, first_name, last_name, middle_name,
+        role, department, position, contact_number, birth_date, branch)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [employee_id, email, hashedPassword, first_name, last_name, middle_name || null,
-       role, department || null, position || null, contact_number || null]
+       role, department || null, position || null, contact_number || null,
+       mysqlBirthDate, branch || null]
     );
 
     // Get the created user
     const [newUser] = await pool.execute(
-      'SELECT id, employee_id, email, first_name, last_name, middle_name, role, department, position, contact_number, created_at FROM users WHERE id = ?',
+      'SELECT id, employee_id, email, first_name, last_name, middle_name, role, department, position, contact_number, birth_date, branch, created_at FROM users WHERE id = ?',
       [result.insertId]
     );
 
@@ -122,6 +151,8 @@ const register = async (req, res) => {
           department: user.department,
           position: user.position,
           contact_number: user.contact_number,
+          birth_date: user.birth_date,
+          branch: user.branch,
           full_name: `${user.first_name} ${user.middle_name ? user.middle_name + ' ' : ''}${user.last_name}`.trim(),
           created_at: user.created_at
         },
@@ -358,7 +389,7 @@ const getProfile = async (req, res) => {
 
     // Get user details
     const [users] = await pool.execute(
-      'SELECT id, employee_id, email, first_name, last_name, middle_name, role, department, position, contact_number, is_active, last_login, created_at, updated_at FROM users WHERE id = ?',
+      'SELECT id, employee_id, email, first_name, last_name, middle_name, role, department, position, contact_number, birth_date, branch, is_active, last_login, created_at, updated_at FROM users WHERE id = ?',
       [userId]
     );
 
@@ -387,6 +418,8 @@ const getProfile = async (req, res) => {
           department: user.department,
           position: user.position,
           contact_number: user.contact_number,
+          birth_date: user.birth_date,
+          branch: user.branch,
           full_name: `${user.first_name} ${user.middle_name ? user.middle_name + ' ' : ''}${user.last_name}`.trim(),
           is_active: user.is_active,
           last_login: user.last_login,
@@ -552,6 +585,14 @@ const changePassword = async (req, res) => {
       'UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [hashedNewPassword, userId]
     );
+
+    // Log activity
+    await logActivity({
+      userId: userId,
+      action: ACTIVITY_TYPES.CHANGE_PASSWORD,
+      description: 'Changed account password',
+      ...getRequestInfo(req)
+    });
 
     res.json({
       success: true,

@@ -5,13 +5,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import NavBarMain from "@/Components/NavBarMain";
 import ExclamationPoint from "@/assets/ExclamationPoint.svg";
 import UploadIcon from "@/assets/UploadIcon.svg";
-import { X, Search, Check } from "lucide-react";
+import { X, Search, Check, FileText } from "lucide-react";
 
 // Assets
 import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
 
 // Import API service
 import apiService from "@/services/api";
+import FileRequestModal from "@/components/FileRequestModal";
 
 export default function LOA_Submit() {
     const navigate = useNavigate();
@@ -198,6 +199,7 @@ export default function LOA_Submit() {
     const [showApproveModal, setShowApproveModal] = useState(false);
     const [showRejectModal, setShowRejectModal] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
+    const [showFileRequestModal, setShowFileRequestModal] = useState(false);
     const [rejectionReason, setRejectionReason] = useState("");
     const [approvalComment, setApprovalComment] = useState("");
     const [isDragOver, setIsDragOver] = useState(false);
@@ -262,9 +264,9 @@ export default function LOA_Submit() {
         // Handle special status names
         const statusMap = {
             'hr_final_verification': 'Executive Clearance Review',
-            'hr_processing': 'HR Processing',
-            'benefits_review': 'Benefits Review',
-            'welfare_review': 'Welfare Review'
+            'hr_processing': 'Human Resource Processing',
+            'benefits_review': 'Benefits Officer Review',
+            'welfare_review': 'Division Head Review'
         };
 
         if (statusMap[status]) {
@@ -512,20 +514,8 @@ export default function LOA_Submit() {
             return;
         }
 
-        // Check if file upload is required for HR, Benefits Officers, and Welfare Heads
-        if (['hr_personnel', 'benefits_officer', 'welfare_head'].includes(user?.role)) {
-            // Get files uploaded by current user for this request
-            const currentUserFiles = (request?.files || []).filter(file =>
-                file.uploaded_by === user?.id &&
-                file.request_id === request?.id
-            );
-
-            if (!currentUserFiles || currentUserFiles.length === 0) {
-                setErrorMessage('File upload is required before rejection. Please upload a file first.');
-                setShowErrorModal(true);
-                return;
-            }
-        }
+        // Note: File upload is NOT required for rejection
+        // Rejection can happen without uploading files
 
         if (isSubmitting) return;
         setIsSubmitting(true);
@@ -811,11 +801,11 @@ export default function LOA_Submit() {
     const getUploadMessage = () => {
         switch (user?.role) {
             case 'hr_personnel':
-                return 'No HR documents uploaded yet';
+                return 'No Human Resource documents uploaded yet';
             case 'benefits_officer':
-                return 'No Benefits documents uploaded yet';
+                return 'No Benefits & Services documents uploaded yet';
             case 'welfare_head':
-                return 'No Welfare documents uploaded yet';
+                return 'No Welfare & Recreation documents uploaded yet';
             default:
                 return 'No documents uploaded yet';
         }
@@ -825,11 +815,11 @@ export default function LOA_Submit() {
     const getRoleFileLabel = () => {
         switch (user?.role) {
             case 'hr_personnel':
-                return 'HR File:';
+                return 'Human Resource File:';
             case 'benefits_officer':
-                return 'Benefits File:';
+                return 'Benefits & Services File:';
             case 'welfare_head':
-                return 'Welfare File:';
+                return 'Welfare & Recreation File:';
             default:
                 return 'Staff File:';
         }
@@ -840,12 +830,15 @@ export default function LOA_Submit() {
         if (!request?.id) return { file: null, label: 'Staff File:', noFileMessage: 'No Staff File' };
 
         // Get all non-executive files (staff files) for THIS specific request from database
-        // BUT exclude HR files if request is still in HR processing stage
+        // Document Preview should ONLY show permanent files from previous approvers
         const staffFiles = (request.files || []).filter(file => {
             // Always exclude executive files
             if (file.uploaded_by === request.employee_id) return false;
 
-            // If request is still in initial hr_processing, don't show HR files yet
+            // Exclude current user's files if they are the current approver (their files go to Temporary Storage)
+            if (canApprove() && file.uploaded_by === user?.id) return false;
+
+            // If request is still in initial hr_processing, don't show any staff files yet
             // HR files should only be visible AFTER initial HR processing is complete
             if (request.current_status === 'hr_processing' || request.current_status === 'pending') {
                 return false; // Hide all staff files during initial HR processing
@@ -854,8 +847,9 @@ export default function LOA_Submit() {
             return file.request_id === request.id;
         });
 
-        // Also include pending files (not yet saved to database)
-        const allStaffFiles = [...staffFiles, ...pendingFiles];
+        // Document Preview = permanent files ONLY (no pending files)
+        // Pending files are shown in Temporary Storage section
+        const allStaffFiles = [...staffFiles];
 
         console.log(`🔍 Debug - Request ID: ${request.id}, Employee ID: ${request.employee_id}`);
         console.log(`📁 Database files for request:`, request.files || []);
@@ -882,67 +876,67 @@ export default function LOA_Submit() {
 
         if (request.current_status === 'hr_processing' || request.current_status === 'pending') {
             // Still in HR stage - no staff files should be visible yet
-            fileLabel = 'HR File:';
-            roleIdentifier = 'HR';
+            fileLabel = 'Human Resource File:';
+            roleIdentifier = 'Human Resource';
         } else if (request.current_status === 'benefits_review') {
             // In Benefits review stage
             if (user?.role === 'benefits_officer') {
                 // Benefits officer sees HR's file (the previous stage)
-                fileLabel = 'HR File:';
-                roleIdentifier = 'HR';
+                fileLabel = 'Human Resource File:';
+                roleIdentifier = 'Human Resource';
             } else {
                 // Others see Benefits file if it exists, otherwise HR file
-                fileLabel = staffFiles.length > 1 ? 'Benefits File:' : 'HR File:';
-                roleIdentifier = staffFiles.length > 1 ? 'Benefits' : 'HR';
+                fileLabel = staffFiles.length > 1 ? 'Benefits & Services File:' : 'Human Resource File:';
+                roleIdentifier = staffFiles.length > 1 ? 'Benefits & Services' : 'Human Resource';
             }
         } else if (request.current_status === 'welfare_review') {
             // In Welfare review stage
             if (user?.role === 'welfare_head') {
                 // Welfare head sees Benefits file (the previous stage)
-                fileLabel = 'Benefits File:';
-                roleIdentifier = 'Benefits';
+                fileLabel = 'Benefits & Services File:';
+                roleIdentifier = 'Benefits & Services';
             } else {
                 // Others see Welfare file if it exists, otherwise the most recent
-                fileLabel = staffFiles.length > 2 ? 'Welfare File:' : 'Benefits File:';
-                roleIdentifier = staffFiles.length > 2 ? 'Welfare' : 'Benefits';
+                fileLabel = staffFiles.length > 2 ? 'Welfare & Recreation File:' : 'Benefits & Services File:';
+                roleIdentifier = staffFiles.length > 2 ? 'Welfare & Recreation' : 'Benefits & Services';
             }
         } else if (request.current_status === 'hr_final_verification') {
             // In HR Final Verification stage
             if (user?.role === 'hr_personnel') {
                 // HR sees all files for final verification
-                fileLabel = 'Welfare File:';
-                roleIdentifier = 'Welfare';
+                fileLabel = 'Welfare & Recreation File:';
+                roleIdentifier = 'Welfare & Recreation';
             } else {
                 // Others see the most recent available file
-                fileLabel = staffFiles.length >= 3 ? 'Welfare File:' : 'Benefits File:';
-                roleIdentifier = staffFiles.length >= 3 ? 'Welfare' : 'Benefits';
+                fileLabel = staffFiles.length >= 3 ? 'Welfare & Recreation File:' : 'Benefits & Services File:';
+                roleIdentifier = staffFiles.length >= 3 ? 'Welfare & Recreation' : 'Benefits & Services';
             }
         } else if (['approved', 'rejected', 'completed'].includes(request.current_status)) {
             // Final stage - show the final approver's file (usually Welfare)
             if (staffFiles.length >= 3) {
-                fileLabel = 'Welfare File:';
-                roleIdentifier = 'Welfare';
+                fileLabel = 'Welfare & Recreation File:';
+                roleIdentifier = 'Welfare & Recreation';
             } else if (staffFiles.length >= 2) {
-                fileLabel = 'Benefits File:';
-                roleIdentifier = 'Benefits';
+                fileLabel = 'Benefits & Services File:';
+                roleIdentifier = 'Benefits & Services';
             } else {
-                fileLabel = 'HR File:';
-                roleIdentifier = 'HR';
+                fileLabel = 'Human Resource File:';
+                roleIdentifier = 'Human Resource';
             }
         }
 
         // Special handling: if user is viewing their own stage, show the previous stage's file
         // This allows them to see what they need to review/approve
         if (user?.role === 'benefits_officer' && request.current_status === 'benefits_review') {
-            fileLabel = 'HR File:';
-            roleIdentifier = 'HR';
+            fileLabel = 'Human Resource File:';
+            roleIdentifier = 'Human Resource';
         } else if (user?.role === 'welfare_head' && request.current_status === 'welfare_review') {
-            fileLabel = 'Benefits File:';
-            roleIdentifier = 'Benefits';
+            fileLabel = 'Benefits & Services File:';
+            roleIdentifier = 'Benefits & Services';
         } else if (user?.role === 'hr_personnel' && request.current_status === 'hr_final_verification') {
             // HR Final Verification: show all files from all previous stages
-            fileLabel = 'Welfare File:';
-            roleIdentifier = 'Welfare';
+            fileLabel = 'Welfare & Recreation File:';
+            roleIdentifier = 'Welfare & Recreation';
         }
 
         // Select the appropriate file based on the determined logic
@@ -1340,19 +1334,31 @@ export default function LOA_Submit() {
                                         </div>
                                         {/* Executive File Display */}
                                         <div className="mb-2">
-                                            <p className="text-[#023184] font-semibold text-xs mb-1">Executive File:</p>
+                                            <p className="text-[#023184] font-semibold text-xs mb-1">
+                                                Executive File{(() => {
+                                                    const executiveFiles = request?.files?.filter(file =>
+                                                        file.uploaded_by === request.employee_id
+                                                    ) || [];
+                                                    return executiveFiles.length > 1 ? 's' : '';
+                                                })()}:
+                                            </p>
                                             {(() => {
                                                 const executiveFiles = request?.files?.filter(file =>
                                                     file.uploaded_by === request.employee_id
                                                 ) || [];
                                                 return executiveFiles.length > 0 ? (
-                                                    <p
-                                                        className="text-[#023184] font-medium text-xs cursor-pointer hover:underline hover:text-blue-600 break-words px-2 max-w-full leading-tight"
-                                                        onClick={() => handleDownload(executiveFiles[0].id, executiveFiles[0].original_file_name)}
-                                                        title="Click to download"
-                                                    >
-                                                        {executiveFiles[0].original_file_name}
-                                                    </p>
+                                                    <div className="space-y-1">
+                                                        {executiveFiles.map((file, index) => (
+                                                            <p
+                                                                key={file.id}
+                                                                className="text-[#023184] font-medium text-xs cursor-pointer hover:underline hover:text-blue-600 break-words px-2 max-w-full leading-tight"
+                                                                onClick={() => handleDownload(file.id, file.original_file_name)}
+                                                                title="Click to download"
+                                                            >
+                                                                {executiveFiles.length > 1 ? `${index + 1}. ` : ''}{file.original_file_name}
+                                                            </p>
+                                                        ))}
+                                                    </div>
                                                 ) : (
                                                     <p className="text-gray-500 text-xs px-2">No Executive File</p>
                                                 );
@@ -1426,18 +1432,13 @@ export default function LOA_Submit() {
                                         </button>
                                     )}
 
-                                    {/* Upload button - for all processing roles (HR, Benefits, Welfare) - but not during hr_final_verification */}
-                                    {['hr_personnel', 'benefits_officer', 'welfare_head', 'admin'].includes(user?.role) &&
-                                     request?.current_status !== 'hr_final_verification' && (
+                                    {/* Upload button - only available when user can approve (their turn to review) */}
+                                    {(canApprove() || user?.role === 'admin') && request?.current_status !== 'hr_final_verification' && (
                                         <button
                                             onClick={handleUpload}
-                                            className={`px-4 sm:px-6 py-2 text-white rounded-full font-medium transition-colors text-sm sm:text-base w-full sm:w-auto ${
-                                                ['hr_personnel', 'benefits_officer', 'welfare_head'].includes(user?.role)
-                                                    ? 'bg-gray-600 hover:bg-gray-700'
-                                                    : 'bg-gray-600 hover:bg-gray-700'
-                                            }`}
+                                            className="px-4 sm:px-6 py-2 text-white bg-gray-600 hover:bg-gray-700 rounded-full font-medium transition-colors text-sm sm:text-base w-full sm:w-auto cursor-pointer"
                                         >
-                                            Upload {['hr_personnel', 'benefits_officer', 'welfare_head'].includes(user?.role) ? '' : ''}
+                                            Upload
                                         </button>
                                     )}
                                 </div>
@@ -1448,6 +1449,17 @@ export default function LOA_Submit() {
 
                         {/* Action Buttons - Responsive */}
                         <div className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mt-6 md:mt-8 pt-4 md:pt-6 border-t border-gray-200">
+                            {/* Request Files Button - Only available when user can approve (their turn to review) */}
+                            {canApprove() && request && (
+                                <button
+                                    onClick={() => setShowFileRequestModal(true)}
+                                    className="px-6 sm:px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full font-bold hover:from-blue-700 hover:to-purple-700 transition-colors text-sm sm:text-base w-full sm:w-auto flex items-center justify-center gap-2 cursor-pointer"
+                                >
+                                    <FileText size={20} />
+                                    Request Files
+                                </button>
+                            )}
+
                             {/* Show Approve/Reject buttons when user can approve */}
                             {canApprove() && (
                                 <>
@@ -1461,9 +1473,8 @@ export default function LOA_Submit() {
                                     <button
                                         onClick={handleReject}
                                         className="px-6 sm:px-8 py-3 bg-red-600 text-white rounded-full font-bold hover:bg-red-700 transition-colors text-sm sm:text-base w-full sm:w-auto"
-                                        title={['hr_personnel', 'benefits_officer', 'welfare_head'].includes(user?.role) ? 'File upload required before rejection' : ''}
                                     >
-                                        Reject {['hr_personnel', 'benefits_officer', 'welfare_head'].includes(user?.role) ? '' : ''}
+                                        Reject
                                     </button>
                                 </>
                             )}
@@ -1891,6 +1902,17 @@ export default function LOA_Submit() {
                     </div>
                 </div>
             )}
+
+            {/* File Request Modal */}
+            <FileRequestModal
+                isOpen={showFileRequestModal}
+                onClose={() => setShowFileRequestModal(false)}
+                requestId={requestId}
+                onSuccess={() => {
+                    // Optionally refresh request data after file request is sent
+                    fetchRequest();
+                }}
+            />
         </div>
     );
 }

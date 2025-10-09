@@ -5,15 +5,16 @@ const jwt = require('jsonwebtoken');
 const { pool } = require('../config/database/connection');
 require('dotenv').config();
 const { authenticateToken } = require('../middleware/authMiddleware');
-const { 
-  validateRegister, 
+const { logActivity, ACTIVITY_TYPES } = require('../utils/activityLogger');
+const {
+  validateRegister,
   validateLogin,
   validateUpdateProfile,
   validateChangePassword
 } = require('../validators/authValidators');
 
-// POST /api/auth/register
-router.post('/register', validateRegister, async (req, res) => {
+// POST /api/auth/register - Requires authentication (admin creates users)
+router.post('/register', authenticateToken, validateRegister, async (req, res) => {
   try {
 
     if (!process.env.JWT_SECRET) {
@@ -30,18 +31,19 @@ router.post('/register', validateRegister, async (req, res) => {
 
     console.log('JWT_SECRET:', process.env.JWT_SECRET); // Add this line
 
-    const { 
-      employee_id, 
-      email, 
-      password, 
-      first_name, 
-      last_name, 
-      middle_name, 
+    const {
+      employee_id,
+      email,
+      password,
+      first_name,
+      last_name,
+      middle_name,
       role,
-      department, 
-      position, 
+      department,
+      position,
       branch,
-      contact_number 
+      contact_number,
+      birth_date
     } = req.body;
 
     console.log('Destructured role:', role);
@@ -58,11 +60,16 @@ router.post('/register', validateRegister, async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Convert birth_date to MySQL format
+    const mysqlBirthDate = birth_date ? new Date(birth_date).toISOString().split('T')[0] : null;
+
+    console.log('Birth date conversion:', { birth_date, mysqlBirthDate });
+
     // Insert new user - CORRECTED to match your database schema
     const [result] = await pool.execute(
-      `INSERT INTO users (employee_id, email, password_hash, first_name, last_name, middle_name, role, department, position, branch, contact_number, is_active, created_at, updated_at) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())`,
-      [employee_id, email, hashedPassword, first_name, last_name, middle_name ?? null, role, department, position, branch, contact_number]
+      `INSERT INTO users (employee_id, email, password_hash, first_name, last_name, middle_name, role, department, position, branch, contact_number, birth_date, is_active, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())`,
+      [employee_id, email, hashedPassword, first_name, last_name, middle_name ?? null, role, department, position, branch, contact_number, mysqlBirthDate]
     );
 
     // Verify required data for JWT
@@ -93,6 +100,24 @@ router.post('/register', validateRegister, async (req, res) => {
       { expiresIn: process.env.JWT_REFRESH_EXPIRE || '30d' }
     );
 
+    // Log user creation activity
+    await logActivity({
+      userId: req.user.id, // The admin who created the user
+      action: ACTIVITY_TYPES.CREATE_USER,
+      description: `Created new user ${employee_id} (${first_name} ${last_name}) with role ${role}`,
+      newValues: {
+        userId: userId,
+        employee_id,
+        email,
+        first_name,
+        last_name,
+        role,
+        department,
+        position,
+        branch
+      }
+    });
+
     // Return success response
     res.status(201).json({
       success: true,
@@ -109,7 +134,8 @@ router.post('/register', validateRegister, async (req, res) => {
           department,
           position,
           branch,
-          contact_number
+          contact_number,
+          birth_date: mysqlBirthDate
         },
         token,
         refreshToken
@@ -204,7 +230,7 @@ router.get('/profile', authenticateToken, async (req, res) => {
   try {
     console.log('Profile request - User from token:', req.user);
     const [users] = await pool.execute(
-      'SELECT id, employee_id, email, first_name, last_name, middle_name, role, department, position, branch, contact_number, is_active, created_at, updated_at FROM users WHERE id = ?',
+      'SELECT id, employee_id, email, first_name, last_name, middle_name, role, department, position, branch, contact_number, profile_picture, is_active, created_at, updated_at FROM users WHERE id = ?',
       [req.user.id]
     );
     console.log('Profile query result:', users);

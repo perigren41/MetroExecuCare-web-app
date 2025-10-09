@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ProtectedRoute, AdminRoute, ExecutiveRoute, HRRoute, BenefitsRoute, WelfareRoute } from "@/Components/ProtectedRoute";
+import { ProtectedRoute, AdminRoute, ExecutiveRoute, HRRoute, BenefitsRoute, WelfareRoute, WorkflowRoute } from "@/Components/ProtectedRoute";
 import { NotFound } from "@/NotFound";
 import { LandingPage } from "@/webpages/LandingPage";
 import { LoginPage } from "@/webpages/NewLoginPage";
@@ -19,9 +19,8 @@ import HR_PendingRequestsPage from "@/webpages/HR_PendingRequestsPage.jsx";
 import HRProfilePage from "@/webpages/HR_Profile.jsx";
 import LOA_RecordSummary from "@/webpages/LOA_RecordSummary.jsx";
 import LOA_Submit from "@/webpages/LOA_Submit.jsx";
-import { AboutUs } from "@/webpages/AboutUs.jsx";
-import { ContactUs } from "@/webpages/ContactUs.jsx";
-import { FAQ } from "@/webpages/FAQ.jsx";
+import AboutUsPage from "@/webpages/AboutUsPage.jsx";
+import FAQPage from "@/webpages/FAQPage.jsx";
 
 
 function App() {
@@ -32,6 +31,8 @@ function App() {
           {/* Public Routes */}
           <Route index element={ <LandingPage /> } />
           <Route path="/loginpage" element={<LoginPage />} />
+          <Route path="/about" element={<AboutUsPage />} />
+          <Route path="/faq" element={<FAQPage />} />
 
           {/* Executive Routes */}
           <Route
@@ -121,9 +122,9 @@ function App() {
           <Route
             path="/hr-profile"
             element={
-              <HRRoute>
+              <WorkflowRoute>
                 <HRProfilePage />
-              </HRRoute>
+              </WorkflowRoute>
             }
           />
 
@@ -213,10 +214,7 @@ function App() {
             }
           />
 
-          {/* Public Information Routes */}
-          <Route path="/about-us" element={<AboutUs />} />
-          <Route path="/contact-us" element={<ContactUs />} />
-          <Route path="/faq" element={<FAQ />} />
+          {/* Public Information Routes - Handled above in Public Routes section */}
 
           {/* 404 Route */}
           <Route path="*" element={ <NotFound/> } />

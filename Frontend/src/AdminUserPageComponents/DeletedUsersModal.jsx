@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import apiService from "@/services/api";
 
 export default function DeletedUsersModal({ isOpen, onClose, onRestore }) {
   const [deletedUsers, setDeletedUsers] = useState([]);
@@ -34,28 +35,34 @@ export default function DeletedUsersModal({ isOpen, onClose, onRestore }) {
       setAlertMessage("");
     }
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:5019/api/users/deleted?page=${currentPage}&search=${searchTerm}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+      const response = await apiService.getDeletedUsers({
+        page: currentPage,
+        search: searchTerm
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setDeletedUsers(data.data.users);
-        setTotalPages(data.data.pagination.totalPages);
+      if (response.success) {
+        const userData = response.data?.users || [];
+        setDeletedUsers(Array.isArray(userData) ? userData : []);
+        setTotalPages(response.data?.pagination?.totalPages || 1);
       } else {
-        const errorData = await response.json();
-        setAlertMessage(errorData.error || 'Failed to fetch deleted users');
+        setAlertMessage(response.message || 'Failed to fetch deleted users');
         setAlertType('error');
-        console.error('Failed to fetch deleted users');
+        setDeletedUsers([]);
       }
     } catch (error) {
-      setAlertMessage('Network error: Unable to fetch deleted users');
-      setAlertType('error');
       console.error('Error fetching deleted users:', error);
+
+      // Provide user-friendly error messages
+      if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+        setAlertMessage('Cannot connect to server. Please check your connection.');
+      } else if (error.message.includes('NetworkError') || error.message.includes('Network')) {
+        setAlertMessage('Network error: Unable to fetch deleted users');
+      } else {
+        setAlertMessage(error.message || 'Failed to fetch deleted users');
+      }
+
+      setAlertType('error');
+      setDeletedUsers([]);
     } finally {
       setLoading(false);
     }
@@ -69,27 +76,16 @@ export default function DeletedUsersModal({ isOpen, onClose, onRestore }) {
   const confirmRestore = async () => {
     // Validate required restoration reason
     if (!restorationReason.trim()) {
-      alert('Please provide a reason for restoration');
+      setAlertMessage('Please provide a reason for restoration');
+      setAlertType('error');
       return;
     }
 
     setRestoreLoading(true);
     try {
-      const token = localStorage.getItem('authToken');
-      const response = await fetch(`http://localhost:5019/api/users/${selectedUser.id}/restore`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          restored_reason: restorationReason.trim()
-        })
-      });
+      const response = await apiService.restoreUser(selectedUser.id, restorationReason.trim());
 
-      if (response.ok) {
-        const data = await response.json();
-
+      if (response.success) {
         // Store user info before clearing
         const restoredUserName = `${selectedUser.first_name} ${selectedUser.last_name}`;
 
@@ -118,15 +114,22 @@ export default function DeletedUsersModal({ isOpen, onClose, onRestore }) {
           setAlertType("");
         }, 5000);
       } else {
-        const errorData = await response.json();
-        setAlertMessage(errorData.error || 'Failed to restore user');
+        setAlertMessage(response.message || 'Failed to restore user');
         setAlertType('error');
-        console.error('Failed to restore user');
       }
     } catch (error) {
-      setAlertMessage('Network error: Unable to restore user');
-      setAlertType('error');
       console.error('Error restoring user:', error);
+
+      // Provide user-friendly error messages
+      if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+        setAlertMessage('Cannot connect to server. Please check your connection.');
+      } else if (error.message.includes('NetworkError') || error.message.includes('Network')) {
+        setAlertMessage('Network error: Unable to restore user');
+      } else {
+        setAlertMessage(error.message || 'Failed to restore user');
+      }
+
+      setAlertType('error');
     } finally {
       setRestoreLoading(false);
     }
@@ -152,7 +155,7 @@ export default function DeletedUsersModal({ isOpen, onClose, onRestore }) {
           <h2 className="text-sm sm:text-lg font-bold">Deleted Users</h2>
           <button
             onClick={onClose}
-            className="text-white hover:text-gray-200 text-xl"
+            className="text-white hover:text-gray-200 text-xl cursor-pointer"
           >
             ✖
           </button>
@@ -243,7 +246,7 @@ export default function DeletedUsersModal({ isOpen, onClose, onRestore }) {
                       <td className="py-2 sm:py-3 px-2 sm:px-4">
                         <button
                           onClick={() => handleRestore(user)}
-                          className="px-2 sm:px-3 py-1 bg-green-600 text-white text-xs rounded-full hover:bg-green-700 transition-colors w-full sm:w-auto"
+                          className="px-2 sm:px-3 py-1 bg-green-600 text-white text-xs rounded-full hover:bg-green-700 transition-colors w-full sm:w-auto cursor-pointer"
                         >
                           Restore
                         </button>
@@ -261,7 +264,7 @@ export default function DeletedUsersModal({ isOpen, onClose, onRestore }) {
               <button
                 onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300"
+                className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 cursor-pointer"
               >
                 Previous
               </button>
@@ -271,7 +274,7 @@ export default function DeletedUsersModal({ isOpen, onClose, onRestore }) {
               <button
                 onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300"
+                className="px-3 py-1 text-sm bg-gray-200 text-gray-700 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-300 cursor-pointer"
               >
                 Next
               </button>
@@ -311,7 +314,7 @@ export default function DeletedUsersModal({ isOpen, onClose, onRestore }) {
               <button
                 onClick={confirmRestore}
                 disabled={restoreLoading}
-                className="px-4 py-2 rounded-full bg-green-600 text-white text-xs hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 rounded-full bg-green-600 text-white text-xs hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {restoreLoading ? 'Restoring...' : 'Yes, Restore Account'}
               </button>
@@ -321,7 +324,7 @@ export default function DeletedUsersModal({ isOpen, onClose, onRestore }) {
                   setSelectedUser(null);
                   setRestorationReason("");
                 }}
-                className="px-4 py-2 rounded-full bg-gray-400 text-white text-xs hover:bg-gray-500"
+                className="px-4 py-2 rounded-full bg-gray-400 text-white text-xs hover:bg-gray-500 cursor-pointer"
               >
                 Cancel
               </button>

@@ -1,6 +1,6 @@
 const { pool } = require('../config/database/connection');
 const bcrypt = require('bcryptjs');
-const { logActivity, getRequestInfo, ACTIVITY_TYPES } = require('../utils/activityLogger');
+const { logActivity, getRequestInfo, ACTIVITY_TYPES, formatRoleName, formatActionName } = require('../utils/activityLogger');
 const path = require('path');
 const fs = require('fs');
 
@@ -27,12 +27,11 @@ const getUsers = async (req, res) => {
       SELECT
         id, employee_id, email, first_name, last_name, middle_name, role,
         department, position, branch, contact_number, birth_date, is_active,
-        deleted_at, deleted_by, deletion_reason, restored_at, restored_by,
-        created_at, updated_at
+        profile_picture, created_at, updated_at
       FROM users
-      WHERE is_active = 1 AND deleted_at IS NULL
+      WHERE is_active = 1
     `;
-    let countQuery = 'SELECT COUNT(*) as total FROM users WHERE is_active = 1 AND deleted_at IS NULL';
+    let countQuery = 'SELECT COUNT(*) as total FROM users WHERE is_active = 1';
     let queryParams = [];
     let countParams = [];
 
@@ -105,11 +104,11 @@ const getUserById = async (req, res) => {
     }
 
     const [users] = await pool.execute(
-      `SELECT 
+      `SELECT
         id, employee_id, email, first_name, last_name, middle_name, role,
-        department, position, branch, contact_number, birth_date, is_active,
-        created_at, updated_at 
-      FROM users 
+        department, position, branch, contact_number, birth_date, profile_picture,
+        is_active, created_at, updated_at
+      FROM users
       WHERE id = ?`,
       [id]
     );
@@ -245,8 +244,12 @@ const updateUser = async (req, res) => {
     }
     if (birth_date !== undefined) {
       updateFields.push('birth_date = ?');
-      // Convert ISO date string to MySQL date format (YYYY-MM-DD)
-      const mysqlDate = birth_date ? new Date(birth_date).toISOString().split('T')[0] : null;
+      // Convert ISO date string to MySQL date format (YYYY-MM-DD) - timezone-safe
+      let mysqlDate = null;
+      if (birth_date) {
+        const d = new Date(birth_date);
+        mysqlDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      }
       updateValues.push(mysqlDate);
     }
 
@@ -297,19 +300,31 @@ const updateUser = async (req, res) => {
       action: ACTIVITY_TYPES.UPDATE_USER,
       description: logDescription,
       oldValues: {
+        employee_id: oldUserData.employee_id,
         first_name: oldUserData.first_name,
         last_name: oldUserData.last_name,
+        middle_name: oldUserData.middle_name,
         email: oldUserData.email,
         role: oldUserData.role,
         department: oldUserData.department,
+        position: oldUserData.position,
+        contact_number: oldUserData.contact_number,
+        birth_date: oldUserData.birth_date,
+        branch: oldUserData.branch,
         ...(hashedPassword && { password: '[PASSWORD CHANGED]' })
       },
       newValues: {
+        employee_id: newUserData.employee_id,
         first_name: newUserData.first_name,
         last_name: newUserData.last_name,
+        middle_name: newUserData.middle_name,
         email: newUserData.email,
         role: newUserData.role,
         department: newUserData.department,
+        position: newUserData.position,
+        contact_number: newUserData.contact_number,
+        birth_date: newUserData.birth_date,
+        branch: newUserData.branch,
         ...(hashedPassword && { password: '[PASSWORD UPDATED]' })
       },
       ...getRequestInfo(req)
@@ -402,19 +417,28 @@ const deleteUser = async (req, res) => {
     const { id } = req.params;
     const { deletion_reason } = req.body;
 
-    // Check if user exists and is not already deleted, get user data for logging
+    // Check if user exists and is active, get user data for logging
+    // Note: deleted_at column doesn't exist in schema, using is_active flag
     const [users] = await pool.execute(
-      'SELECT id, employee_id, email, first_name, last_name, role FROM users WHERE id = ? AND deleted_at IS NULL',
+      'SELECT id, employee_id, email, first_name, last_name, role, is_active FROM users WHERE id = ?',
       [id]
     );
     if (users.length === 0) {
       return res.status(404).json({
         success: false,
-        error: 'User not found or already deleted'
+        error: 'User not found'
       });
     }
 
     const userToDelete = users[0];
+
+    // Check if already inactive
+    if (!userToDelete.is_active) {
+      return res.status(400).json({
+        success: false,
+        error: 'User is already deactivated'
+      });
+    }
 
     // Prevent admin from deleting themselves
     if (parseInt(id) === req.user.id) {
@@ -424,23 +448,20 @@ const deleteUser = async (req, res) => {
       });
     }
 
-    // Enhanced soft delete with audit trail - keep original email
+    // Soft delete by setting is_active = 0 (deleted_at columns don't exist in schema)
     await pool.execute(
       `UPDATE users SET
         is_active = 0,
-        deleted_at = CURRENT_TIMESTAMP,
-        deleted_by = ?,
-        deletion_reason = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?`,
-      [req.user.id, deletion_reason || 'No reason provided', id]
+      [id]
     );
 
     // Log user deletion activity
     await logActivity({
       userId: req.user.id, // The admin performing the action
       action: ACTIVITY_TYPES.DELETE_USER,
-      description: `Deleted user ${userToDelete.employee_id} (${userToDelete.first_name} ${userToDelete.last_name}). Reason: ${deletion_reason || 'No reason provided'}`,
+      description: `Deactivated user ${userToDelete.employee_id} (${userToDelete.first_name} ${userToDelete.last_name}). Reason: ${deletion_reason || 'No reason provided'}`,
       oldValues: {
         employee_id: userToDelete.employee_id,
         email: userToDelete.email,
@@ -450,9 +471,7 @@ const deleteUser = async (req, res) => {
         is_active: true
       },
       newValues: {
-        is_active: false,
-        deleted_at: new Date().toISOString(),
-        deletion_reason: deletion_reason || 'No reason provided'
+        is_active: false
       },
       ...getRequestInfo(req)
     });
@@ -487,17 +506,13 @@ const getDeletedUsers = async (req, res) => {
     const search = req.query.search || '';
 
     // Build query for inactive users (is_active = 0)
+    // Note: deleted_at, deletion_reason, restored_at columns don't exist in schema
     let query = `
       SELECT
-        u.id, u.employee_id, u.email, u.first_name, u.last_name, u.middle_name, u.role,
-        u.department, u.position, u.branch, u.contact_number, u.birth_date,
-        u.deleted_at, u.deletion_reason, u.restored_at, u.restored_reason,
-        deleter.first_name as deleted_by_first_name, deleter.last_name as deleted_by_last_name,
-        restorer.first_name as restored_by_first_name, restorer.last_name as restored_by_last_name
-      FROM users u
-      LEFT JOIN users deleter ON u.deleted_by = deleter.id
-      LEFT JOIN users restorer ON u.restored_by = restorer.id
-      WHERE u.is_active = 0
+        id, employee_id, email, first_name, last_name, middle_name, role,
+        department, position, branch, contact_number, birth_date, updated_at
+      FROM users
+      WHERE is_active = 0
     `;
     let countQuery = 'SELECT COUNT(*) as total FROM users WHERE is_active = 0';
     let queryParams = [];
@@ -505,14 +520,14 @@ const getDeletedUsers = async (req, res) => {
 
     // Add search filter
     if (search) {
-      query += ` AND (u.first_name LIKE ? OR u.last_name LIKE ? OR u.email LIKE ?)`;
+      query += ` AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ?)`;
       countQuery += ` AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ?)`;
       const searchParam = `%${search}%`;
       queryParams.push(searchParam, searchParam, searchParam);
       countParams.push(searchParam, searchParam, searchParam);
     }
 
-    query += ` ORDER BY u.deleted_at DESC LIMIT ${limit} OFFSET ${offset}`;
+    query += ` ORDER BY updated_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
     // Execute queries
     const [deletedUsers] = await pool.execute(query, queryParams);
@@ -582,17 +597,13 @@ const restoreUser = async (req, res) => {
       });
     }
 
-    // Restore user - set is_active = 1, clear deleted_at, and record restoration details
+    // Restore user - set is_active = 1 (restored_at columns don't exist in schema)
     await pool.execute(
       `UPDATE users SET
         is_active = 1,
-        deleted_at = NULL,
-        restored_at = CURRENT_TIMESTAMP,
-        restored_by = ?,
-        restored_reason = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?`,
-      [req.user.id, restored_reason || 'No reason provided', id]
+      [id]
     );
 
     // Get restored user data
@@ -600,7 +611,7 @@ const restoreUser = async (req, res) => {
       `SELECT
         id, employee_id, email, first_name, last_name, middle_name, role,
         department, position, branch, contact_number, birth_date, is_active,
-        deleted_at, restored_at, restored_reason, created_at, updated_at
+        created_at, updated_at
       FROM users
       WHERE id = ?`,
       [id]
@@ -610,7 +621,7 @@ const restoreUser = async (req, res) => {
     await logActivity({
       userId: req.user.id, // The admin performing the action
       action: ACTIVITY_TYPES.RESTORE_USER,
-      description: `Restored user ${userToRestore.employee_id} (${userToRestore.first_name} ${userToRestore.last_name}). Reason: ${restored_reason || 'No reason provided'}`,
+      description: `Activated user ${userToRestore.employee_id} (${userToRestore.first_name} ${userToRestore.last_name}). Reason: ${restored_reason || 'No reason provided'}`,
       oldValues: {
         employee_id: userToRestore.employee_id,
         email: userToRestore.email,
@@ -620,16 +631,14 @@ const restoreUser = async (req, res) => {
         is_active: false
       },
       newValues: {
-        is_active: true,
-        restored_at: new Date().toISOString(),
-        restored_reason: restored_reason || 'No reason provided'
+        is_active: true
       },
       ...getRequestInfo(req)
     });
 
     res.json({
       success: true,
-      message: 'User restored successfully',
+      message: 'User activated successfully',
       data: { user: restoredUsers[0] }
     });
   } catch (error) {
@@ -701,6 +710,17 @@ const getUserActivityLogs = async (req, res) => {
     const userId = parseInt(id); // Ensure id is an integer
     const limit = parseInt(req.query.limit) || 10;
 
+    console.log(`📋 Fetching activity logs for user ${userId}, limit: ${limit}`);
+    console.log(`User ID type: ${typeof userId}, Limit type: ${typeof limit}`);
+
+    // Validate userId
+    if (isNaN(userId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid user ID'
+      });
+    }
+
     // Check if user exists and user has permission to view the logs
     // For now, allow users to view their own logs or admins to view any logs
     if (req.user.role !== 'admin' && req.user.id !== userId) {
@@ -710,57 +730,121 @@ const getUserActivityLogs = async (req, res) => {
       });
     }
 
-    // Get user checkup requests that are approved for activity display
-    const [logs] = await pool.execute(
+    // Get comprehensive activity logs from activity_logs table with file information
+    const [logs] = await pool.query(
       `SELECT
-        cr.id,
+        al.id,
+        al.action,
+        al.description,
+        al.created_at,
+        al.request_id,
+        al.file_id,
+        cr.request_number,
         cr.request_type,
-        cr.current_status,
-        cr.created_at,
-        cr.completed_at,
-        h.name as hospital_name
-      FROM checkup_requests cr
-      LEFT JOIN hospitals h ON cr.hospital_id = h.id
-      WHERE cr.employee_id = ? AND cr.current_status IN ('approved', 'rejected')
-      ORDER BY cr.created_at DESC
+        rf.original_file_name as file_name
+      FROM activity_logs al
+      LEFT JOIN checkup_requests cr ON al.request_id = cr.id
+      LEFT JOIN request_files rf ON al.file_id = rf.id
+      WHERE al.user_id = ?
+      ORDER BY al.created_at DESC
       LIMIT ?`,
       [userId, limit]
     );
 
-    // Format the request logs for user-friendly display
-    const formattedLogs = logs.map(log => {
-      // Convert request_type to user-friendly format
-      let requestType = '';
-      if (log.request_type === 'letter_of_approval') {
-        requestType = 'Letter of Approval';
-      } else if (log.request_type === 'letter_of_authorization') {
-        requestType = 'Letter of Authorization';
-      } else {
-        requestType = log.request_type || 'Unknown Request';
-      }
+    console.log(`✅ Found ${logs.length} comprehensive activity logs for user ${userId}`);
 
-      // Format status to capitalize first letter
-      const status = log.current_status.charAt(0).toUpperCase() + log.current_status.slice(1);
+    // If no logs found, return empty array
+    if (!logs || logs.length === 0) {
+      console.log(`ℹ️ No activity logs found for user ${userId}`);
+      return res.json({
+        success: true,
+        data: []
+      });
+    }
 
-      return {
-        id: log.id,
-        request_type: requestType,
-        hospital_name: log.hospital_name || 'Unknown Hospital',
-        current_status: status,
-        created_at: log.created_at,
-        completed_at: log.completed_at || log.created_at
-      };
-    });
-
+    // Format and return the comprehensive activity logs with user-friendly descriptions
     res.json({
       success: true,
-      data: { logs: formattedLogs }
+      data: logs.map(log => {
+        // Create user-friendly description
+        let userFriendlyDescription = log.description;
+
+        // Replace "user ID: X" with more context if available
+        userFriendlyDescription = userFriendlyDescription.replace(/user ID: \d+/gi, 'your account');
+        userFriendlyDescription = userFriendlyDescription.replace(/userID: \d+/gi, 'your account');
+
+        // Replace role abbreviations with full names
+        userFriendlyDescription = userFriendlyDescription.replace(/\bhr\b/gi, 'Human Resource Personnel');
+        userFriendlyDescription = userFriendlyDescription.replace(/\bhr_personnel\b/gi, 'Human Resource Personnel');
+        userFriendlyDescription = userFriendlyDescription.replace(/\bbenefits_officer\b/gi, 'Benefits Officer');
+        userFriendlyDescription = userFriendlyDescription.replace(/\bwelfare_head\b/gi, 'Welfare Head');
+        userFriendlyDescription = userFriendlyDescription.replace(/\badmin\b/gi, 'Admin');
+        userFriendlyDescription = userFriendlyDescription.replace(/\bexecutive\b/gi, 'Executive');
+
+        // Improve common action descriptions with request numbers for workflow actions
+        if (log.action === 'UPDATE_NOTES') {
+          userFriendlyDescription = 'Updated personal notes';
+        } else if (log.action === 'CHANGE_PASSWORD') {
+          userFriendlyDescription = 'Changed account password';
+        } else if (log.action === 'UPDATE_PROFILE') {
+          userFriendlyDescription = 'Updated profile information';
+        }
+        // Handle approval actions (hr_stage_approved, benefits_stage_approved, welfare_stage_approved, hr_final_stage_approved)
+        else if (log.action && log.action.includes('_approved') && log.request_number) {
+          userFriendlyDescription = `Request approved by you, Request #${log.request_number}`;
+        }
+        // Handle rejection actions
+        else if ((log.action === 'request_rejected' || log.action === 'REJECT_REQUEST') && log.request_number) {
+          userFriendlyDescription = `Request rejected by you, Request #${log.request_number}`;
+        }
+        // Handle claim actions
+        else if ((log.action === 'request_claimed' || log.action === 'CLAIM_REQUEST') && log.request_number) {
+          userFriendlyDescription = `Claimed request, Request #${log.request_number}`;
+        }
+        // Handle file upload actions
+        else if ((log.action === 'file_uploaded' || log.action === 'UPLOAD_FILE') && log.file_name && log.request_number) {
+          userFriendlyDescription = `Uploaded submission document: ${log.file_name}, Request #${log.request_number}`;
+        } else if ((log.action === 'file_uploaded' || log.action === 'UPLOAD_FILE') && log.request_number) {
+          userFriendlyDescription = `Uploaded submission document, Request #${log.request_number}`;
+        }
+        // Handle assignment actions
+        else if ((log.action === 'request_assigned' || log.action === 'ASSIGN_REQUEST') && log.request_number) {
+          userFriendlyDescription = `Assigned request, Request #${log.request_number}`;
+        }
+        // Handle request creation
+        else if ((log.action === 'request_created' || log.action === 'CREATE_REQUEST') && log.request_number) {
+          userFriendlyDescription = `Created new request, Request #${log.request_number}`;
+        }
+        // Handle HR processing completion
+        else if (log.action === 'hr_processing_completed' && log.request_number) {
+          userFriendlyDescription = `Completed HR processing, Request #${log.request_number}`;
+        }
+        // Handle file deletion
+        else if ((log.action === 'file_deleted' || log.action === 'DELETE_FILE') && log.file_name && log.request_number) {
+          userFriendlyDescription = `Deleted file: ${log.file_name}, Request #${log.request_number}`;
+        } else if ((log.action === 'file_deleted' || log.action === 'DELETE_FILE') && log.request_number) {
+          userFriendlyDescription = `Deleted file, Request #${log.request_number}`;
+        }
+
+        return {
+          id: log.id,
+          action: log.action,
+          description: userFriendlyDescription,
+          created_at: log.created_at,
+          request_id: log.request_id,
+          request_number: log.request_number,
+          request_type: log.request_type
+        };
+      })
     });
   } catch (error) {
-    console.error('Get user activity logs error:', error);
+    console.error('❌ Get user activity logs error:', error);
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
-      error: 'Internal server error'
+      error: 'Internal server error',
+      message: error.message
     });
   }
 };
@@ -837,7 +921,7 @@ const uploadProfilePicture = async (req, res) => {
       success: true,
       message: 'Profile picture updated successfully',
       data: {
-        profile_picture_url: profilePictureUrl
+        profile_picture: profilePictureUrl
       }
     });
   } catch (error) {
@@ -852,6 +936,79 @@ const uploadProfilePicture = async (req, res) => {
       }
     }
 
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+};
+
+// DELETE /api/users/:id/profile-picture - Remove profile picture
+const removeProfilePicture = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if user can update this profile (admin or own profile)
+    if (req.user.role !== 'admin' && req.user.id !== parseInt(id)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied. You can only update your own profile.'
+      });
+    }
+
+    // Get current profile picture
+    const [users] = await pool.execute(
+      'SELECT profile_picture FROM users WHERE id = ?',
+      [id]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    const oldProfilePicture = users[0].profile_picture;
+
+    // Remove profile picture from database
+    await pool.execute(
+      'UPDATE users SET profile_picture = NULL WHERE id = ?',
+      [id]
+    );
+
+    // Delete physical file if it exists
+    if (oldProfilePicture) {
+      const oldFilePath = path.join(__dirname, '..', oldProfilePicture);
+      try {
+        if (fs.existsSync(oldFilePath)) {
+          fs.unlinkSync(oldFilePath);
+        }
+      } catch (error) {
+        console.error('Error deleting profile picture file:', error);
+        // Don't fail the request if we can't delete the file
+      }
+    }
+
+    // Log activity
+    await logActivity({
+      userId: req.user.id,
+      action: 'REMOVE_PROFILE_PICTURE',
+      description: `Removed profile picture for user ID: ${id}`,
+      oldValues: { profile_picture: oldProfilePicture },
+      newValues: { profile_picture: null },
+      ...getRequestInfo(req)
+    });
+
+    res.json({
+      success: true,
+      message: 'Profile picture removed successfully',
+      data: {
+        profile_picture: null
+      }
+    });
+  } catch (error) {
+    console.error('Remove profile picture error:', error);
     res.status(500).json({
       success: false,
       error: 'Internal server error'
@@ -957,6 +1114,195 @@ const getUserNotes = async (req, res) => {
   }
 };
 
+// GET /api/users/admin/activity-logs - Get admin's user management activity logs
+const getAdminActivityLogs = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+
+    // Only admins can access this endpoint
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied. Admin role required.'
+      });
+    }
+
+    // Get activity logs for the current admin user
+    // Filter for user management actions: CREATE_USER, UPDATE_USER, DELETE_USER, RESTORE_USER
+    const [logs] = await pool.query(
+      `SELECT
+        id,
+        user_id,
+        action,
+        description,
+        old_values,
+        new_values,
+        created_at
+      FROM activity_logs
+      WHERE user_id = ?
+        AND action IN ('CREATE_USER', 'UPDATE_USER', 'DELETE_USER', 'RESTORE_USER')
+      ORDER BY created_at DESC
+      LIMIT ?`,
+      [req.user.id, limit]
+    );
+
+    // Process logs to extract employee info and format action descriptions
+    const processedLogs = logs.map(log => {
+      let employee_id = '-';
+      let employee_name = '-';
+      let action_display = log.action;
+      let clean_description = log.description;
+
+      // Extract employee info from new_values (for CREATE_USER) or old_values (for UPDATE/DELETE/RESTORE)
+      if (log.new_values) {
+        const newVals = typeof log.new_values === 'string' ? JSON.parse(log.new_values) : log.new_values;
+        employee_id = newVals.employee_id || employee_id;
+        employee_name = newVals.first_name && newVals.last_name
+          ? `${newVals.first_name} ${newVals.last_name}`
+          : employee_name;
+      }
+
+      if (employee_id === '-' && log.old_values) {
+        const oldVals = typeof log.old_values === 'string' ? JSON.parse(log.old_values) : log.old_values;
+        employee_id = oldVals.employee_id || employee_id;
+        employee_name = oldVals.first_name && oldVals.last_name
+          ? `${oldVals.first_name} ${oldVals.last_name}`
+          : employee_name;
+      }
+
+      // If still no employee_id, try to parse from description (fallback for old logs)
+      if (employee_id === '-') {
+        // Format: "Updated user HRP393 (sample16 HR)"
+        const match = log.description.match(/user ([A-Z]+\d+) \(([^)]+)\)/);
+        if (match) {
+          employee_id = match[1];
+          employee_name = match[2];
+        }
+      }
+
+      // Convert action to user-friendly display
+      const actionMap = {
+        'CREATE_USER': 'User Created',
+        'UPDATE_USER': 'User Updated',
+        'DELETE_USER': 'User Deleted',
+        'RESTORE_USER': 'User Restored'
+      };
+      action_display = actionMap[log.action] || log.action;
+
+      // Clean up description to remove redundancy and show detailed changes
+      if (log.action === 'UPDATE_USER') {
+        // Compare old and new values to show what changed
+        const changes = [];
+        const oldVals = log.old_values ? (typeof log.old_values === 'string' ? JSON.parse(log.old_values) : log.old_values) : {};
+        const newVals = log.new_values ? (typeof log.new_values === 'string' ? JSON.parse(log.new_values) : log.new_values) : {};
+
+        // Field display names
+        const fieldNames = {
+          first_name: 'First Name',
+          last_name: 'Last Name',
+          middle_name: 'Middle Name',
+          email: 'Email',
+          role: 'Role',
+          department: 'Department',
+          position: 'Position',
+          contact_number: 'Contact Number',
+          birth_date: 'Birth Date',
+          branch: 'Branch',
+          password: 'Password'
+        };
+
+        // Compare each field
+        for (const [key, displayName] of Object.entries(fieldNames)) {
+          if (oldVals[key] !== undefined && newVals[key] !== undefined) {
+            let oldVal = oldVals[key];
+            let newVal = newVals[key];
+
+            // Normalize null/undefined values
+            if (oldVal === null || oldVal === undefined) oldVal = '';
+            if (newVal === null || newVal === undefined) newVal = '';
+
+            // For dates, convert to comparable format (timezone-safe)
+            if (key === 'birth_date') {
+              if (oldVal) {
+                const d = new Date(oldVal);
+                oldVal = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+              }
+              if (newVal) {
+                const d = new Date(newVal);
+                newVal = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+              }
+            }
+
+            // Convert to string for comparison
+            oldVal = String(oldVal);
+            newVal = String(newVal);
+
+            if (oldVal !== newVal) {
+              if (key === 'password') {
+                changes.push('Password changed');
+              } else if (key === 'role') {
+                const displayOld = formatRoleName(oldVal) || '(empty)';
+                const displayNew = formatRoleName(newVal) || '(empty)';
+                changes.push(`${displayName}: "${displayOld}" → "${displayNew}"`);
+              } else {
+                const displayOld = oldVal || '(empty)';
+                const displayNew = newVal || '(empty)';
+                changes.push(`${displayName}: "${displayOld}" → "${displayNew}"`);
+              }
+            }
+          }
+        }
+
+        if (changes.length > 0) {
+          clean_description = changes.join(', ');
+        } else {
+          clean_description = 'Updated user profile (no field changes detected)';
+        }
+      } else if (log.action === 'DELETE_USER') {
+        // Extract only the reason
+        const reasonMatch = log.description.match(/Reason: (.+)$/);
+        clean_description = reasonMatch ? `Reason: ${reasonMatch[1]}` : 'User deleted';
+      } else if (log.action === 'RESTORE_USER') {
+        // Extract only the reason
+        const reasonMatch = log.description.match(/Reason: (.+)$/);
+        clean_description = reasonMatch ? `Reason: ${reasonMatch[1]}` : 'User restored';
+      } else if (log.action === 'CREATE_USER') {
+        // Show role and department info
+        const newVals = log.new_values ? (typeof log.new_values === 'string' ? JSON.parse(log.new_values) : log.new_values) : {};
+        const details = [];
+        if (newVals.role) details.push(`Role: ${formatRoleName(newVals.role)}`);
+        if (newVals.department) details.push(`Department: ${newVals.department}`);
+        if (newVals.position) details.push(`Position: ${newVals.position}`);
+        clean_description = details.length > 0 ? details.join(', ') : 'New user created';
+      }
+
+      return {
+        id: log.id,
+        user_id: log.user_id,
+        action: log.action,
+        action_display,
+        description: clean_description,
+        employee_id,
+        employee_name,
+        created_at: log.created_at
+      };
+    });
+
+    res.json({
+      success: true,
+      data: {
+        logs: processedLogs || []
+      }
+    });
+  } catch (error) {
+    console.error('Get admin activity logs error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+};
+
 // CRITICAL: Make sure this export is at the bottom and correctly structured
 module.exports = {
   getUsers,
@@ -968,6 +1314,8 @@ module.exports = {
   getDeletedUsers,
   restoreUser,
   uploadProfilePicture,
+  removeProfilePicture,
   updateUserNotes,
-  getUserNotes
+  getUserNotes,
+  getAdminActivityLogs
 };

@@ -14,6 +14,7 @@ import RoundArrowIconWhite from "@/assets/RoundArrowIconWhite.svg";
 import ProfileIcon from '../assets/ProfileIcon.svg';
 import LogoutIcon from '../assets/LogoutIcon.svg';
 import AlertIcon from '../assets/AlertIcon.svg';
+import ProfileGray from '@/assets/profilegray.svg';
 
 
 export default function HRDashboard() {
@@ -37,6 +38,15 @@ export default function HRDashboard() {
     const getUserInitials = (user) => {
         if (!user) return "?";
         return `${user.first_name.charAt(0)}${user.last_name.charAt(0)}`;
+    };
+
+    // Helper function to get profile picture URL
+    const getProfilePictureUrl = (picturePath) => {
+        if (!picturePath) return null;
+        if (picturePath.startsWith('http')) return picturePath;
+        if (picturePath.startsWith('data:')) return picturePath;
+        const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
+        return `${baseUrl}${picturePath}`;
     };
 
     // Helper function to get the correct pending requests route based on user role
@@ -74,9 +84,9 @@ export default function HRDashboard() {
     // Helper function to format request status for display
     const formatRequestStatus = (status) => {
         const statusMap = {
-            'hr_processing': 'HR Processing',
-            'benefits_review': 'Benefits Review',
-            'welfare_review': 'Welfare Review',
+            'hr_processing': 'Human Resource Processing',
+            'benefits_review': 'Benefits Officer Review',
+            'welfare_review': 'Division Head Review',
             'hr_final_verification': 'Executive Clearance Review',
             'approved': 'Approved',
             'rejected': 'Rejected'
@@ -102,15 +112,29 @@ export default function HRDashboard() {
             setLoading(true);
             console.log('HRDashboard: Starting to fetch dashboard data for user:', user);
 
-            // Fetch claimed requests (assigned to current HR user, excluding approved/rejected)
+            // Fetch claimed requests based on user role
+            const claimedRequestsParams = {
+                limit: 5,
+                sort: 'created_at',
+                order: 'desc'
+            };
+
+            // For HR Personnel, use assigned_hr_id filter
+            if (user.role === 'hr_personnel') {
+                claimedRequestsParams.status = 'hr_processing,benefits_review,welfare_review,hr_final_verification';
+                claimedRequestsParams.assigned_hr_id = user.id;
+            }
+            // For Benefits Officer and Welfare Head, use claimed_by_me filter
+            else if (user.role === 'benefits_officer') {
+                claimedRequestsParams.status = 'benefits_review,welfare_review,hr_final_verification';
+                claimedRequestsParams.claimed_by_me = 'true';
+            } else if (user.role === 'welfare_head') {
+                claimedRequestsParams.status = 'welfare_review,hr_final_verification';
+                claimedRequestsParams.claimed_by_me = 'true';
+            }
+
             const [claimedResponse, dashboardResponse] = await Promise.all([
-                apiService.getRequests({
-                    status: 'hr_processing,benefits_review,welfare_review,hr_final_verification',
-                    assigned_hr_id: user.id,
-                    limit: 5,
-                    sort: 'created_at',
-                    order: 'desc'
-                }),
+                apiService.getRequests(claimedRequestsParams),
                 apiService.getDashboardStats()
             ]);
 
@@ -210,15 +234,15 @@ export default function HRDashboard() {
         if (role === "benefits_officer") {
             const pendingReview = stats.pending_review || 0;
             return {
-                message: `You have ${pendingReview} LOA request/s to review and approve.`,
+                message: `You have ${pendingReview} request/s to review and approve.`,
             };
         }
 
-        // Welfare Head handles final approval
+        // Division Head handles final approval
         if (role === "welfare_head") {
             const pendingFinalApproval = stats.pending_final_approval || 0;
             return {
-                message: `You have ${pendingFinalApproval} LOA request/s for final approval.`,
+                message: `You have ${pendingFinalApproval} request/s for final approval.`,
             };
         }
 
@@ -361,16 +385,18 @@ export default function HRDashboard() {
                             className="flex items-center gap-2 hover:opacity-80 transition cursor-pointer"
                         >
                             <span className="text-white text-base font-medium">{getUserDisplayName(user)}</span>
-                            {user && user.profilePic ? (
+                            {user?.profile_picture || user?.profilePic ? (
                                 <img
-                                    src={user.profilePic}
+                                    src={getProfilePictureUrl(user.profile_picture || user.profilePic) || ProfileGray}
                                     alt={`${getUserDisplayName(user)} profile`}
                                     className="w-7 h-7 rounded-full object-cover border border-white"
                                 />
                             ) : (
-                                <div className="w-7 h-7 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs border border-white">
-                                    {getUserInitials(user)}
-                                </div>
+                                <img
+                                    src={ProfileGray}
+                                    alt="Default profile"
+                                    className="w-7 h-7 rounded-full object-cover border border-white"
+                                />
                             )}
                         </button>
 
@@ -476,7 +502,7 @@ export default function HRDashboard() {
                                 background: "linear-gradient(45deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)"
                             }}
                         >
-                            {/* LOA Icon */}
+                            {/* Request Icon */}
                             <div className="mb-3">
                                 <img src={LOAppIcon} alt="Claimed Requests" className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16" />
                             </div>
@@ -558,16 +584,18 @@ export default function HRDashboard() {
                                 <span className="text-white text-xs font-medium sm:hidden">
                                     {getUserInitials(user)}
                                 </span>
-                                {user && user.profilePic ? (
+                                {user?.profile_picture || user?.profilePic ? (
                                     <img
-                                        src={user.profilePic}
+                                        src={getProfilePictureUrl(user.profile_picture || user.profilePic) || ProfileGray}
                                         alt={`${getUserDisplayName(user)} profile`}
                                         className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full object-cover border border-white"
                                     />
                                 ) : (
-                                    <div className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full bg-gray-300 flex items-center justify-center text-white text-xs border border-white">
-                                        {getUserInitials(user)}
-                                    </div>
+                                    <img
+                                        src={ProfileGray}
+                                        alt="Default profile"
+                                        className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 rounded-full object-cover border border-white"
+                                    />
                                 )}
                             </button>
 
@@ -744,7 +772,7 @@ export default function HRDashboard() {
                             className="flex items-center justify-center gap-2 bg-white rounded-full cursor-pointer
                             hover:bg-gray-50 transition-colors text-sm font-medium px-4 py-2 mt-4"
                             style={{ color: '#023184' }}
-                            onClick={() => navigate("/hr-history", { state: { user } })}
+                            onClick={() => navigate(getHistoryRoute(), { state: { user } })}
                         >
                             View full history
                             <img src={RoundArrowIconBlue} alt="Arrow" className="w-4 h-4" />

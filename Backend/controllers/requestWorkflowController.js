@@ -34,7 +34,7 @@ const assignRequest = async (req, res) => {
     if (!['admin', 'benefits_officer', 'welfare_head'].includes(assignerRole)) {
       return res.status(403).json({
         success: false,
-        error: 'Only admin, benefits officer, or welfare head can assign requests'
+        error: 'Only Admin, Benefits Officer, or Division Head can assign requests'
       });
     }
 
@@ -47,7 +47,7 @@ const assignRequest = async (req, res) => {
     if (hrPersonnel.length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid HR personnel ID'
+        error: 'Invalid Human Resource personnel ID'
       });
     }
 
@@ -150,17 +150,19 @@ const assignRequest = async (req, res) => {
   }
 };
 
-// POST /api/requests/:id/claim - Claim unassigned request (HR personnel only)
+// POST /api/requests/:id/claim - Claim request (HR, Benefits Officer, Welfare Head)
 const claimRequest = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
     const userRole = req.user.role;
 
-    if (userRole !== 'hr_personnel') {
+    // Check if user is allowed to claim requests
+    const allowedRoles = ['hr_personnel', 'benefits_officer', 'welfare_head'];
+    if (!allowedRoles.includes(userRole)) {
       return res.status(403).json({
         success: false,
-        error: 'Only HR personnel can claim requests'
+        error: 'Only Human Resource Personnel, Benefits Officer, and Division Head can claim requests'
       });
     }
 
@@ -186,49 +188,148 @@ const claimRequest = async (req, res) => {
 
       const request = requests[0];
 
-      // Double-check availability with latest data
-      if (request.current_status !== 'pending' || request.assigned_hr_id !== null) {
-        await connection.rollback();
-        return res.status(400).json({
-          success: false,
-          error: 'Request is not available for claiming - it may have been claimed by another HR personnel'
-        });
+      // Determine expected status and stage based on user role
+      let expectedStatus, newStatus, approvalStage, claimDescription;
+
+      if (userRole === 'hr_personnel') {
+        expectedStatus = 'pending';
+        newStatus = 'hr_processing';
+        approvalStage = 'hr_stage';
+        claimDescription = 'Request claimed by Human Resource Personnel';
+
+        // Check if already claimed by another HR
+        if (request.current_status !== 'pending' || request.assigned_hr_id !== null) {
+          await connection.rollback();
+          return res.status(400).json({
+            success: false,
+            error: 'Request is not available for claiming - it may have been claimed by another Human Resource Personnel'
+          });
+        }
+
+        // Update request with HR assignment
+        const [updateResult] = await connection.execute(
+          `UPDATE checkup_requests SET
+            assigned_hr_id = ?, assigned_at = NOW(), current_status = ?,
+            updated_at = NOW()
+           WHERE id = ? AND current_status = ? AND assigned_hr_id IS NULL`,
+          [userId, newStatus, id, expectedStatus]
+        );
+
+        if (updateResult.affectedRows === 0) {
+          await connection.rollback();
+          return res.status(400).json({
+            success: false,
+            error: 'Request could not be claimed - it may have been claimed by another user'
+          });
+        }
+
+        // Create assignment record
+        await connection.execute(
+          `INSERT INTO request_assignments (
+            request_id, hr_personnel_id, assigned_by, assignment_type, assigned_at
+          ) VALUES (?, ?, ?, 'self_claimed', NOW())`,
+          [id, userId, userId]
+        );
+
+      } else if (userRole === 'benefits_officer') {
+        expectedStatus = 'benefits_review';
+        approvalStage = 'benefits_stage';
+        claimDescription = 'Request claimed by Benefits Officer';
+
+        // Check if already claimed by another Benefits Officer
+        const [existingClaim] = await connection.execute(
+          `SELECT approver_id FROM request_approvals
+           WHERE request_id = ? AND approval_stage = ? AND approver_id IS NOT NULL`,
+          [id, approvalStage]
+        );
+
+        if (request.current_status !== expectedStatus) {
+          await connection.rollback();
+          return res.status(400).json({
+            success: false,
+            error: 'Request is not at Benefits Officer review stage'
+          });
+        }
+
+        if (existingClaim.length > 0 && existingClaim[0].approver_id !== null) {
+          await connection.rollback();
+          return res.status(400).json({
+            success: false,
+            error: 'Request has already been claimed by another Benefits Officer'
+          });
+        }
+
+        // Update request_approvals to assign this Benefits Officer
+        const [updateResult] = await connection.execute(
+          `UPDATE request_approvals SET
+            approver_id = ?,
+            updated_at = NOW()
+           WHERE request_id = ? AND approval_stage = ? AND approver_id IS NULL`,
+          [userId, id, approvalStage]
+        );
+
+        if (updateResult.affectedRows === 0) {
+          await connection.rollback();
+          return res.status(400).json({
+            success: false,
+            error: 'Request could not be claimed - it may have been claimed by another user'
+          });
+        }
+
+      } else if (userRole === 'welfare_head') {
+        expectedStatus = 'welfare_review';
+        approvalStage = 'welfare_stage';
+        claimDescription = 'Request claimed by Division Head';
+
+        // Check if already claimed by another Welfare Head
+        const [existingClaim] = await connection.execute(
+          `SELECT approver_id FROM request_approvals
+           WHERE request_id = ? AND approval_stage = ? AND approver_id IS NOT NULL`,
+          [id, approvalStage]
+        );
+
+        if (request.current_status !== expectedStatus) {
+          await connection.rollback();
+          return res.status(400).json({
+            success: false,
+            error: 'Request is not at Division Head review stage'
+          });
+        }
+
+        if (existingClaim.length > 0 && existingClaim[0].approver_id !== null) {
+          await connection.rollback();
+          return res.status(400).json({
+            success: false,
+            error: 'Request has already been claimed by another Division Head'
+          });
+        }
+
+        // Update request_approvals to assign this Welfare Head
+        const [updateResult] = await connection.execute(
+          `UPDATE request_approvals SET
+            approver_id = ?,
+            updated_at = NOW()
+           WHERE request_id = ? AND approval_stage = ? AND approver_id IS NULL`,
+          [userId, id, approvalStage]
+        );
+
+        if (updateResult.affectedRows === 0) {
+          await connection.rollback();
+          return res.status(400).json({
+            success: false,
+            error: 'Request could not be claimed - it may have been claimed by another user'
+          });
+        }
       }
-
-      // Atomically update request status and assignment
-      const [updateResult] = await connection.execute(
-        `UPDATE checkup_requests SET
-          assigned_hr_id = ?, assigned_at = NOW(), current_status = 'hr_processing',
-          updated_at = NOW()
-         WHERE id = ? AND current_status = 'pending' AND assigned_hr_id IS NULL`,
-        [userId, id]
-      );
-
-      // Verify the update was successful (prevents race conditions)
-      if (updateResult.affectedRows === 0) {
-        await connection.rollback();
-        return res.status(400).json({
-          success: false,
-          error: 'Request could not be claimed - it may have been claimed by another HR personnel'
-        });
-      }
-
-      // Create assignment record within transaction
-      await connection.execute(
-        `INSERT INTO request_assignments (
-          request_id, hr_personnel_id, assigned_by, assignment_type, assigned_at
-        ) VALUES (?, ?, ?, 'self_claimed', NOW())`,
-        [id, userId, userId]
-      );
 
       // Commit the transaction
       await connection.commit();
 
       // Log activity (outside transaction)
       await logActivity(id, userId, 'request_claimed',
-        'Request claimed by HR personnel',
-        { status: 'pending', assigned_hr_id: null },
-        { status: 'hr_processing', assigned_hr_id: userId }
+        claimDescription,
+        { status: request.current_status },
+        { status: request.current_status, claimed_by: userId, stage: approvalStage }
       );
 
     // Send email notification to Executive (async, don't wait)
@@ -251,7 +352,7 @@ const claimRequest = async (req, res) => {
           last_name: requestDetails[0].hr_last_name,
           email: requestDetails[0].hr_email,
           role: 'hr_personnel',
-          position: 'HR Personnel'
+          position: 'Human Resource Personnel'
         };
 
         // Email to Executive about assignment
@@ -273,9 +374,22 @@ const claimRequest = async (req, res) => {
       // Don't fail the claim if email fails
     }
 
+      const roleNames = {
+        'hr_personnel': 'Human Resource Personnel',
+        'benefits_officer': 'Benefits Officer',
+        'welfare_head': 'Division Head'
+      };
+
       res.json({
         success: true,
-        message: 'Request claimed successfully'
+        message: `Request claimed successfully by ${roleNames[userRole]}`,
+        data: {
+          request_id: id,
+          status: request.current_status,
+          claimed_by: userId,
+          role: userRole,
+          stage: approvalStage
+        }
       });
 
     } catch (transactionError) {
@@ -320,7 +434,7 @@ const processRequest = async (req, res) => {
     if (userRole !== 'hr_personnel') {
       return res.status(403).json({
         success: false,
-        error: 'Only HR personnel can process requests'
+        error: 'Only Human Resources personnel can process requests'
       });
     }
 
@@ -394,7 +508,7 @@ const processRequest = async (req, res) => {
       if (hrHospitals.length === 0) {
         return res.status(400).json({
           success: false,
-          error: 'Invalid HR assigned hospital ID'
+          error: 'Invalid Human Resources assigned hospital ID'
         });
       }
     }
@@ -488,7 +602,7 @@ const processRequest = async (req, res) => {
     }
 
     await logActivity(id, userId, 'hr_processing_completed',
-      `HR processing completed - Hospital information filled and ${request.request_type.replace('_', ' ')} forwarded to Benefits review`,
+      `Human Resources processing completed - Hospital information filled and ${request.request_type.replace('_', ' ')} forwarded to Benefits review`,
       { status: request.current_status },
       activityData
     );
@@ -549,7 +663,7 @@ const processRequest = async (req, res) => {
         if (hrUser.length > 0) {
           emailService.sendStatusUpdateNotification(
             requestData, executive, 'pending',
-            `Your request has been processed by HR and is now under Benefits Officer review.`,
+            `Your request has been processed by Human Resources and is now under Benefits Officer review.`,
             hrUser[0]
           )
             .then(() => console.log(`📧 Status update notification sent to ${executive.email}`))
@@ -614,6 +728,14 @@ const approveRequest = async (req, res) => {
     let currentStage = null;
     let nextStatus = null;
 
+    console.log(`🔍 Initial Request State:`, {
+      requestId: id,
+      currentStatus: request.current_status,
+      userRole: userRole,
+      assignedHrId: request.assigned_hr_id,
+      userId: userId
+    });
+
     if (request.current_status === 'hr_processing' && userRole === 'hr_personnel' && request.assigned_hr_id === userId) {
       currentStage = 'hr_stage';
       nextStatus = 'benefits_review';
@@ -623,6 +745,11 @@ const approveRequest = async (req, res) => {
     } else if (request.current_status === 'welfare_review' && userRole === 'welfare_head') {
       currentStage = 'welfare_stage';
       nextStatus = 'hr_final_verification'; // Send back to HR for final document verification
+      console.log(`🔍 Welfare approval - nextStatus set to:`, {
+        nextStatus: nextStatus,
+        length: nextStatus.length,
+        charCodes: Array.from(nextStatus).map(c => c.charCodeAt(0))
+      });
     } else if (request.current_status === 'hr_final_verification' && userRole === 'hr_personnel' && request.assigned_hr_id === userId) {
       currentStage = 'hr_final_stage';
       nextStatus = 'completed'; // Final completion with document sending
@@ -670,6 +797,49 @@ const approveRequest = async (req, res) => {
     }
 
     updateValues.push(id);
+
+    // Validate status against allowed ENUM values
+    const allowedStatuses = [
+      'pending', 'assigned_to_hr', 'hr_processing', 'benefits_review',
+      'welfare_review', 'hr_final_verification', 'approved', 'rejected',
+      'letter_generated', 'letter_sent', 'completed', 'cancelled', 'deleted'
+    ];
+
+    // Trim nextStatus to remove any whitespace
+    nextStatus = nextStatus.trim();
+
+    console.log(`🔍 DEBUG - Request ${id}:`, {
+      currentStatus: request.current_status,
+      userRole: userRole,
+      currentStage: currentStage,
+      nextStatus: nextStatus,
+      nextStatusLength: nextStatus.length,
+      nextStatusType: typeof nextStatus,
+      nextStatusCharCodes: Array.from(nextStatus).map(c => c.charCodeAt(0)),
+      updateFields: updateFields,
+      updateValues: updateValues
+    });
+
+    if (!allowedStatuses.includes(nextStatus)) {
+      console.error(`❌ Invalid status value: "${nextStatus}" (length: ${nextStatus.length}, bytes: ${Buffer.byteLength(nextStatus, 'utf8')})`);
+      console.error(`❌ Allowed values:`, allowedStatuses);
+      return res.status(500).json({
+        success: false,
+        error: `Invalid status transition: "${nextStatus}". This is a system error.`
+      });
+    }
+
+    console.log(`✅ Updating request ${id} status from "${request.current_status}" to "${nextStatus}"`);
+
+    // Update the first value in updateValues with trimmed status
+    updateValues[0] = nextStatus;
+
+    console.log(`🔍 SQL Query Debug:`, {
+      query: `UPDATE checkup_requests SET ${updateFields.join(', ')} WHERE id = ?`,
+      values: updateValues,
+      nextStatusInArray: updateValues[0],
+      nextStatusInArrayLength: updateValues[0].length
+    });
 
     await pool.execute(
       `UPDATE checkup_requests SET ${updateFields.join(', ')} WHERE id = ?`,
@@ -725,10 +895,10 @@ const approveRequest = async (req, res) => {
 
     // Log activity
     const stageNames = {
-      'hr_stage': 'HR',
+      'hr_stage': 'Human Resources',
       'benefits_stage': 'Benefits Officer',
-      'welfare_stage': 'Welfare Head',
-      'hr_final_stage': 'HR Final Verification'
+      'welfare_stage': 'Division Head',
+      'hr_final_stage': 'Human Resource Final Clearance'
     };
 
     await logActivity(id, userId, `${currentStage}_approved`,
@@ -762,20 +932,22 @@ const approveRequest = async (req, res) => {
           first_name: requestDetails[0].approver_first_name,
           last_name: requestDetails[0].approver_last_name,
           role: userRole,
-          position: userRole === 'benefits_officer' ? 'Benefits Officer' : userRole === 'welfare_head' ? 'Welfare Head' : userRole === 'hr_personnel' ? 'HR Personnel' : 'Administrator'
+          position: userRole === 'benefits_officer' ? 'Benefits Officer' : userRole === 'welfare_head' ? 'Division Head' : userRole === 'hr_personnel' ? 'Human Resource Personnel' : 'Administrator'
         };
 
-        // Email to Executive about approval
-        const statusMessage = nextStatus === 'approved' ? 'approved' : 'pending';
-        const detailMessage = nextStatus === 'approved'
-          ? `Your request has been fully approved by ${stageNames[currentStage]}. Final approval letters will be generated.`
-          : `Your request has been approved by ${stageNames[currentStage]} and is now moving to the next approval stage.`;
+        // Email to Executive about approval (skip if HR final verification completing to 'completed' - that has its own special email)
+        if (!(nextStatus === 'completed' && currentStage === 'hr_final_stage')) {
+          const statusMessage = nextStatus === 'approved' ? 'approved' : 'pending';
+          const detailMessage = nextStatus === 'approved'
+            ? `Your request has been fully approved by ${stageNames[currentStage]}. Final approval letters will be generated.`
+            : `Your request has been approved by ${stageNames[currentStage]} and is now moving to the next approval stage.`;
 
-        emailService.sendStatusUpdateNotification(
-          requestData, executive, statusMessage, detailMessage, approver
-        )
-          .then(() => console.log(`📧 Approval notification sent to ${executive.email}`))
-          .catch(error => console.error('Email notification error:', error.message));
+          emailService.sendStatusUpdateNotification(
+            requestData, executive, statusMessage, detailMessage, approver
+          )
+            .then(() => console.log(`📧 Approval notification sent to ${executive.email}`))
+            .catch(error => console.error('Email notification error:', error.message));
+        }
 
         // If moving to next stage, notify the next approvers
         if (nextStatus === 'hr_final_verification') {
@@ -786,13 +958,13 @@ const approveRequest = async (req, res) => {
           );
 
           if (hrUser.length > 0) {
-            emailService.sendTaskNotification(
+            emailService.sendHRFinalVerificationNotification(
+              requestData,
+              executive,
               hrUser[0],
-              `Final Document Verification Required`,
-              `Request ${requestData.request_number} has been approved by Welfare Head. Please verify all documents and send final approval to employee.`,
               approver
             )
-              .then(() => console.log(`📧 HR final verification notification sent to ${hrUser[0].email}`))
+              .then(() => console.log(`📧 Human Resource final clearance notification sent to ${hrUser[0].email}`))
               .catch(error => console.error('Email notification error:', error.message));
           }
         } else if (nextStatus === 'benefits_review') {
@@ -819,7 +991,7 @@ const approveRequest = async (req, res) => {
             emailService.sendApprovalRequestNotification(
               requestData, executive, head, 'welfare_review'
             )
-              .then(() => console.log(`📧 Welfare approval request sent to ${head.email}`))
+              .then(() => console.log(`📧 Division Head approval request sent to ${head.email}`))
               .catch(error => console.error('Email notification error:', error.message));
           });
 
@@ -849,7 +1021,7 @@ const approveRequest = async (req, res) => {
       message: nextStatus === 'completed' && currentStage === 'hr_final_stage'
         ? 'Final document verification completed. All documents have been sent to the employee.'
         : nextStatus === 'completed' && currentStage === 'welfare_stage'
-        ? 'Request fully approved and completed. (Legacy request - skipped HR final verification)'
+        ? 'Request fully approved and completed. (Legacy request - skipped Human Resource final clearance)'
         : `Request approved at ${stageNames[currentStage]} stage`,
       data: {
         current_status: nextStatus,
@@ -965,14 +1137,14 @@ const rejectRequest = async (req, res) => {
           first_name: requestDetails[0].rejector_first_name,
           last_name: requestDetails[0].rejector_last_name,
           role: userRole,
-          position: userRole === 'benefits_officer' ? 'Benefits Officer' : userRole === 'welfare_head' ? 'Welfare Head' : userRole === 'hr_personnel' ? 'HR Personnel' : 'Administrator'
+          position: userRole === 'benefits_officer' ? 'Benefits Officer' : userRole === 'welfare_head' ? 'Division Head' : userRole === 'hr_personnel' ? 'Human Resource Personnel' : 'Administrator'
         };
 
         const stageNames = {
-          'hr_stage': 'HR',
+          'hr_stage': 'Human Resources',
           'benefits_stage': 'Benefits Officer',
-          'welfare_stage': 'Welfare Head',
-          'hr_final_stage': 'HR Final Verification'
+          'welfare_stage': 'Division Head',
+          'hr_final_stage': 'Human Resource Final Clearance'
         };
 
         // Email to Executive about rejection
@@ -1008,7 +1180,7 @@ const rejectRequest = async (req, res) => {
             `Request ${requestData.request_number} has been rejected by ${stageNames[currentStage]}. Reason: ${comments}`,
             rejector
           )
-            .then(() => console.log(`📧 Rejection notification sent to HR ${hrUser.email}`))
+            .then(() => console.log(`📧 Rejection notification sent to Human Resource ${hrUser.email}`))
             .catch(error => console.error('Email notification error:', error.message));
         }
       }
@@ -1068,12 +1240,13 @@ const getDashboardStats = async (req, res) => {
           SUM(CASE WHEN cr.current_status = 'hr_processing' THEN 1 ELSE 0 END) as in_progress,
           SUM(CASE WHEN cr.assigned_hr_id = ? THEN 1 ELSE 0 END) as assigned_to_me,
           SUM(CASE WHEN cr.priority_level = 'urgent' THEN 1 ELSE 0 END) as urgent_requests,
-          SUM(CASE WHEN DATEDIFF(cr.due_date, CURDATE()) < 0 AND cr.current_status NOT IN ('completed', 'rejected') THEN 1 ELSE 0 END) as overdue
+          SUM(CASE WHEN DATEDIFF(cr.due_date, CURDATE()) < 0 AND cr.current_status NOT IN ('completed', 'rejected', 'cancelled', 'deleted') THEN 1 ELSE 0 END) as overdue
         FROM request_approvals ra
         JOIN checkup_requests cr ON ra.request_id = cr.id
         WHERE ra.approval_stage = 'hr_stage'
           AND ra.action = 'pending'
           AND ra.is_current_stage = 1
+          AND cr.current_status NOT IN ('cancelled', 'deleted')
       `, [userId]);
 
       stats = {
@@ -1083,7 +1256,7 @@ const getDashboardStats = async (req, res) => {
       };
 
     } else if (userRole === 'benefits_officer') {
-      // Benefits officer dashboard stats - count requests in benefits_stage from request_approvals
+      // Benefits officer dashboard stats - count ONLY unclaimed requests for pending
       const [benefitsStageStats] = await pool.execute(`
         SELECT
           COUNT(*) as total_in_benefits_stage,
@@ -1092,12 +1265,14 @@ const getDashboardStats = async (req, res) => {
           SUM(CASE WHEN cr.current_status = 'rejected' THEN 1 ELSE 0 END) as rejected,
           SUM(CASE WHEN cr.priority_level = 'urgent' THEN 1 ELSE 0 END) as urgent_pending,
           SUM(CASE WHEN DATEDIFF(cr.due_date, CURDATE()) < 3 THEN 1 ELSE 0 END) as due_soon,
-          SUM(CASE WHEN DATEDIFF(cr.due_date, CURDATE()) < 0 AND cr.current_status NOT IN ('completed', 'rejected') THEN 1 ELSE 0 END) as overdue
+          SUM(CASE WHEN DATEDIFF(cr.due_date, CURDATE()) < 0 AND cr.current_status NOT IN ('completed', 'rejected', 'cancelled', 'deleted') THEN 1 ELSE 0 END) as overdue
         FROM request_approvals ra
         JOIN checkup_requests cr ON ra.request_id = cr.id
         WHERE ra.approval_stage = 'benefits_stage'
           AND ra.action = 'pending'
           AND ra.is_current_stage = 1
+          AND ra.approver_id IS NULL
+          AND cr.current_status NOT IN ('cancelled', 'deleted')
       `);
 
       stats = {
@@ -1106,7 +1281,7 @@ const getDashboardStats = async (req, res) => {
       };
 
     } else if (userRole === 'welfare_head') {
-      // Welfare head dashboard stats - count requests in welfare_stage from request_approvals
+      // Welfare head dashboard stats - count ONLY unclaimed requests for pending
       const [welfareStageStats] = await pool.execute(`
         SELECT
           COUNT(*) as total_in_welfare_stage,
@@ -1115,12 +1290,14 @@ const getDashboardStats = async (req, res) => {
           SUM(CASE WHEN cr.current_status = 'completed' THEN 1 ELSE 0 END) as completed,
           SUM(CASE WHEN cr.current_status = 'rejected' THEN 1 ELSE 0 END) as rejected,
           SUM(CASE WHEN cr.priority_level = 'urgent' THEN 1 ELSE 0 END) as urgent_requests,
-          SUM(CASE WHEN DATEDIFF(cr.due_date, CURDATE()) < 0 AND cr.current_status NOT IN ('completed', 'rejected') THEN 1 ELSE 0 END) as overdue
+          SUM(CASE WHEN DATEDIFF(cr.due_date, CURDATE()) < 0 AND cr.current_status NOT IN ('completed', 'rejected', 'cancelled', 'deleted') THEN 1 ELSE 0 END) as overdue
         FROM request_approvals ra
         JOIN checkup_requests cr ON ra.request_id = cr.id
         WHERE ra.approval_stage = 'welfare_stage'
           AND ra.action = 'pending'
           AND ra.is_current_stage = 1
+          AND ra.approver_id IS NULL
+          AND cr.current_status NOT IN ('cancelled', 'deleted')
       `);
 
       // Also get overall system stats for welfare head overview
@@ -1228,14 +1405,11 @@ const getPendingApprovals = async (req, res) => {
       ORDER BY cr.priority_level DESC, cr.created_at ASC
     `, [role]);
 
-    // Additional filtering for hr_personnel to only show their assigned requests
-    let filteredApprovals = approvals;
-    if (role === 'hr_personnel') {
-      // For HR personnel, only show requests assigned to them
-      filteredApprovals = approvals.filter(approval =>
-        approval.approver_id === userId || approval.approver_id === null
-      );
-    }
+    // Filter to show ONLY unclaimed requests (approver_id is NULL)
+    // Claimed requests should appear in "Claimed Requests" section, not "Pending Requests"
+    const filteredApprovals = approvals.filter(approval =>
+      approval.approver_id === null
+    );
 
     res.json({
       success: true,
@@ -1256,6 +1430,153 @@ const getPendingApprovals = async (req, res) => {
   }
 };
 
+// GET /api/requests/user-stats - Get user-specific action statistics
+const getUserActionStats = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    // Only allow workflow roles (HR, Benefits Officer, Welfare Head)
+    if (!['hr_personnel', 'benefits_officer', 'welfare_head'].includes(userRole)) {
+      return res.status(403).json({
+        success: false,
+        error: 'This endpoint is only available for workflow personnel'
+      });
+    }
+
+    // Get current year
+    const currentYear = new Date().getFullYear();
+
+    // Get user's action statistics for the current year
+    const [stats] = await pool.execute(`
+      SELECT
+        COUNT(*) as totalRequests,
+        SUM(CASE WHEN ra.action = 'approved' THEN 1 ELSE 0 END) as approvedRequests,
+        SUM(CASE WHEN ra.action = 'rejected' THEN 1 ELSE 0 END) as rejectedRequests
+      FROM request_approvals ra
+      WHERE ra.approver_id = ?
+        AND ra.action IN ('approved', 'rejected')
+        AND YEAR(ra.action_date) = ?
+    `, [userId, currentYear]);
+
+    res.json({
+      success: true,
+      data: stats[0] || {
+        totalRequests: 0,
+        approvedRequests: 0,
+        rejectedRequests: 0
+      }
+    });
+
+  } catch (error) {
+    console.error('Get user action stats error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch user action statistics'
+    });
+  }
+};
+
+// GET /api/requests/user-action-logs?limit=10 - Get user-specific action logs
+const getUserActionLogs = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const userRole = req.user.role;
+    let limit = parseInt(req.query.limit);
+
+    // Validate limit is a valid number
+    if (isNaN(limit) || limit <= 0) {
+      limit = 10;
+    }
+    // Cap maximum limit to prevent performance issues
+    if (limit > 5000) {
+      limit = 5000;
+    }
+
+    console.log(`[getUserActionLogs] userId=${userId}, role=${userRole}, limit=${limit}`);
+
+    // Only allow workflow roles (HR, Benefits Officer, Welfare Head)
+    if (!['hr_personnel', 'benefits_officer', 'welfare_head'].includes(userRole)) {
+      return res.status(403).json({
+        success: false,
+        error: 'This endpoint is only available for workflow personnel'
+      });
+    }
+
+    // Get user's action logs
+    console.log('[getUserActionLogs] Executing query...');
+    console.log('[getUserActionLogs] Parameters:', { userId, userIdType: typeof userId, limit, limitType: typeof limit });
+
+    const [logs] = await pool.query(
+      `SELECT
+        ra.id,
+        ra.request_id,
+        ra.action,
+        COALESCE(ra.action_date, ra.updated_at, ra.created_at) as created_at,
+        ra.approval_stage,
+        ra.comments,
+        cr.request_type,
+        cr.current_status,
+        cr.request_number,
+        h.name as hospital_name,
+        u.first_name as employee_first_name,
+        u.last_name as employee_last_name
+      FROM request_approvals ra
+      JOIN checkup_requests cr ON ra.request_id = cr.id
+      LEFT JOIN hospitals h ON cr.hospital_id = h.id
+      LEFT JOIN users u ON cr.employee_id = u.id
+      WHERE ra.approver_id = ?
+        AND ra.action IN ('approved', 'rejected')
+      ORDER BY COALESCE(ra.action_date, ra.updated_at, ra.created_at) DESC
+      LIMIT ?`,
+      [userId, limit]
+    );
+
+    console.log(`[getUserActionLogs] Query returned ${logs.length} rows`);
+
+    // Format the logs to match the expected format with user-friendly descriptions
+    const formattedLogs = logs.map(log => {
+      // Create user-friendly description with request number
+      const action = log.action === 'approved' ? 'approved' : 'rejected';
+      const description = `Request ${action} by you, Request #${log.request_number}`;
+
+      return {
+        id: log.id,
+        request_id: log.request_id,
+        request_type: log.request_type,
+        current_status: log.current_status,
+        created_at: log.created_at,
+        hospital_name: log.hospital_name,
+        action: log.action,
+        approval_stage: log.approval_stage,
+        description: description,
+        employee_first_name: log.employee_first_name,
+        employee_last_name: log.employee_last_name,
+        request_number: log.request_number,
+        statusDisplay: {
+          text: log.action === 'approved' ? 'Approved' : 'Rejected',
+          color: log.action === 'approved' ? 'text-green-600' : 'text-red-600'
+        }
+      };
+    });
+
+    res.json({
+      success: true,
+      data: formattedLogs
+    });
+
+  } catch (error) {
+    console.error('❌ [getUserActionLogs] Error details:', error);
+    console.error('❌ [getUserActionLogs] Error message:', error.message);
+    console.error('❌ [getUserActionLogs] Error stack:', error.stack);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch user action logs',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
 module.exports = {
   assignRequest,
   claimRequest,
@@ -1263,5 +1584,7 @@ module.exports = {
   approveRequest,
   rejectRequest,
   getDashboardStats,
-  getPendingApprovals
+  getPendingApprovals,
+  getUserActionStats,
+  getUserActionLogs
 };

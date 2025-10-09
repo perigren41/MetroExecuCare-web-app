@@ -13,8 +13,11 @@
 
   const app = express();
 
-  // Security middleware
-  app.use(helmet());
+  // Security middleware with CORS-friendly configuration
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    crossOriginEmbedderPolicy: false
+  }));
 
   // Rate limiting
   const limiter = rateLimit({
@@ -42,7 +45,11 @@
       'http://localhost:3007',
       'http://localhost:3008',
       'http://localhost:3009',
-      'http://localhost:3010'
+      'http://localhost:3010',
+      // Allow IP address for mobile/external device testing
+      'http://192.168.1.3:3000',
+      'http://192.168.1.3:3001',
+      'http://192.168.1.3:3002'
     ],
     credentials: true,
     optionsSuccessStatus: 200,
@@ -63,8 +70,12 @@
     app.use(morgan('combined'));
   }
 
-  // Static file serving for uploads
-  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+  // Static file serving for uploads with CORS headers
+  app.use('/uploads', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  }, express.static(path.join(__dirname, 'uploads')));
 
 
   // Root endpoint
@@ -233,11 +244,12 @@ app.use('*', (req, res) => {
         throw new Error('Database connection failed');
       }
       
-      // Start server
-      app.listen(PORT, () => {
+      // Start server on all network interfaces (0.0.0.0) to allow external connections
+      app.listen(PORT, '0.0.0.0', () => {
         console.log(`🚀 MetroExecuCare API Server running on port ${PORT}`);
         console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
         console.log(`📍 Health check: http://localhost:${PORT}/api/health`);
+        console.log(`📍 Network access: http://192.168.1.3:${PORT}/api/health`);
         console.log(`🔐 Auth endpoints: http://localhost:${PORT}/api/auth/`);
         console.log(`👥 User endpoints: http://localhost:${PORT}/api/users/`);
       });

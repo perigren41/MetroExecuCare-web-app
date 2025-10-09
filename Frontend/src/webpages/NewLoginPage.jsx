@@ -76,7 +76,17 @@ export function LoginPage() {
       }
     } catch (error) {
       console.error('Login error:', error);
-      setError("Network error. Please check your connection and try again.");
+
+      // Provide specific error messages based on error type
+      if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+        setError("Unable to reach the server. The server may be down or unreachable. Please try again later or contact support.");
+      } else if (error.message.includes('NetworkError') || error.message.includes('Network')) {
+        setError("Network connectivity issue detected. Please check your internet connection and try again.");
+      } else if (error.response && error.response.status >= 500) {
+        setError("The server is currently unavailable. Please try again later or contact support.");
+      } else {
+        setError(error.message || "An unexpected error occurred. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }

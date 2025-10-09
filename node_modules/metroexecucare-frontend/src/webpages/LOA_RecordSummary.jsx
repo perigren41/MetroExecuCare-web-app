@@ -65,17 +65,22 @@ export default function LOA_RecordSummary() {
     navigate("/login", { replace: true });
   };
 
-  // Handle file downloads
-  const handleDownload = async (type) => {
+  // Handle file downloads - can accept type (string) or fileId (number)
+  const handleDownload = async (typeOrFileId, customFilename = null) => {
     try {
       let downloadUrl;
       let filename;
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
-      if (type === 'latest') {
-        downloadUrl = `${import.meta.env.VITE_API_URL}/api/requests/${requestId}/download-latest-file`;
+      // Check if it's a direct file ID download
+      if (typeof typeOrFileId === 'number') {
+        downloadUrl = `${API_BASE_URL}/requests/files/${typeOrFileId}`;
+        filename = customFilename || 'document.pdf';
+      } else if (typeOrFileId === 'latest') {
+        downloadUrl = `${API_BASE_URL}/requests/${requestId}/download-latest-file`;
         filename = 'approved_file.pdf';
-      } else if (type === 'executive') {
-        downloadUrl = `${import.meta.env.VITE_API_URL}/api/requests/${requestId}/download-executive-file`;
+      } else if (typeOrFileId === 'executive') {
+        downloadUrl = `${API_BASE_URL}/requests/${requestId}/download-executive-file`;
         filename = 'original_request.pdf';
       }
 
@@ -154,7 +159,20 @@ export default function LOA_RecordSummary() {
 
   const formatStatus = (status) => {
     if (!status) return "N/A";
-    return status.charAt(0).toUpperCase() + status.slice(1);
+
+    // Map status codes to user-friendly names
+    const statusMap = {
+      'pending': 'Pending',
+      'hr_processing': 'Human Resource Processing',
+      'benefits_review': 'Benefits Officer Review',
+      'welfare_review': 'Division Head Review',
+      'final_hr_verification': 'Final Human Resource Verification',
+      'approved': 'Approved',
+      'rejected': 'Rejected',
+      'completed': 'Completed'
+    };
+
+    return statusMap[status.toLowerCase()] || status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ');
   };
 
   const getStatusStyling = (status) => {
@@ -336,6 +354,41 @@ export default function LOA_RecordSummary() {
                     {request.selected_hospital_contact && (
                       <p className="text-sm text-gray-600">Contact: {request.selected_hospital_contact}</p>
                     )}
+                  </div>
+                </div>
+              )}
+
+              {/* Submitted Documents Section */}
+              {request.files && request.files.filter(file => file.uploaded_by === request.employee_id).length > 0 && (
+                <div className="mb-4 md:mb-6">
+                  <label className="text-gray-600 text-xs md:text-sm font-medium block mb-2">
+                    Submitted Documents
+                  </label>
+                  <div className="bg-gray-50 rounded-lg p-3 md:p-4 space-y-2">
+                    {request.files
+                      .filter(file => file.uploaded_by === request.employee_id)
+                      .map((file, index) => (
+                        <div
+                          key={file.id}
+                          className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200 hover:border-blue-400 hover:bg-blue-50 transition-all cursor-pointer"
+                          onClick={() => handleDownload(file.id, file.original_file_name)}
+                        >
+                          <svg className="w-5 h-5 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          </svg>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">
+                              {file.original_file_name}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Uploaded {new Date(file.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <svg className="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                        </div>
+                      ))}
                   </div>
                 </div>
               )}

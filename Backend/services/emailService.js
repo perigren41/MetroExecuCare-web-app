@@ -174,6 +174,34 @@ class EmailService {
   }
 
   /**
+   * Send HR final verification notification
+   * @param {Object} requestData - Request information
+   * @param {Object} executive - Executive who submitted the request
+   * @param {Object} hrPersonnel - HR personnel assigned to the request
+   * @param {Object} welfareHead - Welfare head who approved
+   */
+  async sendHRFinalVerificationNotification(requestData, executive, hrPersonnel, welfareHead) {
+    try {
+      const subject = `Final Verification Required - ${requestData.request_number}`;
+
+      const emailData = {
+        to: hrPersonnel.email,
+        subject: subject,
+        html: this.generateHRFinalVerificationTemplate(requestData, executive, hrPersonnel, welfareHead),
+        text: `Request ${requestData.request_number} has been approved by the Division Head and requires your final document verification.`
+      };
+
+      const result = await this.sendNotificationEmail(emailData, 'hr_final_verification', requestData.id, hrPersonnel.id);
+      console.log(`📧 HR final verification notification sent to ${hrPersonnel.email}`);
+
+      return result;
+    } catch (error) {
+      console.error('Error sending HR final verification notification:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Send notification email and log to database
    * @param {Object} emailData - Email configuration
    * @param {string} notificationType - Type of notification
@@ -182,8 +210,15 @@ class EmailService {
    */
   async sendNotificationEmail(emailData, notificationType, requestId, recipientId) {
     try {
+      console.log(`📧 [EMAIL DEBUG] Attempting to send: ${notificationType}`);
+      console.log(`📧 [EMAIL DEBUG] To: ${emailData.to}`);
+      console.log(`📧 [EMAIL DEBUG] Subject: ${emailData.subject}`);
+      console.log(`📧 [EMAIL DEBUG] Request ID: ${requestId}`);
+
       // Send email
       const emailResult = await this.gmailService.sendEmail(emailData);
+
+      console.log(`📧 [EMAIL DEBUG] Email result:`, emailResult);
 
       // Log notification to database
       await this.logNotification({
@@ -202,7 +237,7 @@ class EmailService {
 
       return emailResult;
     } catch (error) {
-      console.error('Error in sendNotificationEmail:', error);
+      console.error(`❌ [EMAIL DEBUG] Error in sendNotificationEmail (${notificationType}):`, error);
 
       // Still try to log the failed attempt
       try {
@@ -232,6 +267,27 @@ class EmailService {
    */
   async logNotification(notificationData) {
     try {
+      // Validate required data and convert undefined to null
+      const values = [
+        notificationData.request_id || null,
+        notificationData.recipient_id || null,
+        notificationData.notification_type || 'unknown',
+        notificationData.email_subject || 'No subject',
+        notificationData.email_content || 'No content',
+        notificationData.html_content || null,
+        notificationData.email_to || null,
+        notificationData.sent_successfully ? 'sent' : 'failed',
+        notificationData.error_message || null,
+        notificationData.message_id || null,
+        notificationData.sent_successfully ? new Date() : null
+      ];
+
+      // Only log if we have at minimum the email recipient
+      if (!values[6]) {
+        console.warn('⚠️  Cannot log notification: recipient_email is missing');
+        return;
+      }
+
       const query = `
         INSERT INTO notifications (
           request_id, recipient_id, notification_type, subject,
@@ -240,24 +296,10 @@ class EmailService {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       `;
 
-      const values = [
-        notificationData.request_id,
-        notificationData.recipient_id,
-        notificationData.notification_type,
-        notificationData.email_subject,
-        notificationData.email_content,
-        notificationData.html_content || null,
-        notificationData.email_to,
-        notificationData.sent_successfully ? 'sent' : 'failed',
-        notificationData.error_message,
-        notificationData.message_id,
-        notificationData.sent_successfully ? new Date() : null
-      ];
-
       await pool.execute(query, values);
       console.log(`📊 Notification logged: ${notificationData.notification_type} to ${notificationData.email_to}`);
     } catch (error) {
-      console.error('Error logging notification to database:', error);
+      console.error('⚠️  Error logging notification to database:', error.message);
       // Don't throw here - logging failure shouldn't break email sending
     }
   }
@@ -327,6 +369,10 @@ class EmailService {
     return EmailTemplates.finalApprovalNotification(requestData, executive);
   }
 
+  generateHRFinalVerificationTemplate(requestData, executive, hrPersonnel, welfareHead) {
+    return EmailTemplates.hrFinalVerificationNotification(requestData, executive, hrPersonnel, welfareHead);
+  }
+
   /**
    * Send executive final approval notification with download links
    * @param {Object} requestData - Request information
@@ -389,6 +435,56 @@ class EmailService {
 
   generateExecutiveFinalRejectionTemplate(requestData, executive, rejectionReason, rejectedBy) {
     return EmailTemplates.executiveFinalRejectionNotification(requestData, executive, rejectionReason, rejectedBy);
+  }
+
+  /**
+   * Send file request notification to executive
+   * @param {Object} data - { to, executiveName, requesterName, requesterRole, requestId, requestType, message }
+   */
+  async sendFileRequestNotification(data) {
+    try {
+      const subject = `📎 Additional Files Requested - Request ${data.requestId}`;
+
+      const emailData = {
+        to: data.to,
+        subject: subject,
+        html: EmailTemplates.fileRequestNotification(data),
+        text: `${data.requesterName} (${data.requesterRole}) has requested additional files for your request ${data.requestId}. Message: ${data.message}`
+      };
+
+      const result = await this.gmailService.sendEmail(emailData);
+      console.log(`📧 File request notification sent to ${data.to}`);
+
+      return result;
+    } catch (error) {
+      console.error('Error sending file request notification:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Send file uploaded notification to approver
+   * @param {Object} data - { to, requesterName, executiveName, requestId }
+   */
+  async sendFileUploadedNotification(data) {
+    try {
+      const subject = `✅ Requested Files Uploaded - Request ${data.requestId}`;
+
+      const emailData = {
+        to: data.to,
+        subject: subject,
+        html: EmailTemplates.fileUploadedNotification(data),
+        text: `${data.executiveName} has uploaded the files you requested for request ${data.requestId}.`
+      };
+
+      const result = await this.gmailService.sendEmail(emailData);
+      console.log(`📧 File uploaded notification sent to ${data.to}`);
+
+      return result;
+    } catch (error) {
+      console.error('Error sending file uploaded notification:', error);
+      throw error;
+    }
   }
 }
 

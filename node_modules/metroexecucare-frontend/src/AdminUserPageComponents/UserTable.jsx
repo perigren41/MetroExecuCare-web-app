@@ -19,15 +19,15 @@ export default function UserTable({ users, onView }) {
   return (
     <>
       {/* Desktop Table */}
-      <div className="hidden sm:block overflow-x-auto shadow-xl/30 shadow-blue-500/50 rounded-xl bg-white max-h-[calc(100vh-200px)] text-xs text-gray-900">
+      <div className="hidden sm:block overflow-auto shadow-xl shadow-blue-500/30 rounded-xl bg-white h-full text-xs text-gray-900">
         <table className="min-w-full border-collapse border-white">
           <thead className="sticky top-0 z-10">
             <tr className="bg-[linear-gradient(to_right,#3F6EC0_10%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] text-white">
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Employee ID</th>
-              <th className="px-4 py-2">Role</th>
-              <th className="px-4 py-2">Date Added</th>
-              <th className="px-4 py-2">Action</th>
+              <th className="px-4 py-3">Name</th>
+              <th className="px-4 py-3">Employee ID</th>
+              <th className="px-4 py-3">Role</th>
+              <th className="px-4 py-3">Date Added</th>
+              <th className="px-4 py-3">Action</th>
             </tr>
           </thead>
           <tbody>
@@ -35,7 +35,8 @@ export default function UserTable({ users, onView }) {
               users.map((user) => (
                 <tr
                   key={user.id}
-                  className="hover:bg-blue-50 transition text-center text-gray-900"
+                  onClick={() => onView(user)}
+                  className="hover:bg-blue-50 transition text-center text-gray-900 cursor-pointer"
                 >
                   <td className="pl-5 pr-2 py-2 border-t text-left border-gray-700 text-gray-900">
                     <div className="flex items-center gap-2">
@@ -52,8 +53,11 @@ export default function UserTable({ users, onView }) {
                   <td className="px-4 py-2 border-t border-gray-700 text-gray-900">{new Date(user.created_at).toLocaleDateString()}</td>
                   <td className="px-4 py-2 border-t border-gray-700 justify-center">
                     <button
-                      onClick={() => onView(user)}
-                      className="bg-blue-700 text-white w-5 h-5 rounded-full hover:bg-blue-800 transition flex items-center justify-center mx-auto"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent row click when clicking button
+                        onView(user);
+                      }}
+                      className="bg-blue-700 text-white w-5 h-5 rounded-full hover:bg-blue-800 transition flex items-center justify-center mx-auto cursor-pointer"
                     >
                       <img src={ChevronRight} alt="Chevron Right" className="w-3 h-3" />
                     </button>
@@ -75,12 +79,13 @@ export default function UserTable({ users, onView }) {
       </div>
 
       {/* Mobile Card View */}
-      <div className="block sm:hidden space-y-3 max-h-[calc(100vh-180px)] overflow-y-auto">
+      <div className="block sm:hidden space-y-3 h-full overflow-y-auto">
         {users.length > 0 ? (
           users.map((user) => (
             <div
               key={user.id}
-              className="bg-white rounded-xl shadow-md border border-gray-200 p-4 hover:shadow-lg transition-shadow"
+              onClick={() => onView(user)}
+              className="bg-white rounded-xl shadow-md border border-gray-200 p-4 hover:shadow-lg transition-shadow cursor-pointer"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -103,8 +108,11 @@ export default function UserTable({ users, onView }) {
                     {new Date(user.created_at).toLocaleDateString()}
                   </span>
                   <button
-                    onClick={() => onView(user)}
-                    className="bg-blue-700 text-white w-8 h-8 rounded-full hover:bg-blue-800 transition flex items-center justify-center"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent card click when clicking button
+                      onView(user);
+                    }}
+                    className="bg-blue-700 text-white w-8 h-8 rounded-full hover:bg-blue-800 transition flex items-center justify-center cursor-pointer"
                   >
                     <img src={ChevronRight} alt="View" className="w-4 h-4" />
                   </button>

@@ -13,7 +13,7 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    host: 'localhost',
+    host: '0.0.0.0', // Listen on all network interfaces for container/cloud compatibility
     open: true,
     strictPort: true, // Fail if port is already in use instead of trying next available
   },

@@ -1,0 +1,13 @@
+node_modules/
+.git/
+.env.local
+.env.development
+*.log
+coverage/
+.DS_Store
+.vscode/
+.idea/
+Backend/uploads/*.pdf
+Backend/uploads/*.jpg
+Backend/uploads/*.png
+!Backend/uploads/.gitkeep

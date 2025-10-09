@@ -15,8 +15,22 @@ const getRoleDisplayName = (role) => {
   return roleMap[role] || role; // Return original if not found in map
 };
 
+// Function to format date as "Month Day, Year" (e.g., "October 1, 2000")
+const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
 export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, onRestore }) {
   if (!user) return null;
+
+  console.log("=== UserDetailsModal user data ===", user);
+  console.log("=== user.birth_date ===", user.birth_date);
 
   const isDeleted = user.is_active === 0;
   const [isEditing, setIsEditing] = useState(false);
@@ -189,7 +203,7 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
         <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-2 sm:gap-4 p-3 sm:p-5 text-left">
           {/* Archive Status Banner */}
           {isDeleted && (
-            <div className="lg:col-span-2 mb-2 sm:mb-4 p-2 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="lg:col-span-2 mb-2 sm:mb-4 p-2 sm:p-4 bg-red-50 border border-red-200 rounded-lg cursor-pointer">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-red-600 font-bold text-sm">🗄️ ACCOUNT ARCHIVED</span>
               </div>
@@ -384,7 +398,9 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
                     className="border px-1 text-xs w-full rounded-sm"
                   />
                 ) : (
-                  <span>{formData[key] || "N/A"}</span>
+                  <span>
+                    {key === "birth_date" ? formatDate(formData[key]) : (formData[key] || "N/A")}
+                  </span>
                 )}
               </React.Fragment>
             ))}
@@ -422,7 +438,7 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
             <>
               <button
                 onClick={handleRestore}
-                className="px-3 sm:px-4 py-1 w-full sm:w-20 h-6 rounded-full bg-green-600 text-white text-xs hover:bg-green-700"
+                className="px-3 sm:px-4 py-1 w-full sm:w-20 h-6 rounded-full bg-green-600 text-white text-xs hover:bg-green-700 cursor-pointer"
               >
                 Restore Account
               </button>
@@ -431,13 +447,13 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
             <>
               <button
                 onClick={handleSave}
-                className="px-3 sm:px-4 py-1 w-full sm:w-15 h-6 rounded-full bg-green-600 text-white text-xs hover:bg-green-700"
+                className="px-3 sm:px-4 py-1 w-full sm:w-15 h-6 rounded-full bg-green-600 text-white text-xs hover:bg-green-700 cursor-pointer"
               >
                 Save
               </button>
               <button
                 onClick={handleCancel}
-                className="px-2 sm:px-2 py-1 w-full sm:w-15 h-6 rounded-full bg-gray-600 text-white text-xs hover:bg-gray-700"
+                className="px-2 sm:px-2 py-1 w-full sm:w-15 h-6 rounded-full bg-gray-600 text-white text-xs hover:bg-gray-700 cursor-pointer"
               >
                 Cancel
               </button>
@@ -446,13 +462,13 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
             <>
               <button
                 onClick={() => setIsEditing(true)}
-                className="px-3 sm:px-4 py-1 w-full sm:w-15 h-6 rounded-full bg-blue-700 text-white text-xs hover:bg-blue-800"
+                className="px-3 sm:px-4 py-1 w-full sm:w-15 h-6 rounded-full bg-blue-700 text-white text-xs hover:bg-blue-800 cursor-pointer"
               >
                 Edit
               </button>
               <button
                 onClick={handleDelete}
-                className="px-2 sm:px-2 py-1 w-full sm:w-15 h-6 rounded-full bg-red-600 text-white text-xs hover:bg-red-700"
+                className="px-2 sm:px-2 py-1 w-full sm:w-15 h-6 rounded-full bg-red-600 text-white text-xs hover:bg-red-700 cursor-pointer"
               >
                 Delete
               </button>
@@ -471,13 +487,13 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
             <div className="flex justify-center gap-3">
               <button
                 onClick={confirmSave}
-                className="px-4 py-1 rounded-full bg-green-600 text-white text-xs hover:bg-green-700"
+                className="px-4 py-1 rounded-full bg-green-600 text-white text-xs hover:bg-green-700 cursor-pointer"
               >
                 Yes, Save it
               </button>
               <button
                 onClick={() => setShowConfirmSave(false)}
-                className="px-4 py-1 rounded-full bg-gray-400 text-white text-xs hover:bg-gray-500"
+                className="px-4 py-1 rounded-full bg-gray-400 text-white text-xs hover:bg-gray-500 cursor-pointer"
               >
                 Cancel
               </button>
@@ -508,7 +524,7 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
             <div className="flex justify-center gap-3">
               <button
                 onClick={confirmDelete}
-                className="px-4 py-1 rounded-full bg-red-600 text-white text-xs hover:bg-red-700"
+                className="px-4 py-1 rounded-full bg-red-600 text-white text-xs hover:bg-red-700 cursor-pointer"
               >
                 Yes, Delete it
               </button>
@@ -517,7 +533,7 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
                   setShowConfirmDelete(false);
                   setDeletionReason("");
                 }}
-                className="px-4 py-1 rounded-full bg-gray-400 text-white text-xs hover:bg-gray-500"
+                className="px-4 py-1 rounded-full bg-gray-400 text-white text-xs hover:bg-gray-500 cursor-pointer"
               >
                 Cancel
               </button>
@@ -555,7 +571,7 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
             <div className="flex justify-center gap-3">
               <button
                 onClick={confirmRestore}
-                className="px-4 py-2 rounded-full bg-green-600 text-white text-xs hover:bg-green-700"
+                className="px-4 py-2 rounded-full bg-green-600 text-white text-xs hover:bg-green-700 cursor-pointer"
               >
                 Yes, Restore Account
               </button>
@@ -564,7 +580,7 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
                   setShowConfirmRestore(false);
                   setRestorationReason("");
                 }}
-                className="px-4 py-2 rounded-full bg-gray-400 text-white text-xs hover:bg-gray-500"
+                className="px-4 py-2 rounded-full bg-gray-400 text-white text-xs hover:bg-gray-500 cursor-pointer"
               >
                 Cancel
               </button>
@@ -578,7 +594,7 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-lg text-center w-full sm:w-80 mx-2 sm:mx-4 max-w-sm">
             <div className="flex items-center justify-center mb-4">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center cursor-pointer">
                 <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                 </svg>
@@ -608,7 +624,7 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60]">
           <div className="bg-white p-4 sm:p-6 rounded-2xl shadow-2xl text-center w-full sm:w-96 mx-2 sm:mx-4 max-w-md border-2 border-red-200">
             <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center animate-bounce">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center animate-bounce cursor-pointer">
                 <svg className="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
@@ -617,7 +633,7 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
             <h2 className="text-lg font-bold text-red-700 mb-3">
               🗑️ User Deleted Successfully!
             </h2>
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 cursor-pointer">
               <p className="text-sm text-gray-700 mb-2">
                 <strong className="text-red-800">{`${formData.first_name} ${formData.last_name}`}</strong> has been successfully deleted and archived.
               </p>
@@ -633,7 +649,7 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
                 setShowDeleteSuccessAlert(false);
                 onClose();
               }}
-              className="px-6 py-2 rounded-full bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition transform hover:scale-105"
+              className="px-6 py-2 rounded-full bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition transform hover:scale-105 cursor-pointer"
             >
               OK, Continue
             </button>
