@@ -362,19 +362,26 @@ export default function LOAStatusTracker() {
             
           <h2 className="text-base font-bold text-blue-900 mb-4">Details</h2>
           {/* Two-column layout for labels & values */}
-          <div className="grid grid-cols-2 text-left text-xs">
-            <span className="font-bold text-blue-900">Request Number:</span>
-            <span className="text-left">{requestDetails.request_number || requestDetails.request_id}</span>
+          {requestDetails.current_status === 'no_request' ? (
+            <div className="text-center text-gray-500 text-sm py-8">
+              <p className="mb-2">No active request found</p>
+              <p className="text-xs">Submit a new request to track its progress</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 text-left text-xs">
+              <span className="font-bold text-blue-900">Request Number:</span>
+              <span className="text-left">{requestDetails.request_number || requestDetails.request_id}</span>
 
-            <span className="font-bold text-blue-900">Type:</span>
-            <span className="text-left">{requestDetails.request_type === 'letter_of_authorization' ? 'Letter of Authorization' : requestDetails.request_type === 'letter_of_approval' ? 'Letter of Approval' : requestDetails.request_type}</span>
+              <span className="font-bold text-blue-900">Type:</span>
+              <span className="text-left">{requestDetails.request_type === 'letter_of_authorization' ? 'Letter of Authorization' : requestDetails.request_type === 'letter_of_approval' ? 'Letter of Approval' : requestDetails.request_type}</span>
 
-            <span className="font-bold text-blue-900">Requested on:</span>
-            <span className="text-left">{requestDetails.created_at ? new Date(requestDetails.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : requestDetails.requested_on}</span>
+              <span className="font-bold text-blue-900">Requested on:</span>
+              <span className="text-left">{requestDetails.created_at ? new Date(requestDetails.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : requestDetails.requested_on}</span>
 
-            <span className="font-bold text-blue-900">Requested by:</span>
-            <span className="text-left">{requestDetails.first_name && requestDetails.last_name ? `${requestDetails.first_name} ${requestDetails.last_name}` : requestDetails.requested_by}</span>
-          </div>
+              <span className="font-bold text-blue-900">Requested by:</span>
+              <span className="text-left">{requestDetails.first_name && requestDetails.last_name ? `${requestDetails.first_name} ${requestDetails.last_name}` : requestDetails.requested_by}</span>
+            </div>
+          )}
 
           {/* Document Icon */}
           <div className="flex justify-center my-6">

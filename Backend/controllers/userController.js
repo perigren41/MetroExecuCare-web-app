@@ -295,38 +295,38 @@ const updateUser = async (req, res) => {
       ? `Updated user ${oldUserData.employee_id} (${oldUserData.first_name} ${oldUserData.last_name}) including password change`
       : `Updated user ${oldUserData.employee_id} (${oldUserData.first_name} ${oldUserData.last_name})`;
 
+    // Only log fields that actually changed
+    const oldValues = {};
+    const newValues = {};
+    const fieldsToCheck = ['employee_id', 'first_name', 'last_name', 'middle_name', 'email', 'role', 'department', 'position', 'contact_number', 'birth_date', 'branch'];
+
+    fieldsToCheck.forEach(field => {
+      // Compare old and new values
+      const oldVal = oldUserData[field];
+      const newVal = newUserData[field];
+
+      // Convert dates to ISO strings for comparison
+      const oldValStr = oldVal instanceof Date ? oldVal.toISOString() : String(oldVal || '');
+      const newValStr = newVal instanceof Date ? newVal.toISOString() : String(newVal || '');
+
+      if (oldValStr !== newValStr) {
+        oldValues[field] = oldVal;
+        newValues[field] = newVal;
+      }
+    });
+
+    // Add password change indicator if applicable
+    if (hashedPassword) {
+      oldValues.password = '[PASSWORD CHANGED]';
+      newValues.password = '[PASSWORD UPDATED]';
+    }
+
     await logActivity({
       userId: req.user.id, // The user performing the action
       action: ACTIVITY_TYPES.UPDATE_USER,
       description: logDescription,
-      oldValues: {
-        employee_id: oldUserData.employee_id,
-        first_name: oldUserData.first_name,
-        last_name: oldUserData.last_name,
-        middle_name: oldUserData.middle_name,
-        email: oldUserData.email,
-        role: oldUserData.role,
-        department: oldUserData.department,
-        position: oldUserData.position,
-        contact_number: oldUserData.contact_number,
-        birth_date: oldUserData.birth_date,
-        branch: oldUserData.branch,
-        ...(hashedPassword && { password: '[PASSWORD CHANGED]' })
-      },
-      newValues: {
-        employee_id: newUserData.employee_id,
-        first_name: newUserData.first_name,
-        last_name: newUserData.last_name,
-        middle_name: newUserData.middle_name,
-        email: newUserData.email,
-        role: newUserData.role,
-        department: newUserData.department,
-        position: newUserData.position,
-        contact_number: newUserData.contact_number,
-        birth_date: newUserData.birth_date,
-        branch: newUserData.branch,
-        ...(hashedPassword && { password: '[PASSWORD UPDATED]' })
-      },
+      oldValues,
+      newValues,
       ...getRequestInfo(req)
     });
 
@@ -448,13 +448,16 @@ const deleteUser = async (req, res) => {
       });
     }
 
-    // Soft delete by setting is_active = 0 (deleted_at columns don't exist in schema)
+    // Soft delete by setting is_active = 0 and recording deletion details
     await pool.execute(
       `UPDATE users SET
         is_active = 0,
+        deleted_at = CURRENT_TIMESTAMP,
+        deletion_reason = ?,
+        deleted_by = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?`,
-      [id]
+      [deletion_reason || null, req.user.id, id]
     );
 
     // Log user deletion activity
@@ -505,14 +508,17 @@ const getDeletedUsers = async (req, res) => {
     const offset = (page - 1) * limit;
     const search = req.query.search || '';
 
-    // Build query for inactive users (is_active = 0)
-    // Note: deleted_at, deletion_reason, restored_at columns don't exist in schema
+    // Build query for inactive users (is_active = 0) with deletion tracking info
     let query = `
       SELECT
-        id, employee_id, email, first_name, last_name, middle_name, role,
-        department, position, branch, contact_number, birth_date, updated_at
-      FROM users
-      WHERE is_active = 0
+        u.id, u.employee_id, u.email, u.first_name, u.last_name, u.middle_name, u.role,
+        u.department, u.position, u.branch, u.contact_number, u.birth_date, u.updated_at,
+        u.deleted_at, u.deletion_reason, u.deleted_by,
+        deleter.first_name AS deleted_by_first_name,
+        deleter.last_name AS deleted_by_last_name
+      FROM users u
+      LEFT JOIN users deleter ON u.deleted_by = deleter.id
+      WHERE u.is_active = 0
     `;
     let countQuery = 'SELECT COUNT(*) as total FROM users WHERE is_active = 0';
     let queryParams = [];
@@ -520,14 +526,14 @@ const getDeletedUsers = async (req, res) => {
 
     // Add search filter
     if (search) {
-      query += ` AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ?)`;
+      query += ` AND (u.first_name LIKE ? OR u.last_name LIKE ? OR u.email LIKE ?)`;
       countQuery += ` AND (first_name LIKE ? OR last_name LIKE ? OR email LIKE ?)`;
       const searchParam = `%${search}%`;
       queryParams.push(searchParam, searchParam, searchParam);
       countParams.push(searchParam, searchParam, searchParam);
     }
 
-    query += ` ORDER BY updated_at DESC LIMIT ${limit} OFFSET ${offset}`;
+    query += ` ORDER BY u.deleted_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
     // Execute queries
     const [deletedUsers] = await pool.execute(query, queryParams);
@@ -597,13 +603,16 @@ const restoreUser = async (req, res) => {
       });
     }
 
-    // Restore user - set is_active = 1 (restored_at columns don't exist in schema)
+    // Restore user - set is_active = 1 and record restoration details
     await pool.execute(
       `UPDATE users SET
         is_active = 1,
+        restored_at = CURRENT_TIMESTAMP,
+        restoration_reason = ?,
+        restored_by = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?`,
-      [id]
+      [restored_reason || null, req.user.id, id]
     );
 
     // Get restored user data

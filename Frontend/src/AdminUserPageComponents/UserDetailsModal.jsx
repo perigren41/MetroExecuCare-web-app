@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import cameraIcon from "@/assets/cameraiconwhite.svg";
 import NoProfilePicture from "@/assets/profilegray.svg";
 
 // Function to convert role variable names to user-friendly names
@@ -65,17 +64,6 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  // Handle image change
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () =>
-        setFormData((prev) => ({ ...prev, profile_picture_url: reader.result }));
-      reader.readAsDataURL(file);
-    }
   };
 
   // Save confirmation
@@ -239,25 +227,6 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
                 alt="Profile"
                 className="w-full h-full rounded-full object-cover border-2 border-[#00539F] p-1"
               />
-
-              <input
-                type="file"
-                accept="image/*"
-                id="profileImageInput"
-                className="hidden"
-                onChange={handleImageChange}
-              />
-
-              {isEditing && !isDeleted && (
-                <button
-                  onClick={() =>
-                    document.getElementById("profileImageInput").click()
-                  }
-                  className="absolute top-0 left-0 w-20 h-20 sm:w-30 sm:h-30 flex items-center justify-center rounded-full bg-black/30 hover:bg-black/50"
-                >
-                  <img src={cameraIcon} alt="Camera Icon" className="w-4 h-4 sm:w-6 sm:h-6" />
-                </button>
-              )}
             </div>
           </div>
 

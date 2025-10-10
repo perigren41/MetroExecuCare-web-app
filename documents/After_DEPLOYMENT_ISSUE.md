@@ -18,14 +18,14 @@
 
 
 **EXECUTIVES**
-- LoaStatusTracker page: If executive currently has no active requests, make sure to blank the informations in "details"
+- LoaStatusTracker page: If executive currently has no active requests, make sure to blank the informations in "details" - **Fixed**
 - executive-employee-submit-loapproval and executive-employee-submit-loauthorization pages' Download PDF is not working, after clicking download, it's giving error: "localhost refused to connect" - **Fixed**
 
 **ADMIN**
-- Admin-users-page inside Employee Details modal, profile picture card must also fetch the latest profile picture from the database.
-- Admin-users-page in Employee Details modal, remove the add profile picture and focus on the textfields
-- Admin Profile: in Summary -> Action Logs, if the admin updates a user's information, it also updates the birthdate even though it did not update.
-- Admin-users-page: in employee details modal, after it deleted a user, the reason is not reflected in the deleted users modal.
+- Admin-users-page inside Employee Details modal, profile picture card must also fetch the latest profile picture from the database. - **Fixed**
+- Admin-users-page in Employee Details modal, remove the add profile picture and focus on the textfields - **Fixed**
+- Admin Profile: in Summary -> Action Logs, if the admin updates a user's information, it also updates the birthdate even though it did not update. - **Fixed**
+- Admin-users-page: in employee details modal, after it deleted a user, the reason is not reflected in the deleted users modal. - **Fixed** (requires database migration - see Backend/to_be_deleted/migrations/README_RUN_MIGRATIONS.md)
 
 **Human Resource**
 - History page (for all three roles): Search bar make it border-none - **Fixed**

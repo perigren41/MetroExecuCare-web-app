@@ -40,7 +40,16 @@ export default function AdminUsersPage() {
       if (response.success) {
         // API returns { success: true, data: { users: [...], pagination: {...} } }
         const userData = response.data?.users || [];
-        setUsers(Array.isArray(userData) ? userData : []);
+
+        // Transform user data to include full profile picture URL
+        const transformedUsers = (Array.isArray(userData) ? userData : []).map(user => ({
+          ...user,
+          profile_picture_url: user.profile_picture
+            ? `${apiService.baseURL.replace('/api', '')}${user.profile_picture}`
+            : null
+        }));
+
+        setUsers(transformedUsers);
       } else {
         setError(response.message || "Failed to fetch users");
         setUsers([]);
