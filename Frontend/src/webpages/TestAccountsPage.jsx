@@ -19,7 +19,7 @@ export default function TestAccountsPage() {
       role: 'HR Personnel',
       description: 'Can claim and process incoming requests',
       email: 'hr@metroexecucare.com',
-      password: 'HR@123',
+      password: 'HR@12345',
       color: 'purple'
     },
     {
@@ -39,7 +39,7 @@ export default function TestAccountsPage() {
     {
       role: 'Administrator',
       description: 'Manages users and system settings (view only for testing)',
-      email: 'admin@metroexecucare.com',
+      email: 'admintest@metroexecucare.com',
       password: 'Admin@123',
       color: 'red'
     }
