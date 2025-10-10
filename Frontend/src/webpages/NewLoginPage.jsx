@@ -11,17 +11,22 @@ import EyeClose from "@/assets/eyeclose.svg";
 import lockIcon from "@/assets/lockicon.svg";
 
 export function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login, isAuthenticated, user } = useAuth();
+
+  // Get credentials from URL params
+  const searchParams = new URLSearchParams(location.search);
+  const urlEmail = searchParams.get('email') || "";
+  const urlPassword = searchParams.get('password') || "";
+
+  const [email, setEmail] = useState(urlEmail);
+  const [password, setPassword] = useState(urlPassword);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { login, isAuthenticated, user } = useAuth();
 
   // Redirect if already authenticated
   useEffect(() => {

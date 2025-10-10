@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Copy, CheckCircle } from 'lucide-react';
+import { Copy, CheckCircle, LogIn } from 'lucide-react';
 import MetroBankLogo from '@/assets/mainLogo-foreground.svg';
 
 export default function TestAccountsPage() {
@@ -51,6 +51,10 @@ export default function TestAccountsPage() {
     setTimeout(() => setCopiedIndex(null), 2000);
   };
 
+  const handleQuickLogin = (email, password) => {
+    navigate(`/loginpage?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
@@ -87,14 +91,18 @@ export default function TestAccountsPage() {
               Test the complete workflow by logging in with different role accounts below.
             </p>
 
-            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">How to Test the Full Workflow:</h3>
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-500 p-4 mb-4 rounded-r-lg">
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">📱 Mobile-Friendly Quick Login</h3>
+              <p className="text-sm text-blue-800 mb-3">
+                Click any <strong>"Quick Login"</strong> button below to auto-fill credentials - just tap Login on the next page!
+              </p>
+              <h3 className="text-lg font-semibold text-blue-900 mb-2 mt-4">How to Test the Full Workflow:</h3>
               <ol className="list-decimal list-inside space-y-2 text-sm text-blue-800">
-                <li><strong>Executive:</strong> Login and submit a Letter of Approval or Authorization request</li>
-                <li><strong>HR Personnel:</strong> Login, claim the request, and forward it to Benefits Officer</li>
-                <li><strong>Benefits Officer:</strong> Login, review the request, and approve it</li>
-                <li><strong>Welfare Head:</strong> Login and give final approval</li>
-                <li><strong>Executive:</strong> Login again to see the approved status and track the request</li>
+                <li><strong>Executive:</strong> Quick login and submit a Letter of Approval or Authorization request</li>
+                <li><strong>HR Personnel:</strong> Quick login, claim the request, and forward it to Benefits Officer</li>
+                <li><strong>Benefits Officer:</strong> Quick login, review the request, and approve it</li>
+                <li><strong>Welfare Head:</strong> Quick login and give final approval</li>
+                <li><strong>Executive:</strong> Quick login again to see the approved status and download the letter</li>
               </ol>
             </div>
 
@@ -168,12 +176,13 @@ export default function TestAccountsPage() {
                   </div>
                 </div>
 
-                {/* Login Button */}
+                {/* Quick Login Button */}
                 <button
-                  onClick={() => navigate('/loginpage')}
-                  className={`w-full py-2 bg-${account.color}-500 hover:bg-${account.color}-600 text-white rounded-lg transition-colors text-sm font-medium`}
+                  onClick={() => handleQuickLogin(account.email, account.password)}
+                  className={`w-full py-3 bg-${account.color}-500 hover:bg-${account.color}-600 text-white rounded-lg transition-colors text-sm font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2`}
                 >
-                  Login as {account.role}
+                  <LogIn className="w-4 h-4" />
+                  Quick Login as {account.role}
                 </button>
               </div>
             </div>
