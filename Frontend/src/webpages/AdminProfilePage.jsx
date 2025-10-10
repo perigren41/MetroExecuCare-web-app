@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import apiService from "@/services/api";
 import AlertModal from "@/Components/AlertModal";
+import ConfirmationModal from "@/Components/ConfirmationModal";
 
 /* ---------------- GradientCard wrapper ---------------- */
 function GradientCard({ children, className, style, isMainCard = false }) {
@@ -84,6 +85,8 @@ function ProfileCard({ profile, setProfile }) {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [isRemoving, setIsRemoving] = useState(false);
+  const [showUploadConfirm, setShowUploadConfirm] = useState(false);
+  const [pendingFile, setPendingFile] = useState(null);
 
   // Helper function to convert profile picture path to full URL
   const getProfilePictureUrl = (picturePath) => {
@@ -94,54 +97,72 @@ function ProfileCard({ profile, setProfile }) {
     return `${baseUrl}${picturePath}`;
   };
 
-  const handleImageChange = async (e) => {
+  const handleImageSelect = (e) => {
     const file = e.target.files[0];
     if (file) {
       // Validate file type
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
       if (!allowedTypes.includes(file.type)) {
         alert('Please select a valid image file (JPEG, PNG, or GIF)');
+        e.target.value = '';
         return;
       }
 
       // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         alert('File size must be less than 5MB');
+        e.target.value = '';
         return;
       }
 
-      try {
-        setUploading(true);
-
-        // Upload to server
-        const response = await apiService.uploadProfilePicture(profile.id, file);
-
-        if (response.success) {
-          // Update profile with new picture path
-          setProfile(prev => ({
-            ...prev,
-            profile_picture: response.data.profile_picture,
-            avatar: `${apiService.baseURL.replace('/api', '')}${response.data.profile_picture}`
-          }));
-
-          // Update AuthContext so NavBar reflects the change
-          updateUser({
-            ...user,
-            profile_picture: response.data.profile_picture
-          });
-
-          setSuccessMessage('Profile picture updated successfully!');
-          setShowSuccessModal(true);
-        } else {
-          alert('Failed to upload profile picture: ' + response.message);
-        }
-      } catch (error) {
-        console.error('Error uploading profile picture:', error);
-        alert('Error uploading profile picture: ' + error.message);
-      } finally {
-        setUploading(false);
-      }
+      setPendingFile(file);
+      setShowUploadConfirm(true);
+      e.target.value = '';
     }
+  };
+
+  const handleConfirmUpload = async () => {
+    if (!pendingFile) return;
+
+    try {
+      setShowUploadConfirm(false);
+      setUploading(true);
+
+      // Upload to server
+      const response = await apiService.uploadProfilePicture(profile.id, pendingFile);
+
+      if (response.success) {
+        // Update profile with new picture path
+        setProfile(prev => ({
+          ...prev,
+          profile_picture: response.data.profile_picture,
+          avatar: `${apiService.baseURL.replace('/api', '')}${response.data.profile_picture}`
+        }));
+
+        // Update AuthContext so NavBar reflects the change
+        updateUser({
+          ...user,
+          profile_picture: response.data.profile_picture
+        });
+
+        setPendingFile(null);
+        setSuccessMessage('Profile picture updated successfully!');
+        setShowSuccessModal(true);
+      } else {
+        alert('Failed to upload profile picture: ' + response.message);
+      }
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      alert('Error uploading profile picture: ' + error.message);
+    } finally {
+      setUploading(false);
+      setPendingFile(null);
+    }
+  };
+
+  const handleCancelUpload = () => {
+    setShowUploadConfirm(false);
+    setPendingFile(null);
   };
 
   const handleRemoveProfilePicture = async () => {
@@ -191,7 +212,7 @@ function ProfileCard({ profile, setProfile }) {
             accept="image/*"
             id="profileImageInput"
             className="hidden"
-            onChange={handleImageChange}
+            onChange={handleImageSelect}
           />
 
           <div className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 rounded-full overflow-hidden border-4 border-gray-200 shadow-md">
@@ -254,6 +275,18 @@ function ProfileCard({ profile, setProfile }) {
           </div>
         </div>
       </div>
+        {/* Upload Confirmation Modal */}
+        <ConfirmationModal
+          isOpen={showUploadConfirm}
+          onClose={handleCancelUpload}
+          onConfirm={handleConfirmUpload}
+          title="Confirm Profile Picture Upload"
+          message={`Are you sure you want to upload this picture as your profile picture?${pendingFile ? ` (${pendingFile.name})` : ''}`}
+          confirmText="Upload"
+          cancelText="Cancel"
+          type="info"
+        />
+
         {/* Success Alert Modal */}
         <AlertModal
           isOpen={showSuccessModal}
