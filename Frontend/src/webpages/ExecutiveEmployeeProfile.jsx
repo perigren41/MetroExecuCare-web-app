@@ -79,6 +79,7 @@ function CircleButton({ text, color, onClick }) {
 
 // ProfileCard component
 function ProfileCard({ profile, setProfile }) {
+  const { updateUser, user } = useAuth();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [isRemoving, setIsRemoving] = useState(false);
@@ -101,10 +102,18 @@ function ProfileCard({ profile, setProfile }) {
         const response = await apiService.uploadProfilePicture(profile.id, file);
         if (response.success) {
           // Update profile with new picture path
-          setProfile(prev => ({
-            ...prev,
+          const updatedProfile = {
+            ...profile,
             profile_picture: response.data.profile_picture
-          }));
+          };
+          setProfile(updatedProfile);
+
+          // Update AuthContext so NavBar reflects the change
+          updateUser({
+            ...user,
+            profile_picture: response.data.profile_picture
+          });
+
           setSuccessMessage('Profile picture updated successfully!');
           setShowSuccessModal(true);
         }
@@ -129,6 +138,13 @@ function ProfileCard({ profile, setProfile }) {
           ...prev,
           profile_picture: null
         }));
+
+        // Update AuthContext so NavBar reflects the change
+        updateUser({
+          ...user,
+          profile_picture: null
+        });
+
         setSuccessMessage('Profile picture removed successfully!');
         setShowSuccessModal(true);
       }

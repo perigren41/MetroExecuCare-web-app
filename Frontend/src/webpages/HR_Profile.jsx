@@ -78,6 +78,7 @@ function CircleButton({ text, color, onClick }) {
 
 /* ---------------- ProfileCard ---------------- */
 function ProfileCard({ profile, setProfile }) {
+    const { updateUser, user } = useAuth();
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [isRemoving, setIsRemoving] = useState(false);
@@ -102,6 +103,13 @@ function ProfileCard({ profile, setProfile }) {
                         ...prev,
                         profile_picture: response.data.profile_picture
                     }));
+
+                    // Update AuthContext so NavBar reflects the change
+                    updateUser({
+                        ...user,
+                        profile_picture: response.data.profile_picture
+                    });
+
                     setSuccessMessage('Profile picture updated successfully!');
                     setShowSuccessModal(true);
                 }
@@ -126,6 +134,13 @@ function ProfileCard({ profile, setProfile }) {
                     ...prev,
                     profile_picture: null
                 }));
+
+                // Update AuthContext so NavBar reflects the change
+                updateUser({
+                    ...user,
+                    profile_picture: null
+                });
+
                 setSuccessMessage('Profile picture removed successfully!');
                 setShowSuccessModal(true);
             }

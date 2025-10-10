@@ -79,6 +79,7 @@ function CircleButton({ text, color, onClick }) {
 
 // ProfileCard component
 function ProfileCard({ profile, setProfile }) {
+  const { updateUser, user } = useAuth();
   const [uploading, setUploading] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
@@ -122,6 +123,13 @@ function ProfileCard({ profile, setProfile }) {
             profile_picture: response.data.profile_picture,
             avatar: `${apiService.baseURL.replace('/api', '')}${response.data.profile_picture}`
           }));
+
+          // Update AuthContext so NavBar reflects the change
+          updateUser({
+            ...user,
+            profile_picture: response.data.profile_picture
+          });
+
           setSuccessMessage('Profile picture updated successfully!');
           setShowSuccessModal(true);
         } else {
@@ -151,6 +159,13 @@ function ProfileCard({ profile, setProfile }) {
           profile_picture: null,
           avatar: null
         }));
+
+        // Update AuthContext so NavBar reflects the change
+        updateUser({
+          ...user,
+          profile_picture: null
+        });
+
         setSuccessMessage('Profile picture removed successfully!');
         setShowSuccessModal(true);
       }
@@ -728,6 +743,7 @@ export default function AdminProfilePage() {
           contact_number: user.contact_number,
           birthDate: user.birth_date ? new Date(user.birth_date).toLocaleDateString() : "Not provided",
           department: user.department,
+          profile_picture: user.profile_picture || "",
           avatar: user.profile_picture ? `${apiService.baseURL.replace('/api', '')}${user.profile_picture}` : "",
         };
         setProfile(profileData);
