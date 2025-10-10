@@ -164,21 +164,16 @@ export default function HR_HistoryPage() {
             <div className="px-4 md:px-8 lg:px-[200px] mt-2 flex flex-col gap-4">
                 {/* Search Input */}
                 <div className="flex justify-center lg:justify-start">
-                    <div className="relative w-full max-w-md lg:max-w-none lg:w-[500px] h-[38px]">
-                        <div
-                            className="absolute inset-0 rounded-full p-[2px]"
-                            style={{ background: 'linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)' }}
-                        >
-                            <div className="w-full h-full bg-white rounded-full flex items-center px-4">
-                                <img src={SearchIcon} alt="Search" className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
-                                <input
-                                    type="text"
-                                    placeholder="Search by name..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full h-full bg-transparent focus:outline-none text-gray-700 placeholder-gray-400"
-                                />
-                            </div>
+                    <div className="relative w-full max-w-md lg:max-w-none lg:w-[500px]">
+                        <div className="w-full bg-white rounded-full flex items-center px-4 py-2 shadow-sm">
+                            <img src={SearchIcon} alt="Search" className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
+                            <input
+                                type="text"
+                                placeholder="Search by name..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full bg-transparent focus:outline-none text-gray-700 placeholder-gray-400 border-none"
+                            />
                         </div>
                     </div>
                 </div>

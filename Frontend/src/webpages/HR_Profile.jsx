@@ -160,7 +160,7 @@ function ProfileCard({ profile, setProfile }) {
             <div className="flex flex-col lg:flex-row lg:justify-start items-center lg:items-start
             pb-4 gap-3 sm:gap-4 lg:gap-6">
                 {/* Profile Image Section */}
-                <div className="flex flex-col items-center flex-shrink-0">
+                <div className="flex bg-black/20 backdrop-blur-sm flex-col items-center flex-shrink-0">
                     <input
                         type="file"
                         accept="image/*"
@@ -385,7 +385,7 @@ function PasswordChangeCard({ user }) {
 
             {/* Modals */}
             {showModal && (
-                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg text-center w-full max-w-sm sm:max-w-md">
                         <div className="mb-4">
                             {modalType === 'success' && (
@@ -722,7 +722,7 @@ function NotesCard({ notes, setNotes, user }) {
 
             {/* Success Modal */}
             {showSuccessModal && (
-                <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg text-center w-full max-w-sm sm:max-w-md">
                         <div className="mb-4">
                             <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">

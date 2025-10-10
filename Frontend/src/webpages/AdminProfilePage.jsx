@@ -482,7 +482,7 @@ function SummaryCard({ notes, setNotes, userId }) {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg text-center w-full max-w-sm sm:max-w-md">
             <div className="mb-4">
               <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">
@@ -646,7 +646,7 @@ function PasswordChangeCard() {
 
       {/* Modals */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-xl shadow-lg text-center w-80">
             <div className="mb-4">
               {modalType === 'success' && (
