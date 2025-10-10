@@ -33,24 +33,28 @@
   app.use('/api/', limiter);
 
   // CORS configuration
+  const allowedOrigins = [
+    process.env.FRONTEND_URL || 'http://localhost:3000',
+    process.env.FRONTEND_CUSTOM_DOMAIN, // For custom domain support
+    'https://metroexecucare.up.railway.app', // Railway default domain
+    'http://localhost:3001',
+    'http://localhost:3002',
+    'http://localhost:3003',
+    'http://localhost:3004',
+    'http://localhost:3005',
+    'http://localhost:3006',
+    'http://localhost:3007',
+    'http://localhost:3008',
+    'http://localhost:3009',
+    'http://localhost:3010',
+    // Allow IP address for mobile/external device testing
+    'http://192.168.1.3:3000',
+    'http://192.168.1.3:3001',
+    'http://192.168.1.3:3002'
+  ].filter(Boolean); // Remove undefined values
+
   const corsOptions = {
-    origin: [
-      process.env.FRONTEND_URL || 'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:3002',
-      'http://localhost:3003',
-      'http://localhost:3004',
-      'http://localhost:3005',
-      'http://localhost:3006',
-      'http://localhost:3007',
-      'http://localhost:3008',
-      'http://localhost:3009',
-      'http://localhost:3010',
-      // Allow IP address for mobile/external device testing
-      'http://192.168.1.3:3000',
-      'http://192.168.1.3:3001',
-      'http://192.168.1.3:3002'
-    ],
+    origin: allowedOrigins,
     credentials: true,
     optionsSuccessStatus: 200,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
