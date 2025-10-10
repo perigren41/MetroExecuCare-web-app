@@ -8,10 +8,10 @@
 - ContactUs is not here anymore, remove it. - **Fixed**
 
 **General**
-- ALL Profile Pages: After changing profile picture, it must give a successful modal and auto refresh the website to see the latest profile picture in the profile card.
+- ALL Profile Pages: After changing profile picture, it must give a successful modal and auto refresh the website to see the latest profile picture in the profile card. - **Fixed**
 - ALL Profile left column grid and right column grid must be aligned in border-bottom regardless how many row it contains and it must not disregard responsiveness
-- ALL Alert modal and success modal, should use this: bg-black/20 backdrop-blur-sm and not bg-black to have 20% opacity for bg.
-- Make change picture and remove picture responsive and UI Fundamentally/Aesthetically aligned and accurate in all screen sizes. 
+- ALL Alert modal and success modal, should use this: bg-black/20 backdrop-blur-sm and not bg-black to have 20% opacity for bg. - **Fixed**
+- Make change picture and remove picture responsive and UI Fundamentally/Aesthetically aligned and accurate in all screen sizes.
 - ALL Change Picture must also be logged in Action Log same with removed profile picture.
 - Is it possible to load all new updated data without the need to refresh all the time? If so, do that
 - Profile pages: it looks like users do not know that the Action Log under Summary is scrollable, how can we provide better UI/UX for them to know that the data table is scrollable

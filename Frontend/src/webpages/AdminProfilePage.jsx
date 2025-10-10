@@ -242,7 +242,11 @@ function ProfileCard({ profile, setProfile }) {
         {/* Success Alert Modal */}
         <AlertModal
           isOpen={showSuccessModal}
-          onClose={() => setShowSuccessModal(false)}
+          onClose={() => {
+            setShowSuccessModal(false);
+            // Auto-refresh to show updated profile picture
+            window.location.reload();
+          }}
           title="Success"
           message={successMessage}
           type="success"
@@ -482,7 +486,7 @@ function SummaryCard({ notes, setNotes, userId }) {
 
       {/* Success Modal */}
       {showSuccessModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg text-center w-full max-w-sm sm:max-w-md">
             <div className="mb-4">
               <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-3">

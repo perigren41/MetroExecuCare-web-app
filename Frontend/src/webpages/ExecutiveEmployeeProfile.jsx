@@ -224,7 +224,11 @@ function ProfileCard({ profile, setProfile }) {
       {/* Success Alert Modal */}
       <AlertModal
         isOpen={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
+        onClose={() => {
+          setShowSuccessModal(false);
+          // Auto-refresh to show updated profile picture
+          window.location.reload();
+        }}
         title="Success"
         message={successMessage}
         type="success"
