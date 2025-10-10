@@ -326,10 +326,10 @@ function SummaryCard({ activityHistory, notes, setNotes, userId }) {
         ) : (
           <>
             {/* Desktop Table - 2 Column Layout */}
-            <div className="hidden sm:block overflow-x-auto">
-              <div className={processedHistory.length > 5 ? "max-h-[200px] overflow-y-auto" : ""}>
+            <div className="hidden sm:block overflow-x-auto relative">
+              <div className={processedHistory.length > 5 ? "max-h-[200px] overflow-y-auto scroll-smooth shadow-inner rounded-lg border border-gray-200" : ""}>
                 <table className="w-full text-xs table-auto">
-                  <thead className="bg-purple-300 sticky top-0">
+                  <thead className="bg-purple-300 sticky top-0 z-10">
                     <tr>
                       <th className="p-2 text-center w-32">Date</th>
                       <th className="p-2 text-center">Action</th>
@@ -349,11 +349,16 @@ function SummaryCard({ activityHistory, notes, setNotes, userId }) {
                   </tbody>
                 </table>
               </div>
+              {processedHistory.length > 5 && (
+                <div className="text-center mt-2 text-xs text-gray-500 italic">
+                  ↕️ Scroll to view more actions
+                </div>
+              )}
             </div>
 
             {/* Mobile Card Layout */}
-            <div className="sm:hidden">
-              <div className={processedHistory.length > 5 ? "max-h-[300px] overflow-y-auto space-y-2" : "space-y-2"}>
+            <div className="sm:hidden relative">
+              <div className={processedHistory.length > 5 ? "max-h-[300px] overflow-y-auto space-y-2 scroll-smooth shadow-inner rounded-lg border border-gray-200 p-2" : "space-y-2"}>
                 {processedHistory.map((item, idx) => (
                   <div key={idx} className="bg-gray-50 rounded-lg p-3 border">
                     <div className="text-blue-600 font-medium text-xs mb-2">
@@ -366,8 +371,8 @@ function SummaryCard({ activityHistory, notes, setNotes, userId }) {
                 ))}
               </div>
               {processedHistory.length > 5 && (
-                <p className="text-xs text-gray-500 text-center mt-2">
-                  Scroll to view all {processedHistory.length} actions
+                <p className="text-xs text-gray-500 text-center mt-2 italic">
+                  ↕️ Scroll to view all {processedHistory.length} actions
                 </p>
               )}
             </div>
@@ -764,13 +769,13 @@ export default function ExecutiveEmployeeProfile() {
               </div>
 
               {/* Desktop: Left Column - Profile and Password Change */}
-              <div className="hidden lg:flex flex-col gap-3 lg:w-[480px] xl:w-[520px]">
+              <div className="hidden lg:flex flex-col gap-3 lg:w-[480px] xl:w-[520px] self-stretch">
                 <ProfileCard profile={profile} setProfile={setProfile} />
                 <PasswordChangeCard />
               </div>
 
               {/* Desktop: Right Column - Summary */}
-              <div className="hidden lg:flex lg:w-[640px] xl:w-[720px]">
+              <div className="hidden lg:flex lg:w-[640px] xl:w-[720px] self-stretch">
                 <SummaryCard
                   activityHistory={activityHistory}
                   notes={notes}

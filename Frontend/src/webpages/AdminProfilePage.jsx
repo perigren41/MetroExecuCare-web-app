@@ -807,7 +807,7 @@ export default function AdminProfilePage() {
             </div>
 
             {/* Desktop: Left Column - Profile and Password Change */}
-            <div className="hidden lg:flex flex-col gap-3 lg:w-[45%] xl:w-[40%] h-full">
+            <div className="hidden lg:flex flex-col gap-3 lg:w-[45%] xl:w-[40%] self-stretch">
               <div className="flex-shrink-0">
                 <ProfileCard profile={profile} setProfile={setProfile} />
               </div>
@@ -817,8 +817,8 @@ export default function AdminProfilePage() {
             </div>
 
             {/* Desktop: Right Column - Summary */}
-            <div className="hidden lg:flex lg:w-[55%] xl:w-[60%] h-full">
-              <div className="w-full">
+            <div className="hidden lg:flex lg:w-[55%] xl:w-[60%] self-stretch">
+              <div className="w-full h-full">
                 <SummaryCard notes={notes} setNotes={setNotes} userId={profile.id} />
               </div>
             </div>

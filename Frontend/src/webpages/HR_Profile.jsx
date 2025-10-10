@@ -849,13 +849,13 @@ export default function HRProfilePage() {
                         </div>
 
                         {/* Desktop: Left Column - Profile and Password Change */}
-                        <div className="hidden lg:flex flex-col gap-3 lg:w-[480px] xl:w-[520px]">
+                        <div className="hidden lg:flex flex-col gap-3 lg:w-[480px] xl:w-[520px] self-stretch">
                             <ProfileCard profile={profile} setProfile={setProfile} />
                             <PasswordChangeCard user={user} />
                         </div>
 
                         {/* Desktop: Right Column - Summary */}
-                        <div className="hidden lg:flex lg:w-[640px] xl:w-[720px]">
+                        <div className="hidden lg:flex lg:w-[640px] xl:w-[720px] self-stretch">
                             <SummaryCard notes={notes} setNotes={setNotes} user={user} />
                         </div>
                     </div>
