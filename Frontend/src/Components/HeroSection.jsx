@@ -1,9 +1,11 @@
 import mainLogo from '@/assets/mainLogo.svg';
 import mainLogoDark from '@/assets/mainLogo-foreground.svg';
 import { useEffect, useState, useRef } from 'react';
-import { ArrowDown } from 'lucide-react';
+import { ArrowDown, TestTube2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 export const HeroSection = () => {
+    const navigate = useNavigate();
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [animate, setAnimate] = useState(false);
     const [showArrow, setShowArrow] = useState(true);
@@ -51,9 +53,16 @@ export const HeroSection = () => {
                     <h1 className="text-2xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-primary leading-snug mb-4 break-words">
                         Welcome to MetroExecuCare!
                     </h1>
-                    <p className="text-sm md:text-base lg:text-lg text-secondary/80 mb-8">
+                    <p className="text-sm md:text-base lg:text-lg text-secondary/80 mb-6">
                         Where health meets convenience.
                     </p>
+                    <button
+                        onClick={() => navigate('/test-accounts')}
+                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 flex items-center space-x-2 group"
+                    >
+                        <TestTube2 className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+                        <span>Try Demo with Test Accounts</span>
+                    </button>
                 </div>
                 
                 {showArrow && (
