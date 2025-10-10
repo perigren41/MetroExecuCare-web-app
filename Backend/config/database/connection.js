@@ -29,7 +29,30 @@ async function testConnection() {
   }
 }
 
+// Execute query helper
+async function executeQuery(query, params = []) {
+  try {
+    const [rows] = await pool.execute(query, params);
+    return rows;
+  } catch (error) {
+    console.error('Query execution error:', error);
+    throw error;
+  }
+}
+
+// Close pool connection
+async function closePool() {
+  try {
+    await pool.end();
+    console.log('✅ Database connection pool closed');
+  } catch (error) {
+    console.error('❌ Error closing pool:', error.message);
+  }
+}
+
 module.exports = {
   pool,
-  testConnection
+  testConnection,
+  executeQuery,
+  closePool
 };

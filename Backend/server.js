@@ -178,7 +178,7 @@
   const authRoutes = require('./routes/authRoutes');
   const userRoutes = require('./routes/userRoutes');
   const requestRoutes = require('./routes/requestRoutes');
-  const emailRoutes = require('./routes/emailRoutes');
+  // const emailRoutes = require('./routes/emailRoutes'); // Removed - handled by emailService
   const hospitalRoutes = require('./routes/hospitalRoutes');
   const testRoutes = require('./routes/testRoutes');
 
@@ -186,7 +186,7 @@
   app.use('/api/users', userRoutes);
   app.use('/api/auth', authRoutes);
   app.use('/api/requests', requestRoutes);
-  app.use('/api/email', emailRoutes);
+  // app.use('/api/email', emailRoutes); // Removed - handled by emailService
   app.use('/api/hospitals', hospitalRoutes);
   app.use('/api/test', testRoutes);
 
