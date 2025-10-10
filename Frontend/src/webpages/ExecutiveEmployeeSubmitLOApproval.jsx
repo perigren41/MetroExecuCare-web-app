@@ -15,10 +15,6 @@ import { useNavigate } from "react-router-dom";
 export default function SubmitLetterOfAuthorization() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  // Get backend URL from environment variable
-  const BACKEND_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
-
   const [uploadedFiles, setUploadedFiles] = useState([]); // Changed to array
   const [showModal, setShowModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -358,7 +354,7 @@ export default function SubmitLetterOfAuthorization() {
                   <button
                     onClick={() => {
                       const link = document.createElement('a');
-                      link.href = `${BACKEND_BASE_URL}/uploads/documents/letters/Request%20Letter%20of%20Approval.pdf`;
+                      link.href = 'http://localhost:3000/uploads/documents/letters/Request%20%20Letter%20of%20Approval.pdf';
                       link.download = 'Request_Letter_of_Approval.pdf';
                       document.body.appendChild(link);
                       link.click();
@@ -434,7 +430,7 @@ export default function SubmitLetterOfAuthorization() {
                 {/* Action Buttons */}
                 <div className="space-y-2">
                   <button
-                    onClick={() => window.open(`${BACKEND_BASE_URL}/uploads/documents/letters/Request%20Letter%20of%20Approval.pdf`, '_blank')}
+                    onClick={() => window.open('http://localhost:5019/uploads/documents/letters/Request%20Letter%20of%20Approval.pdf', '_blank')}
                     className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs cursor-pointer"
                   >
                     <Eye className="w-3 h-3" />
@@ -444,7 +440,7 @@ export default function SubmitLetterOfAuthorization() {
                   <button
                     onClick={() => {
                       const link = document.createElement('a');
-                      link.href = `${BACKEND_BASE_URL}/uploads/documents/letters/Request%20Letter%20of%20Approval.pdf`;
+                      link.href = 'http://localhost:5019/uploads/documents/letters/Request%20%20Letter%20of%20Approval.pdf';
                       link.download = 'Request_Letter_of_Approval.pdf';
                       document.body.appendChild(link);
                       link.click();
