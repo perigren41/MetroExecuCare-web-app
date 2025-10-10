@@ -447,7 +447,11 @@ function SummaryCard({ activityHistory, notes, setNotes, userId }) {
               <p className="text-sm text-gray-600">Your notes have been saved.</p>
             </div>
             <button
-              onClick={() => setShowSuccessModal(false)}
+              onClick={() => {
+                setShowSuccessModal(false);
+                // Reload to refresh activity logs
+                window.location.reload();
+              }}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer"
             >
               Close
@@ -638,8 +642,14 @@ function PasswordChangeCard() {
                 </>
               )}
             </div>
-            <button 
-              onClick={() => setShowModal(false)}
+            <button
+              onClick={() => {
+                setShowModal(false);
+                // Reload page if password was successfully changed
+                if (modalType === 'success') {
+                  window.location.reload();
+                }
+              }}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer"
             >
               Close
