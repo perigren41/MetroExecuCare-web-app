@@ -21,6 +21,7 @@ import LOA_RecordSummary from "@/webpages/LOA_RecordSummary.jsx";
 import LOA_Submit from "@/webpages/LOA_Submit.jsx";
 import AboutUsPage from "@/webpages/AboutUsPage.jsx";
 import FAQPage from "@/webpages/FAQPage.jsx";
+import TestAccountsPage from "@/webpages/TestAccountsPage.jsx";
 
 
 function App() {
@@ -33,6 +34,7 @@ function App() {
           <Route path="/loginpage" element={<LoginPage />} />
           <Route path="/about" element={<AboutUsPage />} />
           <Route path="/faq" element={<FAQPage />} />
+          <Route path="/test-accounts" element={<TestAccountsPage />} />
 
           {/* Executive Routes */}
           <Route
