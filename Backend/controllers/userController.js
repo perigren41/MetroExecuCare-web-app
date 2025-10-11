@@ -1002,7 +1002,7 @@ const removeProfilePicture = async (req, res) => {
     // Log activity
     await logActivity({
       userId: req.user.id,
-      action: 'REMOVE_PROFILE_PICTURE',
+      action: ACTIVITY_TYPES.DELETE_PROFILE_PICTURE,
       description: `Removed profile picture for user ID: ${id}`,
       oldValues: { profile_picture: oldProfilePicture },
       newValues: { profile_picture: null },

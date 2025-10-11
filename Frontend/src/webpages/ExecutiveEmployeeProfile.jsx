@@ -202,7 +202,7 @@ function ProfileCard({ profile, setProfile }) {
             />
           </div>
 
-          <div className="mt-3 flex flex-col sm:flex-row gap-2">
+          <div className="mt-3 flex flex-col gap-2">
             <button
               onClick={() => document.getElementById("profileImageInput").click()}
               className="flex items-center justify-center gap-2 text-blue-600 hover:underline text-xs sm:text-sm font-medium transition-colors cursor-pointer"

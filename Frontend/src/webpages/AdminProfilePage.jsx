@@ -223,7 +223,7 @@ function ProfileCard({ profile, setProfile }) {
             />
           </div>
 
-          <div className="mt-3 flex flex-col sm:flex-row gap-2">
+          <div className="mt-3 flex flex-col gap-2">
             <button
               onClick={() => document.getElementById("profileImageInput").click()}
               disabled={uploading}
