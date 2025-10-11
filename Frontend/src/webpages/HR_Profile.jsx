@@ -742,12 +742,12 @@ function NotesCard({ notes, setNotes, user }) {
 
     return (
         <>
-            <GradientCard className="rounded-[24px]">
+            <GradientCard className="rounded-[24px] flex-1 flex flex-col">
                 <h3 className="text-blue-900 text-xs sm:text-sm font-semibold mb-2 text-left">
                     Notes: Write down notes or reminders...
                 </h3>
                 <textarea
-                    className={`w-full rounded-lg px-3 py-2 h-16 sm:h-20 resize-none border text-sm ${
+                    className={`w-full rounded-lg px-3 py-2 flex-1 resize-none border text-sm ${
                         isEditing
                             ? "border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-[repeating-linear-gradient(white,white_23px,#e5e7eb_24px)]"
                             : "border-gray-200 bg-gray-50 cursor-default"
@@ -809,8 +809,8 @@ function NotesCard({ notes, setNotes, user }) {
 
 function SummaryCard({ notes, setNotes, user }) {
     return (
-        <GradientCard className="rounded-[64px]" isMainCard={true}>
-            <div className="space-y-3 sm:space-y-4">
+        <GradientCard className="rounded-[64px] h-full flex flex-col" isMainCard={true}>
+            <div className="space-y-3 sm:space-y-4 flex-1 flex flex-col">
                 <div className="text-left">
                     <h2 className="text-blue-900 font-semibold text-base sm:text-lg">Summary</h2>
                     <p className="text-xs sm:text-sm text-gray-600">Your activity overview in MetroExecuCare</p>
@@ -906,13 +906,13 @@ export default function HRProfilePage() {
                         </div>
 
                         {/* Desktop: Left Column - Profile and Password Change */}
-                        <div className="hidden lg:flex flex-col gap-3 lg:w-[480px] xl:w-[520px] self-stretch">
+                        <div className="hidden lg:flex flex-col gap-3 lg:w-[420px] xl:w-[450px] self-stretch">
                             <ProfileCard profile={profile} setProfile={setProfile} />
                             <PasswordChangeCard user={user} />
                         </div>
 
                         {/* Desktop: Right Column - Summary */}
-                        <div className="hidden lg:flex lg:w-[640px] xl:w-[720px] self-stretch">
+                        <div className="hidden lg:flex lg:w-[700px] xl:w-[750px] self-stretch h-full">
                             <SummaryCard notes={notes} setNotes={setNotes} user={user} />
                         </div>
                     </div>

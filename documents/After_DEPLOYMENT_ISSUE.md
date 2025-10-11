@@ -9,7 +9,7 @@
 
 **General**
 - ALL Profile Pages: After changing profile picture, it must give a successful modal and auto refresh the website to see the latest profile picture in the profile card. - **Fixed**
-- ALL Profile left column grid and right column grid must be aligned in border-bottom regardless how many row it contains and it must not disregard responsiveness - **Fixed**
+- ALL Profile left column grid and right column grid must be aligned in border-bottom regardless how many row it contains and it must not disregard responsiveness - **Fixed** (SummaryCard now stretches to match left column height)
 - ALL Alert modal and success modal, should use this: bg-black/20 backdrop-blur-sm and not bg-black to have 20% opacity for bg. - **Fixed**
 - Make change picture and remove picture responsive and UI Fundamentally/Aesthetically aligned and accurate in all screen sizes.
 - ALL Change Picture must also be logged in Action Log same with removed profile picture.
