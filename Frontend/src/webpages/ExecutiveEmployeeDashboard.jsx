@@ -13,6 +13,7 @@ import ProfileGray from '@/assets/profilegray.svg';
 import ApprovalBg from "@/assets/approvalbg.svg";
 import AuthorizationBg from "@/assets/authorizationbg.svg";
 import ChevronRight from "@/assets/chevronright.svg";
+import MetrobankLogo from "@/assets/MetrobankLogo.svg";
 
 import CheckSquare from "@/assets/checksquare.svg";
 import ClockSquare from "@/assets/clocksquare.svg";
@@ -79,7 +80,7 @@ function GreetingStatusCard({
         <div className="flex flex-col space-y-3 sm:space-y-4 text-center lg:text-left">
           <div className="flex justify-center lg:justify-start">
             <img
-              src="src/assets/MetrobankLogo.svg"
+              src={MetrobankLogo}
               className="w-24 h-6 sm:w-32 sm:h-8 md:w-40 md:h-10"
               alt="Metrobank Logo"
             />

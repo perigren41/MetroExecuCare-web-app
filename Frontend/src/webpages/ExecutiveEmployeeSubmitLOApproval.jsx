@@ -353,13 +353,23 @@ export default function SubmitLetterOfAuthorization() {
                 <div className="space-y-2">
 
                   <button
-                    onClick={() => {
-                      const link = document.createElement('a');
-                      link.href = `${BACKEND_BASE_URL}/uploads/documents/letters/Request%20Letter%20of%20Approval%20.pdf`;
-                      link.download = 'Request_Letter_of_Approval.pdf';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
+                    onClick={async () => {
+                      try {
+                        // Fetch the PDF as a blob to force download instead of opening in browser
+                        const response = await fetch(`${BACKEND_BASE_URL}/uploads/documents/letters/Request Letter of Approval .pdf`);
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = 'Request_Letter_of_Approval.pdf';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        window.URL.revokeObjectURL(url); // Clean up
+                      } catch (error) {
+                        console.error('Download failed:', error);
+                        alert('Failed to download PDF. Please try again.');
+                      }
                     }}
                     className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm cursor-pointer"
                   >

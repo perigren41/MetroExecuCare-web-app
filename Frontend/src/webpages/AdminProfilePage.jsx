@@ -857,7 +857,7 @@ export default function AdminProfilePage() {
       {/* 2-Column Grid Layout - Viewport Fitted */}
       <div className="flex-1 overflow-hidden px-2 sm:px-4 lg:px-6 pb-2 sm:pb-3">
         <div className="h-full overflow-y-auto">
-          <div className="flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-4 lg:justify-center lg:items-start max-w-7xl mx-auto h-full">
+          <div className="flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-4 lg:justify-center lg:items-stretch max-w-7xl mx-auto h-full">
             {/* Mobile: Stacked Layout */}
             <div className="lg:hidden flex flex-col gap-2 sm:gap-3">
               <ProfileCard profile={profile} setProfile={setProfile} />
@@ -866,13 +866,13 @@ export default function AdminProfilePage() {
             </div>
 
             {/* Desktop: Left Column - Profile and Password Change */}
-            <div className="hidden lg:flex flex-col gap-3 lg:w-[480px] xl:w-[520px] self-stretch">
+            <div className="hidden lg:flex flex-col gap-3 lg:w-[480px] xl:w-[520px] h-full">
               <ProfileCard profile={profile} setProfile={setProfile} />
               <PasswordChangeCard />
             </div>
 
             {/* Desktop: Right Column - Summary */}
-            <div className="hidden lg:flex lg:w-[640px] xl:w-[720px] self-stretch">
+            <div className="hidden lg:flex lg:w-[640px] xl:w-[720px] h-full">
               <div className="w-full h-full">
                 <SummaryCard notes={notes} setNotes={setNotes} userId={profile.id} />
               </div>
