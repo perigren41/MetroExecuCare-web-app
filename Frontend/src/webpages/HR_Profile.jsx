@@ -112,16 +112,20 @@ function ProfileCard({ profile, setProfile }) {
             setShowUploadConfirm(false);
             const response = await apiService.uploadProfilePicture(profile.id, pendingFile);
             if (response.success) {
-                // Update profile with new picture path
+                // Add cache-busting timestamp to force image reload
+                const timestamp = Date.now();
+                const profilePictureWithTimestamp = `${response.data.profile_picture}?t=${timestamp}`;
+
+                // Update profile with new picture path (with timestamp)
                 setProfile(prev => ({
                     ...prev,
-                    profile_picture: response.data.profile_picture
+                    profile_picture: profilePictureWithTimestamp
                 }));
 
                 // Update AuthContext so NavBar reflects the change
                 updateUser({
                     ...user,
-                    profile_picture: response.data.profile_picture
+                    profile_picture: profilePictureWithTimestamp
                 });
 
                 setPendingFile(null);
@@ -282,8 +286,7 @@ function ProfileCard({ profile, setProfile }) {
                 isOpen={showSuccessModal}
                 onClose={() => {
                     setShowSuccessModal(false);
-                    // Auto-refresh to show updated profile picture
-                    window.location.reload();
+                    // No need to reload - cache-busting timestamp handles image refresh
                 }}
                 title="Success"
                 message={successMessage}
