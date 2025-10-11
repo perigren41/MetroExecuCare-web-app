@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { X, Send } from 'lucide-react';
+import { X, Send, CheckCircle } from 'lucide-react';
 import apiService from '@/services/api';
 
 export default function FileRequestModal({ isOpen, onClose, requestId, onSuccess }) {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,17 +23,21 @@ export default function FileRequestModal({ isOpen, onClose, requestId, onSuccess
       const response = await apiService.createFileRequest(requestId, message.trim());
 
       if (response.success) {
-        alert('File request sent successfully! The executive will be notified via email.');
+        setShowSuccess(true);
         setMessage('');
-        onClose();
-        if (onSuccess) {
-          onSuccess();
-        }
+        // Auto-close success modal after 2 seconds
+        setTimeout(() => {
+          setShowSuccess(false);
+          setIsSubmitting(false);
+          onClose();
+          if (onSuccess) {
+            onSuccess();
+          }
+        }, 2000);
       }
     } catch (error) {
       console.error('Error creating file request:', error);
       setError(error.message || 'Failed to send file request. Please try again.');
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -44,6 +49,25 @@ export default function FileRequestModal({ isOpen, onClose, requestId, onSuccess
   };
 
   if (!isOpen) return null;
+
+  // Success Modal View
+  if (showSuccess) {
+    return (
+      <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-8 text-center">
+          <div className="mb-4 flex justify-center">
+            <div className="rounded-full bg-green-100 p-3">
+              <CheckCircle size={48} className="text-green-600" />
+            </div>
+          </div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-2">Request Sent!</h3>
+          <p className="text-gray-600">
+            File request sent successfully! The executive will be notified via email.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center z-50 p-4">

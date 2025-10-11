@@ -357,10 +357,10 @@ export default function LOAStatusTracker() {
       <div className="grid grid-cols-1 md:grid-cols-[41%_59%] px-4 pb-6 gap-6 max-w-6xl mx-auto w-full table-fixed">
   
         {/* Left - Details */}
-        <div className="bg-white rounded-3xl shadow-xl shadow-[#00539F]/30 py-4 pb-8 px-20 border border-gray-200 
+        <div className="bg-white rounded-3xl shadow-xl shadow-[#00539F]/30 py-4 pb-8 px-4 sm:px-8 md:px-12 lg:px-20 border border-gray-200
         outline-2 outline-[#00539F]">
-            
-          <h2 className="text-base font-bold text-blue-900 mb-4">Details</h2>
+
+          <h2 className="text-base font-bold text-blue-900 mb-4 text-center sm:text-left">Details</h2>
           {/* Two-column layout for labels & values */}
           {requestDetails.current_status === 'no_request' ? (
             <div className="text-center text-gray-500 text-sm py-8">
@@ -368,18 +368,18 @@ export default function LOAStatusTracker() {
               <p className="text-xs">Submit a new request to track its progress</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 text-left text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 text-left text-xs">
               <span className="font-bold text-blue-900">Request Number:</span>
-              <span className="text-left">{requestDetails.request_number || requestDetails.request_id}</span>
+              <span className="text-left sm:text-left break-words">{requestDetails.request_number || requestDetails.request_id}</span>
 
               <span className="font-bold text-blue-900">Type:</span>
-              <span className="text-left">{requestDetails.request_type === 'letter_of_authorization' ? 'Letter of Authorization' : requestDetails.request_type === 'letter_of_approval' ? 'Letter of Approval' : requestDetails.request_type}</span>
+              <span className="text-left sm:text-left break-words">{requestDetails.request_type === 'letter_of_authorization' ? 'Letter of Authorization' : requestDetails.request_type === 'letter_of_approval' ? 'Letter of Approval' : requestDetails.request_type}</span>
 
               <span className="font-bold text-blue-900">Requested on:</span>
-              <span className="text-left">{requestDetails.created_at ? new Date(requestDetails.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : requestDetails.requested_on}</span>
+              <span className="text-left sm:text-left break-words">{requestDetails.created_at ? new Date(requestDetails.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : requestDetails.requested_on}</span>
 
               <span className="font-bold text-blue-900">Requested by:</span>
-              <span className="text-left">{requestDetails.first_name && requestDetails.last_name ? `${requestDetails.first_name} ${requestDetails.last_name}` : requestDetails.requested_by}</span>
+              <span className="text-left sm:text-left break-words">{requestDetails.first_name && requestDetails.last_name ? `${requestDetails.first_name} ${requestDetails.last_name}` : requestDetails.requested_by}</span>
             </div>
           )}
 
@@ -439,57 +439,62 @@ export default function LOAStatusTracker() {
         </div>
 
         {/* Right - Progress */}
-        <div className="bg-white rounded-3xl shadow-xl py-4 md:px-20 sm:px-4 border border-gray-200 shadow-[#00539F]/30
+        <div className="bg-white rounded-3xl shadow-xl py-4 px-4 sm:px-6 md:px-12 lg:px-20 border border-gray-200 shadow-[#00539F]/30
         outline-2 outline-[#00539F]">
-          <h2 className="text-base font-bold text-blue-900 mb-4">
+          <h2 className="text-base font-bold text-blue-900 mb-4 text-center sm:text-left">
             Request Progress
           </h2>
 
           {/* Status pill - Same styling as dashboard */}
           <div className="flex justify-center mb-6">
             <div
-              className="font-bold rounded-full shadow-xl/20 px-4 pt-2 pb-1 flex flex-col items-center border mx-auto w-60 h-20"
+              className="font-bold rounded-full shadow-xl/20 px-3 sm:px-4 pt-2 pb-1 flex flex-col items-center border mx-auto w-full max-w-xs sm:max-w-sm md:w-60 h-auto min-h-20"
               style={currentStatusDisplay.pillStyle}
             >
-              <div className="flex items-center">
-                <img src={currentStatusDisplay.icon} alt="Status" className="w-10 h-10 mr-1" />
-                <span>{currentStatusDisplay.text}</span>
+              <div className="flex items-center flex-wrap justify-center gap-1">
+                <img src={currentStatusDisplay.icon} alt="Status" className="w-8 h-8 sm:w-10 sm:h-10" />
+                <span className="text-sm sm:text-base text-center">{currentStatusDisplay.text}</span>
               </div>
-              <p className="text-xs text-gray-500 flex flex-col">{currentStatusDisplay.note}</p>
+              <p className="text-xs text-gray-500 text-center mt-1">{currentStatusDisplay.note}</p>
             </div>
           </div>
 
           {/* Steps */}
-          <div className="space-y-3 text-left text-sm mb-6 pl-4">
+          <div className="space-y-3 text-left text-sm mb-6 pl-2 sm:pl-4">
             {allSteps.map((step) => (
-              <div key={step.id} className={`flex items-start gap-3 ${step.isActive ? 'opacity-100' : step.isCompleted ? 'opacity-80' : 'opacity-40'}`}>
-                <img src={getStepIcon(step)} alt="status" className="w-7 h-7" />
-                <div>
-                  <p className={`font-medium ${step.isActive ? 'text-blue-900' : ''}`}>
+              <div key={step.id} className={`flex items-start gap-2 sm:gap-3 ${step.isActive ? 'opacity-100' : step.isCompleted ? 'opacity-80' : 'opacity-40'}`}>
+                <img src={getStepIcon(step)} alt="status" className="w-6 h-6 sm:w-7 sm:h-7 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className={`font-medium ${step.isActive ? 'text-blue-900' : ''} break-words`}>
                     {step.label}
                   </p>
-                  <p className="text-xs text-gray-600">Status: {step.status}</p>
+                  <p className="text-xs text-gray-600 break-words">Status: {step.status}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Legend */}
-          <div className="grid grid-cols-[.5fr_1fr_1fr_1fr_1fr] mt-6 text-xs text-gray-600 pl-4 text-left">
-            <p className="flex items-center font-bold">Legend:</p>
-
-            <p className="flex items-center gap-1">
-              <img src={CheckSquare} className="w-5 h-5" alt="Completed" /> Completed
-            </p>
-            <p className="flex items-center gap-1">
-              <img src={ClockSquare} className="w-5 h-5" alt="Waiting" /> Waiting
-            </p>
-            <p className="flex items-center gap-1">
-              <img src={AddSquare} className="w-5 h-5" alt="No request" /> No request
-            </p>
-            <p className="flex items-center gap-1">
-              <img src={XSquare} className="w-5 h-5" alt="Rejected" /> Rejected
-            </p>
+          {/* Legend - Responsive Grid */}
+          <div className="mt-6 text-xs text-gray-600">
+            <p className="font-bold mb-2 text-left pl-2 sm:pl-4">Legend:</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pl-2 sm:pl-4">
+              <p className="flex items-center gap-1">
+                <img src={CheckSquare} className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" alt="Completed" />
+                <span className="truncate">Completed</span>
+              </p>
+              <p className="flex items-center gap-1">
+                <img src={ClockSquare} className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" alt="Waiting" />
+                <span className="truncate">Waiting</span>
+              </p>
+              <p className="flex items-center gap-1">
+                <img src={AddSquare} className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" alt="No request" />
+                <span className="truncate">No request</span>
+              </p>
+              <p className="flex items-center gap-1">
+                <img src={XSquare} className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" alt="Rejected" />
+                <span className="truncate">Rejected</span>
+              </p>
+            </div>
           </div>
         </div>
       </div>
