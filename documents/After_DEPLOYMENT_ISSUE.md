@@ -71,7 +71,7 @@ Request ID:(must be requestNumber)
 Executive:
 undefined undefined(Executive firstname)(Executive lastname)
 
-- Benefits Officer Approval Required
+- Benefits Officer Approval Required - **Fixed**
 
 Request Information
 Request Number:
@@ -79,11 +79,11 @@ REQ2025221591698
 Executive:
 John Garcia
 Department:
-undefined (executive info)
+undefined (executive info) - **Fixed**
 Position:
-undefined (executive info)  
+undefined (executive info) - **Fixed**
 
 - Request Under Review: This is being sent to the executive.
-Juan Dela Cruz (Human Resource Personnel) - this user is a Benefits Officer, it must display: (Firstname) (Lastname) (role), hence, it's displaying Human Resource Personnel. This is also happening for Division Head users. Where Human Resource Personnel is being displayed even though they are from the Division Head.
+Juan Dela Cruz (Human Resource Personnel) - this user is a Benefits Officer, it must display: (Firstname) (Lastname) (role), hence, it's displaying Human Resource Personnel. This is also happening for Division Head users. Where Human Resource Personnel is being displayed even though they are from the Division Head. - **Fixed**
 
 - 

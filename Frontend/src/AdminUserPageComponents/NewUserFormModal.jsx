@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import EyeOpen from "@/assets/eyeopen.svg";
 import EyeClose from "@/assets/eyeclose.svg";
-import ProfileGray from "@/assets/profilegray.svg";
 
 export default function NewUserFormModal({ user, onClose, onSave }) {
   const [formData, setFormData] = useState({
@@ -18,7 +17,6 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
     contact_number: "",
     department: "",
     birthDate: "",
-    profileImage: "",
   });
 
   const [showPassword, setShowPassword] = useState(false);
@@ -76,7 +74,6 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
         contact_number: user.contact_number || "",
         department: user.department || "",
         birthDate: user.birth_date || "", // Map birth_date from backend
-        profileImage: user.profile_picture_url || "",
       });
     } else {
       // For new users, start with default Employee ID
@@ -95,7 +92,6 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
         contact_number: "",
         department: "",
         birthDate: "",
-        profileImage: "",
       });
     }
   }, [user]);
@@ -300,61 +296,6 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
               "FirstName"
             )}`}
           />
-
-          {/* Profile upload - IMPROVED: Better styling and error handling */}
-          <div className="sm:row-span-11 flex flex-col items-center gap-2 mt-2 sm:mt-6 sm:ml-4 order-first sm:order-none col-span-1 sm:col-span-1">
-            <div className="w-20 h-20 sm:w-40 sm:h-40 rounded-full border flex items-center justify-center bg-white overflow-hidden">
-              {formData.profileImage ? (
-                <img
-                  src={formData.profileImage}
-                  alt="Profile"
-                  className="w-20 h-20 sm:w-40 sm:h-40 object-cover"
-                />
-              ) : (
-                <img
-                  src={ProfileGray}
-                  alt="Default Profile"
-                  className="w-6 h-6 sm:w-10 sm:h-10 text-gray-400"
-                />
-              )}
-            </div>
-
-            <label
-              htmlFor="profileImage"
-              className="text-xs text-blue-600 cursor-pointer hover:underline"
-            >
-              {formData.profileImage ? "Change Image" : "Add Image"}
-            </label>
-
-            <input
-              id="profileImage"
-              type="file"
-              accept="image/*"
-              onChange={(e) => {
-                const file = e.target.files[0];
-                if (file) {
-                  // Check file size (optional: limit to 5MB)
-                  if (file.size > 5 * 1024 * 1024) {
-                    alert("File size should be less than 5MB");
-                    return;
-                  }
-                  
-                  const reader = new FileReader();
-                  reader.onloadend = () => {
-                    setFormData(prev => ({ 
-                      ...prev, 
-                      profileImage: reader.result 
-                    }));
-                  };
-                  reader.onerror = () => {
-                    alert("Error reading file. Please try again.");
-                  };
-                  reader.readAsDataURL(file);
-                }
-              }}
-              className="hidden"
-            />
-          </div>
 
           {/* Middle Name - OPTIONAL */}
           <label className="font-medium text-blue-900">Middle Name <span className="text-gray-500 text-[10px]">(Optional)</span></label>

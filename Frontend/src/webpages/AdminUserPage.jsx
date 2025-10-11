@@ -41,11 +41,12 @@ export default function AdminUsersPage() {
         // API returns { success: true, data: { users: [...], pagination: {...} } }
         const userData = response.data?.users || [];
 
-        // Transform user data to include full profile picture URL
+        // Transform user data to include full profile picture URL with cache-busting timestamp
+        const timestamp = Date.now();
         const transformedUsers = (Array.isArray(userData) ? userData : []).map(user => ({
           ...user,
           profile_picture_url: user.profile_picture
-            ? `${apiService.baseURL.replace('/api', '')}${user.profile_picture}`
+            ? `${apiService.baseURL.replace('/api', '')}${user.profile_picture}?t=${timestamp}`
             : null
         }));
 
