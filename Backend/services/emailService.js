@@ -262,16 +262,41 @@ class EmailService {
   }
 
   /**
+   * Map notification types to valid ENUM values in database
+   * @param {string} notificationType - Notification type from code
+   * @returns {string} - Valid ENUM value for database
+   */
+  mapNotificationTypeToEnum(notificationType) {
+    const typeMapping = {
+      'new_request': 'request_submitted',
+      'request_assigned': 'request_assigned',
+      'approval_request': 'benefits_review_started',
+      'status_update': 'hr_processing_started',
+      'final_approval': 'request_approved_final',
+      'hr_final_verification': 'hr_approved',
+      'executive_final_approval': 'request_approved_final',
+      'executive_final_rejection': 'request_rejected',
+      'file_request': 'file_requested',
+      'file_uploaded': 'file_uploaded'
+    };
+
+    return typeMapping[notificationType] || 'request_submitted'; // Default fallback
+  }
+
+  /**
    * Log notification to database
    * @param {Object} notificationData - Notification data to log
    */
   async logNotification(notificationData) {
     try {
+      // Map notification type to valid ENUM value
+      const mappedType = this.mapNotificationTypeToEnum(notificationData.notification_type);
+
       // Validate required data and convert undefined to null
       const values = [
         notificationData.request_id || null,
         notificationData.recipient_id || null,
-        notificationData.notification_type || 'unknown',
+        mappedType,
         notificationData.email_subject || 'No subject',
         notificationData.email_content || 'No content',
         notificationData.html_content || null,

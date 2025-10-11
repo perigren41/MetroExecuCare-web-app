@@ -509,15 +509,13 @@ const getDeletedUsers = async (req, res) => {
     const search = req.query.search || '';
 
     // Build query for inactive users (is_active = 0) with deletion tracking info
+    // Note: deleted_at and deleted_by columns don't exist yet, using updated_at as fallback
     let query = `
       SELECT
         u.id, u.employee_id, u.email, u.first_name, u.last_name, u.middle_name, u.role,
         u.department, u.position, u.branch, u.contact_number, u.birth_date, u.updated_at,
-        u.deleted_at, u.deletion_reason, u.deleted_by,
-        deleter.first_name AS deleted_by_first_name,
-        deleter.last_name AS deleted_by_last_name
+        u.deletion_reason
       FROM users u
-      LEFT JOIN users deleter ON u.deleted_by = deleter.id
       WHERE u.is_active = 0
     `;
     let countQuery = 'SELECT COUNT(*) as total FROM users WHERE is_active = 0';
@@ -533,7 +531,7 @@ const getDeletedUsers = async (req, res) => {
       countParams.push(searchParam, searchParam, searchParam);
     }
 
-    query += ` ORDER BY u.deleted_at DESC LIMIT ${limit} OFFSET ${offset}`;
+    query += ` ORDER BY u.updated_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
     // Execute queries
     const [deletedUsers] = await pool.execute(query, queryParams);

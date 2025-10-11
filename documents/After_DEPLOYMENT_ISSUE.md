@@ -199,4 +199,54 @@ Changes Completed:
 
 Result: Professional, modern form with excellent UX and clear visual hierarchy
 
-LOW PRIORITY:
+
+
+**STILL A PROBLEM**
+
+**HIGH PRORITY**
+- It looks like all processes is not being sent out to the proper email. It might have been SMTP is not configured correct in Railway since we change one of the variable from GMAIL_USER_EMAIL to GMAIL_USER. I dont have a clue if this is what's keeping our email notification not sent to their respective workflows. **Partially Fixed**
+
+**Fixes Applied:**
+1. Updated .env.production.template to use GMAIL_USER instead of GMAIL_USER_EMAIL
+2. Created RAILWAY_EMAIL_SETUP.md guide for proper Railway configuration
+3. Fixed database error: "Data truncated for column 'notification_type'" by adding notification type mapping to valid ENUM values
+
+**Remaining Issue - Connection Timeout:**
+Railway logs show: `❌ Failed to send email: Connection timeout`
+- Root Cause: Railway's firewall may be blocking outbound SMTP connections (port 587/465)
+- Emails are configured correctly but cannot reach Gmail's SMTP servers
+- See RAILWAY_EMAIL_SETUP.md for alternative solutions (Gmail API, SendGrid, etc.)
+- This requires Railway network configuration or switching to HTTP-based email service
+
+
+**MEDIUM PRIORITY**
+- Everything is working for Profile. However, the thing that's not working properly is uploading profile picture. After changing picture, it does not do anything. **Should be Fixed** (Previous fixes for cache-busting and imageKey should resolve this - needs testing to confirm)
+
+- loa-status-tracker Request Progress rounded visual is not responsive, it looks like the contents is overlapping. I still want it to be rounded but we need to make sure it does not overlap.
+
+- Can we also do auto-refresh or the cache-busting for when a user updates from the main process ie. executive requests, HR can see pending requests added without manual refresh. HR approves, Benefits Officer can see pending requests added without manual refresh.
+
+- Request Additional Files for HR, BO, Welfare Head: it looks like there is no successful modal after approvers request files from the executive. Change the alert into a modal for a more UI/UX standard. It looks like sending after request file, even though it's already sent, it's still in the request modal and Sending button is still loading.
+
+- Additional Files Requested modal in loa-status-tracker where: 
+From: HR Personnel(**this is supposed to be first name and last name of Human Resource Personnel**) (Human Resource Personnel)
+
+Message: Request loa
+
+- Additional Files Requested modal in loa-status-tracker where: Upload files is not working properly. It should display all uploads by the executives including the requested files.
+
+- Additional Files Requested modal in loa-status-tracker where: If executive uploads 1 file, and changes mind to upload another one separately is not possible. If the executive uploads and confirms file, file is not possible to add anymore, nor they can remove the uploaded file for request files. Goal: make upload files more than 1 if executive changes mind. make uploaded file deletable if executive uploads wrong file.
+
+- Additional Files Requested modal in loa-status-tracker where: Upload file button is still loading even though the requested files it's already sent to the user.
+
+- modals that consist of "Upload successful", "Success", etc. It must have bg-black/20 not bg-black and bg-opacity-20 separately. Since we are using tailwindcss. It's using black as background without having to minimize opacity therefore opacity is not working properly for the background. **Fixed** (AlertModal now uses bg-black/20) 
+
+- It looks like getStatusDisplay is not working properly in LoaStatusTracker. It's not updating properly. It must go back to the dashboard to get update then go back to the LoaStatusTracker page before it updates. Even refresh(f5) is not working for getting updates.
+
+- in loa-submit below reason for request: for Human Resource Personnel, the file "Approval Letter of Authorization For Annual Medical Check-up Laboratory and Procedures" if Letter of Authorization has been filed. And "Approval For Annual Medical Check-up" if Letter of Approval has been filed by the executive.
+
+- If Human Resource Personnel already approve the request filed and come back to view post-approved file, textfield must not be editable nor typable, it should be a text instead of textfields since they have already submitted just like in hr_final_verification(Exit Clearance stage) except the part where it displays "Reason for request".
+
+- loa-submit page, HRDashboard, RequestDetailsModal, and LoaStatusTracker(only the legend part) is not responsive to smaller devices such as phones, Details is overlapping to each other. Make sure to make this responsive and use UI/UX Fundamentals to create a modern responsive page.
+
+- DeletedUsersModal is not working properly. It's giving this error: Get deleted users error: Error: Unknown column 'u.deleted_at' in 'field list' **Fixed** (Removed references to non-existent deleted_at and deleted_by columns, now using updated_at)

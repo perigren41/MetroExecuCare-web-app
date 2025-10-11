@@ -805,7 +805,7 @@ export default function LOA_Submit() {
             case 'benefits_officer':
                 return 'No Benefits & Services documents uploaded yet';
             case 'welfare_head':
-                return 'No Welfare & Recreation documents uploaded yet';
+                return 'No Division Head documents uploaded yet';
             default:
                 return 'No documents uploaded yet';
         }
@@ -819,7 +819,7 @@ export default function LOA_Submit() {
             case 'benefits_officer':
                 return 'Benefits & Services File:';
             case 'welfare_head':
-                return 'Welfare & Recreation File:';
+                return 'Division Head File:';
             default:
                 return 'Staff File:';
         }
