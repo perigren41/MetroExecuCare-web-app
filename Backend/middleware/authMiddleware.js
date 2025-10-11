@@ -19,7 +19,7 @@ const authenticateToken = async (req, res, next) => {
     
     // Get user from database to ensure they still exist and are active
     const [users] = await pool.execute(
-      'SELECT id, email, role, is_active FROM users WHERE id = ?',
+      'SELECT id, employee_id, email, first_name, last_name, middle_name, role, department, position, branch, is_active FROM users WHERE id = ?',
       [decoded.id]
     );
 
@@ -42,8 +42,15 @@ const authenticateToken = async (req, res, next) => {
     // Add user info to request object
     req.user = {
       id: user.id,
+      employee_id: user.employee_id,
       email: user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      middle_name: user.middle_name,
       role: user.role,
+      department: user.department,
+      position: user.position,
+      branch: user.branch,
       is_active: user.is_active
     };
 
