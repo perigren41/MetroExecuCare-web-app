@@ -421,14 +421,14 @@ function SummaryCard({ notes, setNotes, userId }) {
   };
 
   return (
-    <GradientCard className="rounded-[64px]" isMainCard={true}>
-      <div className="space-y-4 sm:space-y-6">
+    <GradientCard className="rounded-[64px] h-full" isMainCard={true}>
+      <div className="space-y-4 sm:space-y-6 h-full flex flex-col">
         <div className="text-left">
           <h2 className="text-blue-900 font-semibold sm:text-base">Summary</h2>
           <p className="text-xs">Your activity overview in MetroExecuCare</p>
         </div>
 
-        <GradientCard className="rounded-[24px]">
+        <GradientCard className="rounded-[24px] flex-shrink-0">
         <h1 className="text-xs sm:text-xs text-left mb-2">
           <span className="text-blue-900 font-semibold">Action Log:</span> Your recent actions
         </h1>
@@ -494,10 +494,10 @@ function SummaryCard({ notes, setNotes, userId }) {
         )}
         </GradientCard>
 
-        <GradientCard className="rounded-[24px]">
+        <GradientCard className="rounded-[24px] flex-1 flex flex-col">
         <h2 className="text-blue-900 text-sm font-semibold mb-2 text-left sm:text-sm">Notes: Write down notes or reminders of yourself ...</h2>
         <textarea
-          className={`w-full rounded-lg px-3 py-2 h-20 sm:h-24 resize-none border text-sm ${
+          className={`w-full rounded-lg px-3 py-2 flex-1 resize-none border text-sm ${
             isEditing
               ? "border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-[repeating-linear-gradient(white,white_23px,#e5e7eb_24px)]"
               : "border-gray-200 bg-gray-50 cursor-default"
@@ -873,7 +873,9 @@ export default function AdminProfilePage() {
 
             {/* Desktop: Right Column - Summary */}
             <div className="hidden lg:flex lg:w-[640px] xl:w-[720px] self-stretch">
-              <SummaryCard notes={notes} setNotes={setNotes} userId={profile.id} />
+              <div className="w-full h-full">
+                <SummaryCard notes={notes} setNotes={setNotes} userId={profile.id} />
+              </div>
             </div>
           </div>
         </div>

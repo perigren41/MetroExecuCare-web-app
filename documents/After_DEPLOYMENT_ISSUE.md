@@ -15,7 +15,7 @@
 - ALL Change Picture must also be logged in Action Log same with removed profile picture.
 - Is it possible to load all new updated data without the need to refresh all the time? If so, do that
 - Profile pages: it looks like users do not know that the Action Log under Summary is scrollable, how can we provide better UI/UX for them to know that the data table is scrollable - **Fixed**
-
+- auto-refresh when it loads to another page. ie if a user logs in/out, it auto-reloads. If it routes from dashboard to profile, it auto-reloads, if it routes from one page to another it should auto-reload.
 
 **EXECUTIVES**
 - LoaStatusTracker page: If executive currently has no active requests, make sure to blank the informations in "details" - **Fixed**
@@ -33,4 +33,45 @@
 
 
 **EMAIL TEMPLATES**
+- New Executive Checkup Request - these are all errors I've seen while email testing to real users it should provide the actual executive's information:
+Executive:
+undefined undefined
+Employee ID:
+undefined
+Department:
+undefined
+
+
+- Additional Files Requested - In this sentence: The Hr Personnel(role) reviewing your checkup request has requested additional files to complete their review. Change the role into a more appropriate naming convention and in the Requested by: (Firstname) (lastname) (role) <-must put proper naming here
+HR Personnel = Human Resource Personnel.
+Benefits Officer
+Division Head
+these names must be used to identify roles in all email templates. In addition, requestID must place Request Number instead of ID. So Request ID: value(requestID)-> Request Number: value(request_number)
+
+- Requested Files Uploaded - undefined issues as well:
+Dear Maria Santos,
+
+undefined undefined(firstname)(lastname) has uploaded the files you requested for their checkup request.
+
+Request Information
+Request ID:(must be requestNumber)
+6(must berequest_number)
+Executive:
+undefined undefined(Executive firstname)(Executive lastname)
+
+- Benefits Officer Approval Required
+
+Request Information
+Request Number:
+REQ2025221591698
+Executive:
+John Garcia
+Department:
+undefined (executive info)
+Position:
+undefined (executive info)  
+
+- Request Under Review: This is being sent to the executive.
+Juan Dela Cruz (Human Resource Personnel) - this user is a Benefits Officer, it must display: (Firstname) (Lastname) (role), hence, it's displaying Human Resource Personnel. This is also happening for Division Head users. Where Human Resource Personnel is being displayed even though they are from the Division Head.
+
 - 
