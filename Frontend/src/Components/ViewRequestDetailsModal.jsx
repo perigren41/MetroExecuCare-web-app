@@ -14,6 +14,7 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
   const [isUploading, setIsUploading] = useState(false);
   const [selectedFileRequest, setSelectedFileRequest] = useState(null);
   const [filesToUpload, setFilesToUpload] = useState([]);
+  const [additionalFilesToUpload, setAdditionalFilesToUpload] = useState([]);
   const [error, setError] = useState(null);
 
   // Modal states
@@ -52,12 +53,18 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
     }
   };
 
-  const handleFileSelect = (event) => {
+  const handleFileSelect = (event, isAdditional = false) => {
     const files = Array.from(event.target.files).filter(
       file => file.type === 'application/pdf'
     );
     if (files.length > 0) {
-      setFilesToUpload(files);
+      if (isAdditional) {
+        // Append to existing additional files instead of replacing
+        setAdditionalFilesToUpload(prev => [...prev, ...files]);
+      } else {
+        // Append to file request files instead of replacing
+        setFilesToUpload(prev => [...prev, ...files]);
+      }
     } else {
       setAlertConfig({
         isOpen: true,
@@ -69,8 +76,18 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
     }
   };
 
-  const handleFileUpload = async (fileRequestId = null) => {
-    if (filesToUpload.length === 0) {
+  const removeFile = (index, isAdditional = false) => {
+    if (isAdditional) {
+      setAdditionalFilesToUpload(prev => prev.filter((_, i) => i !== index));
+    } else {
+      setFilesToUpload(prev => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleFileUpload = async (fileRequestId = null, isAdditional = false) => {
+    const filesToProcess = isAdditional ? additionalFilesToUpload : filesToUpload;
+
+    if (filesToProcess.length === 0) {
       setAlertConfig({
         isOpen: true,
         type: 'warning',
@@ -86,7 +103,7 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
 
       // Upload each file
       const uploadedFileIds = [];
-      for (const file of filesToUpload) {
+      for (const file of filesToProcess) {
         const uploadResponse = await apiService.uploadRequestFile(requestId, file);
         if (uploadResponse.success) {
           uploadedFileIds.push(uploadResponse.data.fileId);
@@ -99,7 +116,11 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
       }
 
       // Reset and refresh
-      setFilesToUpload([]);
+      if (isAdditional) {
+        setAdditionalFilesToUpload([]);
+      } else {
+        setFilesToUpload([]);
+      }
       setSelectedFileRequest(null);
       await fetchRequestDetails();
 
@@ -254,7 +275,7 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
                               type="file"
                               accept=".pdf"
                               multiple
-                              onChange={handleFileSelect}
+                              onChange={(e) => handleFileSelect(e, false)}
                               id={`file-upload-request-${fileRequest.id}`}
                               className="hidden"
                             />
@@ -263,17 +284,31 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
                               className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 cursor-pointer transition-all shadow-md hover:shadow-lg text-sm font-semibold"
                             >
                               <FileText size={18} />
-                              Choose Files (PDF only)
+                              Add Files (PDF only)
                             </label>
                           </div>
                           {filesToUpload.length > 0 && (
-                            <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-lg">
-                              <FileText size={16} />
-                              <span className="font-medium">{filesToUpload.length} file(s) selected</span>
+                            <div className="space-y-2">
+                              <p className="text-xs font-semibold text-gray-700">Selected Files:</p>
+                              {filesToUpload.map((file, index) => (
+                                <div key={index} className="flex items-center justify-between gap-2 text-sm bg-green-50 px-3 py-2 rounded-lg">
+                                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                                    <FileText size={16} className="text-green-700 flex-shrink-0" />
+                                    <span className="font-medium text-green-700 truncate">{file.name}</span>
+                                  </div>
+                                  <button
+                                    onClick={() => removeFile(index, false)}
+                                    className="p-1 hover:bg-red-100 rounded-full transition flex-shrink-0"
+                                    title="Remove file"
+                                  >
+                                    <Trash2 size={14} className="text-red-600" />
+                                  </button>
+                                </div>
+                              ))}
                             </div>
                           )}
                           <button
-                            onClick={() => handleFileUpload(fileRequest.id)}
+                            onClick={() => handleFileUpload(fileRequest.id, false)}
                             disabled={isUploading || filesToUpload.length === 0}
                             className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-semibold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                           >
@@ -304,7 +339,7 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
                       type="file"
                       accept=".pdf"
                       multiple
-                      onChange={handleFileSelect}
+                      onChange={(e) => handleFileSelect(e, true)}
                       id="file-upload-additional"
                       className="hidden"
                     />
@@ -313,18 +348,32 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
                       className="flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 cursor-pointer transition-all shadow-md hover:shadow-lg text-sm font-semibold"
                     >
                       <FileText size={18} />
-                      Choose Files (PDF only)
+                      Add Files (PDF only)
                     </label>
                   </div>
-                  {filesToUpload.length > 0 && (
-                    <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-lg">
-                      <FileText size={16} />
-                      <span className="font-medium">{filesToUpload.length} file(s) selected</span>
+                  {additionalFilesToUpload.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-semibold text-gray-700">Selected Files:</p>
+                      {additionalFilesToUpload.map((file, index) => (
+                        <div key={index} className="flex items-center justify-between gap-2 text-sm bg-green-50 px-3 py-2 rounded-lg">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <FileText size={16} className="text-green-700 flex-shrink-0" />
+                            <span className="font-medium text-green-700 truncate">{file.name}</span>
+                          </div>
+                          <button
+                            onClick={() => removeFile(index, true)}
+                            className="p-1 hover:bg-red-100 rounded-full transition flex-shrink-0"
+                            title="Remove file"
+                          >
+                            <Trash2 size={14} className="text-red-600" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
                   )}
                   <button
-                    onClick={() => handleFileUpload()}
-                    disabled={isUploading || filesToUpload.length === 0}
+                    onClick={() => handleFileUpload(null, true)}
+                    disabled={isUploading || additionalFilesToUpload.length === 0}
                     className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-sm font-semibold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                   >
                     <Upload size={18} />
