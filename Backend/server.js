@@ -102,6 +102,32 @@
     });
   });
 
+  // Email configuration diagnostic endpoint
+  app.get('/api/email-config', (req, res) => {
+    const emailProvider = require('./config/emailProvider');
+    const status = emailProvider.getStatus();
+
+    res.status(200).json({
+      success: true,
+      emailProvider: {
+        provider: status.provider,
+        configured: status.configured,
+        fromEmail: status.fromEmail
+      },
+      environmentVariables: {
+        RESEND_API_KEY: process.env.RESEND_API_KEY ? `SET (${process.env.RESEND_API_KEY.substring(0, 7)}...)` : 'NOT SET',
+        FROM_EMAIL: process.env.FROM_EMAIL || 'NOT SET',
+        GMAIL_USER: process.env.GMAIL_USER ? 'SET' : 'NOT SET',
+        GMAIL_APP_PASSWORD: process.env.GMAIL_APP_PASSWORD ? 'SET' : 'NOT SET'
+      },
+      note: status.provider === 'gmail'
+        ? '⚠️ WARNING: Using Gmail SMTP. This will NOT work on Railway due to port blocking. Please configure RESEND_API_KEY.'
+        : status.provider === 'resend'
+        ? '✅ Using Resend - emails should work correctly on Railway'
+        : '❌ No email provider configured'
+    });
+  });
+
   // Test database endpoint
   app.get('/api/db-test', async (req, res) => {
     try {
