@@ -87,14 +87,15 @@ function ProfileCard({ profile, setProfile }) {
   const [showUploadConfirm, setShowUploadConfirm] = useState(false);
   const [pendingFile, setPendingFile] = useState(null);
 
-  // Helper function to convert relative path to full URL
+  // Helper function to convert relative path to full URL with cache-busting
   const getProfilePictureUrl = (picturePath) => {
     if (!picturePath) return ProfileGray;
     if (picturePath.startsWith('http')) return picturePath;
     if (picturePath.startsWith('data:')) return picturePath; // Base64 preview
-    // Convert relative path to full URL
+    // Convert relative path to full URL and add cache-busting timestamp
     const baseUrl = import.meta.env.VITE_API_BASE_URL.replace('/api', '');
-    return `${baseUrl}${picturePath}`;
+    const timestamp = Date.now();
+    return `${baseUrl}${picturePath}?t=${timestamp}`;
   };
 
   const handleImageSelect = (e) => {
@@ -115,21 +116,17 @@ function ProfileCard({ profile, setProfile }) {
       // Upload the image to the backend
       const response = await apiService.uploadProfilePicture(profile.id, pendingFile);
       if (response.success) {
-        // Add cache-busting timestamp to force image reload
-        const timestamp = Date.now();
-        const profilePictureWithTimestamp = `${response.data.profile_picture}?t=${timestamp}`;
-
-        // Update profile with new picture path (with timestamp)
+        // Update profile with new picture path (without timestamp - store clean path)
         const updatedProfile = {
           ...profile,
-          profile_picture: profilePictureWithTimestamp
+          profile_picture: response.data.profile_picture
         };
         setProfile(updatedProfile);
 
         // Update AuthContext so NavBar reflects the change
         updateUser({
           ...user,
-          profile_picture: profilePictureWithTimestamp
+          profile_picture: response.data.profile_picture
         });
 
         setPendingFile(null);
