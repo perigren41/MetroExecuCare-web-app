@@ -16,14 +16,26 @@
 - Is it possible to load all new updated data without the need to refresh all the time? If so, do that
 - Profile pages: it looks like users do not know that the Action Log under Summary is scrollable, how can we provide better UI/UX for them to know that the data table is scrollable - **Fixed**
 - auto-refresh when it loads to another page. ie if a user logs in/out, it auto-reloads. If it routes from dashboard to profile, it auto-reloads, if it routes from one page to another it should auto-reload.
+- it looks like this function is not working for all when updating profile pictures: {/* Upload Confirmation Modal */}
+            ConfirmationModal
+                isOpen={showUploadConfirm}
+                onClose={handleCancelUpload}
+                onConfirm={handleConfirmUpload}
+                title="Confirm Profile Picture Upload"
+                message={`Are you sure you want to upload this picture as your profile picture?${pendingFile ? ` (${pendingFile.name})` : ''}`}
+                confirmText="Upload"
+                cancelText="Cancel"
+                type="info"
+- Profile pictures is not displaying properly in all pages where profilepicture is fetched.
+
 
 **EXECUTIVES**
 - LoaStatusTracker page: If executive currently has no active requests, make sure to blank the informations in "details" - **Fixed**
 - executive-employee-submit-loapproval and executive-employee-submit-loauthorization pages' Download PDF is not working, after clicking download, it's giving error: "localhost refused to connect" - **Fixed**
 
 **ADMIN**
-- Admin-users-page inside Employee Details modal, profile picture card must also fetch the latest profile picture from the database. - **Fixed**
-- Admin-users-page in Employee Details modal, remove the add profile picture and focus on the textfields - **Fixed**
+- Admin-users-page table: profile picture card must also fetch the latest profile picture from the database. - **not working properly, pictures are blank**
+- Admin-users-page in NewUserFormModal, remove the add profile picture and focus on the textfields - **Adding profile picture is still in NewUserFormModal**
 - Admin Profile: in Summary -> Action Logs, if the admin updates a user's information, it also updates the birthdate even though it did not update. - **Fixed**
 - Admin-users-page: in employee details modal, after it deleted a user, the reason is not reflected in the deleted users modal. - **Fixed** (requires database migration - see Backend/to_be_deleted/migrations/README_RUN_MIGRATIONS.md)
 

@@ -613,7 +613,7 @@ const processRequest = async (req, res) => {
       const [requestDetails] = await pool.execute(`
         SELECT
           cr.*,
-          u.first_name, u.last_name, u.email
+          u.first_name, u.last_name, u.email, u.department, u.position
         FROM checkup_requests cr
         JOIN users u ON cr.employee_id = u.id
         WHERE cr.id = ?
@@ -625,7 +625,9 @@ const processRequest = async (req, res) => {
           id: requestData.employee_id,
           first_name: requestData.first_name,
           last_name: requestData.last_name,
-          email: requestData.email
+          email: requestData.email,
+          department: requestData.department,
+          position: requestData.position
         };
 
         // Notify ALL Benefits Officers
@@ -917,7 +919,7 @@ const approveRequest = async (req, res) => {
     try {
       // Get request and user details
       const [requestDetails] = await pool.execute(`
-        SELECT u.*, cr.*, approver.first_name as approver_first_name, approver.last_name as approver_last_name
+        SELECT u.*, cr.*, approver.first_name as approver_first_name, approver.last_name as approver_last_name, approver.role as approver_role
         FROM users u
         JOIN checkup_requests cr ON u.id = cr.employee_id
         JOIN users approver ON approver.id = ?
@@ -931,8 +933,8 @@ const approveRequest = async (req, res) => {
           id: userId,
           first_name: requestDetails[0].approver_first_name,
           last_name: requestDetails[0].approver_last_name,
-          role: userRole,
-          position: userRole === 'benefits_officer' ? 'Benefits Officer' : userRole === 'welfare_head' ? 'Division Head' : userRole === 'hr_personnel' ? 'Human Resource Personnel' : 'Administrator'
+          role: requestDetails[0].approver_role,
+          position: requestDetails[0].approver_role === 'benefits_officer' ? 'Benefits Officer' : requestDetails[0].approver_role === 'welfare_head' ? 'Division Head' : requestDetails[0].approver_role === 'hr_personnel' ? 'Human Resource Personnel' : 'Administrator'
         };
 
         // Email to Executive about approval (skip if HR final verification completing to 'completed' - that has its own special email)
@@ -1120,7 +1122,7 @@ const rejectRequest = async (req, res) => {
     try {
       // Get request and user details
       const [requestDetails] = await pool.execute(`
-        SELECT u.*, cr.*, rejector.first_name as rejector_first_name, rejector.last_name as rejector_last_name,
+        SELECT u.*, cr.*, rejector.first_name as rejector_first_name, rejector.last_name as rejector_last_name, rejector.role as rejector_role,
                hr.first_name as hr_first_name, hr.last_name as hr_last_name, hr.email as hr_email
         FROM users u
         JOIN checkup_requests cr ON u.id = cr.employee_id
@@ -1136,8 +1138,8 @@ const rejectRequest = async (req, res) => {
           id: userId,
           first_name: requestDetails[0].rejector_first_name,
           last_name: requestDetails[0].rejector_last_name,
-          role: userRole,
-          position: userRole === 'benefits_officer' ? 'Benefits Officer' : userRole === 'welfare_head' ? 'Division Head' : userRole === 'hr_personnel' ? 'Human Resource Personnel' : 'Administrator'
+          role: requestDetails[0].rejector_role,
+          position: requestDetails[0].rejector_role === 'benefits_officer' ? 'Benefits Officer' : requestDetails[0].rejector_role === 'welfare_head' ? 'Division Head' : requestDetails[0].rejector_role === 'hr_personnel' ? 'Human Resource Personnel' : 'Administrator'
         };
 
         const stageNames = {

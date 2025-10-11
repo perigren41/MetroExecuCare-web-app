@@ -195,7 +195,7 @@ function ProfileCard({ profile, setProfile }) {
             <div className="flex flex-col lg:flex-row lg:justify-start items-center lg:items-start
             pb-4 gap-3 sm:gap-4 lg:gap-6">
                 {/* Profile Image Section */}
-                <div className="flex bg-black/20 backdrop-blur-sm flex-col items-center flex-shrink-0">
+                <div className="flex flex-col items-center flex-shrink-0">
                     <input
                         type="file"
                         accept="image/*"
