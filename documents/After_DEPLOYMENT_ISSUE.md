@@ -237,22 +237,22 @@ Follow RESEND_SETUP_GUIDE.md to:
 **MEDIUM PRIORITY**
 - Everything is working for Profile. However, the thing that's not working properly is uploading profile picture. After changing picture, it does not do anything. **Should be Fixed** (Previous fixes for cache-busting and imageKey should resolve this - needs testing to confirm)
 
-- loa-status-tracker Request Progress rounded visual is not responsive, it looks like the contents is overlapping. I still want it to be rounded but we need to make sure it does not overlap.
+- loa-status-tracker Request Progress rounded visual is not responsive, it looks like the contents is overlapping. I still want it to be rounded but we need to make sure it does not overlap. **Fixed** (Responsive padding, flexible width status pill, 2-column mobile legend grid)
 
-- Can we also do auto-refresh or the cache-busting for when a user updates from the main process ie. executive requests, HR can see pending requests added without manual refresh. HR approves, Benefits Officer can see pending requests added without manual refresh.
+- Can we also do auto-refresh or the cache-busting for when a user updates from the main process ie. executive requests, HR can see pending requests added without manual refresh. HR approves, Benefits Officer can see pending requests added without manual refresh. **NEEDS CLARIFICATION** (Requires WebSocket or polling implementation - architectural change)
 
-- Request Additional Files for HR, BO, Welfare Head: it looks like there is no successful modal after approvers request files from the executive. Change the alert into a modal for a more UI/UX standard. It looks like sending after request file, even though it's already sent, it's still in the request modal and Sending button is still loading.
+- Request Additional Files for HR, BO, Welfare Head: it looks like there is no successful modal after approvers request files from the executive. Change the alert into a modal for a more UI/UX standard. It looks like sending after request file, even though it's already sent, it's still in the request modal and Sending button is still loading. **Fixed** (Success modal with CheckCircle icon, auto-closes after 2s, loading state persists until modal closes)
 
-- Additional Files Requested modal in loa-status-tracker where: 
+- Additional Files Requested modal in loa-status-tracker where:
 From: HR Personnel(**this is supposed to be first name and last name of Human Resource Personnel**) (Human Resource Personnel)
 
-Message: Request loa
+Message: Request loa **Fixed** (Already showing: "FirstName LastName (Role)" with proper role formatting)
 
-- Additional Files Requested modal in loa-status-tracker where: Upload files is not working properly. It should display all uploads by the executives including the requested files.
+- Additional Files Requested modal in loa-status-tracker where: Upload files is not working properly. It should display all uploads by the executives including the requested files. **Should be working** (Uploaded files fetched from API and displayed in "Uploaded Files" section)
 
-- Additional Files Requested modal in loa-status-tracker where: If executive uploads 1 file, and changes mind to upload another one separately is not possible. If the executive uploads and confirms file, file is not possible to add anymore, nor they can remove the uploaded file for request files. Goal: make upload files more than 1 if executive changes mind. make uploaded file deletable if executive uploads wrong file.
+- Additional Files Requested modal in loa-status-tracker where: If executive uploads 1 file, and changes mind to upload another one separately is not possible. If the executive uploads and confirms file, file is not possible to add anymore, nor they can remove the uploaded file for request files. Goal: make upload files more than 1 if executive changes mind. make uploaded file deletable if executive uploads wrong file. **Fixed** (Separated file state, files append instead of replace, individual delete buttons, can add multiple batches)
 
-- Additional Files Requested modal in loa-status-tracker where: Upload file button is still loading even though the requested files it's already sent to the user.
+- Additional Files Requested modal in loa-status-tracker where: Upload file button is still loading even though the requested files it's already sent to the user. **Fixed** (Loading state properly managed, resets after upload completes)
 
 - modals that consist of "Upload successful", "Success", etc. It must have bg-black/20 not bg-black and bg-opacity-20 separately. Since we are using tailwindcss. It's using black as background without having to minimize opacity therefore opacity is not working properly for the background. **Fixed** (AlertModal now uses bg-black/20) 
 
