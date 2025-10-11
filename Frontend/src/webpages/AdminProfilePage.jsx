@@ -87,6 +87,8 @@ function ProfileCard({ profile, setProfile }) {
   const [isRemoving, setIsRemoving] = useState(false);
   const [showUploadConfirm, setShowUploadConfirm] = useState(false);
   const [pendingFile, setPendingFile] = useState(null);
+  // Use function initializer to ensure Date.now() only runs ONCE on mount, not on every render
+  const [imageKey, setImageKey] = useState(() => Date.now());
 
   // Helper function to convert profile picture path to full URL with cache-busting
   const getProfilePictureUrl = (picturePath) => {
@@ -94,8 +96,7 @@ function ProfileCard({ profile, setProfile }) {
     if (picturePath.startsWith('http')) return picturePath;
     if (picturePath.startsWith('data:')) return picturePath;
     const baseUrl = import.meta.env.VITE_API_BASE_URL.replace('/api', '');
-    const timestamp = Date.now();
-    return `${baseUrl}${picturePath}?t=${timestamp}`;
+    return `${baseUrl}${picturePath}?v=${imageKey}`;
   };
 
   const handleImageSelect = (e) => {
@@ -133,6 +134,9 @@ function ProfileCard({ profile, setProfile }) {
       const response = await apiService.uploadProfilePicture(profile.id, pendingFile);
 
       if (response.success) {
+        // Update imageKey to bust cache for new picture
+        setImageKey(Date.now());
+
         // Update profile with new picture path (without timestamp - store clean path)
         setProfile(prev => ({
           ...prev,
@@ -857,7 +861,7 @@ export default function AdminProfilePage() {
       {/* 2-Column Grid Layout - Viewport Fitted */}
       <div className="flex-1 overflow-hidden px-2 sm:px-4 lg:px-6 pb-2 sm:pb-3">
         <div className="h-full overflow-y-auto">
-          <div className="flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-4 lg:justify-center lg:items-stretch max-w-7xl mx-auto h-full">
+          <div className="flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-5 lg:justify-center lg:items-start max-w-7xl mx-auto">
             {/* Mobile: Stacked Layout */}
             <div className="lg:hidden flex flex-col gap-2 sm:gap-3">
               <ProfileCard profile={profile} setProfile={setProfile} />
@@ -866,16 +870,14 @@ export default function AdminProfilePage() {
             </div>
 
             {/* Desktop: Left Column - Profile and Password Change */}
-            <div className="hidden lg:flex flex-col gap-3 lg:w-[480px] xl:w-[520px] h-full">
+            <div className="hidden lg:flex flex-col gap-3 lg:w-[480px] xl:w-[520px] self-stretch">
               <ProfileCard profile={profile} setProfile={setProfile} />
               <PasswordChangeCard />
             </div>
 
             {/* Desktop: Right Column - Summary */}
-            <div className="hidden lg:flex lg:w-[640px] xl:w-[720px] h-full">
-              <div className="w-full h-full">
-                <SummaryCard notes={notes} setNotes={setNotes} userId={profile.id} />
-              </div>
+            <div className="hidden lg:flex lg:w-[640px] xl:w-[720px] self-stretch">
+              <SummaryCard notes={notes} setNotes={setNotes} userId={profile.id} />
             </div>
           </div>
         </div>

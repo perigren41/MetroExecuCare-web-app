@@ -91,6 +91,9 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
     apiService.clearAuthToken();
     localStorage.removeItem('authToken');
+    sessionStorage.clear();
+    // Force full page reload to clear all stale state
+    window.location.href = '/loginpage';
   };
 
   // Force logout for testing/debugging
@@ -99,6 +102,9 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
     apiService.clearAuthToken();
     localStorage.clear(); // Clear all localStorage
+    sessionStorage.clear();
+    // Force full page reload to clear all stale state
+    window.location.href = '/loginpage';
   };
 
   const updateUser = (updatedUser) => {

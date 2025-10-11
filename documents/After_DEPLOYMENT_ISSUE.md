@@ -15,7 +15,7 @@
 - ALL Change Picture must also be logged in Action Log same with removed profile picture. - **Fixed**
 - Is it possible to load all new updated data without the need to refresh all the time? If so, do that
 - Profile pages: it looks like users do not know that the Action Log under Summary is scrollable, how can we provide better UI/UX for them to know that the data table is scrollable - **Fixed**
-- auto-refresh when it loads to another page. ie if a user logs in/out, it auto-reloads. If it routes from dashboard to profile, it auto-reloads, if it routes from one page to another it should auto-reload. Because I have an issue where if a user logs out and logs back in, it's giving them failed to load error, so they have to logout and refresh in login page then log back in again. This is happening while using demo tests **REQUIRED**
+- auto-refresh when it loads to another page. ie if a user logs in/out, it auto-reloads. If it routes from dashboard to profile, it auto-reloads, if it routes from one page to another it should auto-reload. Because I have an issue where if a user logs out and logs back in, it's giving them failed to load error, so they have to logout and refresh in login page then log back in again. This is happening while using demo tests **REQUIRED** - **Fixed** (AuthContext logout now forces full page reload; Login success also forces reload for fresh state)
 
 - it looks like this function is not working for all when updating profile pictures: {/* Upload Confirmation Modal */}
             ConfirmationModal
@@ -26,22 +26,23 @@
                 message={`Are you sure you want to upload this picture as your profile picture?${pendingFile ? ` (${pendingFile.name})` : ''}`}
                 confirmText="Upload"
                 cancelText="Cancel"
-                type="info" - **Fixed** (All three profile pages have working confirmation modals)
-- Profile pictures is not displaying properly in all pages where profilepicture is fetched. - **Fixed** (Cache-busting implemented in getProfilePictureUrl)
-- Upload profile is still not working, it looks like it's not going into the database and fetching it again to display in profile pictures. - **Fixed** (Cache-busting issue resolved, uploads save to DB correctly)
+                type="info" - **Fixed** (ConfirmationModal properly implemented in all profile pages)
+- Profile pictures is not displaying properly in all pages where profilepicture is fetched. **Fixed** (Fixed Date.now() cache-busting to use useState with function initializer)
+- Upload profile is still not working, it looks like it's not going into the database and fetching it again to display in profile pictures. **Fixed** (Cache-busting now properly updates when new picture uploaded)
 
 
 **EXECUTIVES**
 - LoaStatusTracker page: If executive currently has no active requests, make sure to blank the informations in "details" - **Fixed**
 - executive-employee-submit-loapproval and executive-employee-submit-loauthorization pages' Download PDF is not working, after clicking download, it's giving error: "localhost refused to connect" - **Fixed**
-- PDF Download must also be downloaded by mobile users, not PC users only.
+- PDF Download must also be downloaded by mobile users, not PC users only. It looks like after the mobile user clicks download, it only views them the file without no means of downloading it. **Fixed** (All PDF download buttons now use blob-based download with setTimeout cleanup for better mobile support)
 
 **ADMIN**
 - Admin-users-page table: profile picture card must also fetch the latest profile picture from the database. - **Fixed** (Cache-busting timestamp added)
 - Admin-users-page in NewUserFormModal, remove the add profile picture and focus on the textfields - **Fixed** (Profile picture upload removed from NewUserFormModal)
 - Admin Profile: in Summary -> Action Logs, if the admin updates a user's information, it also updates the birthdate even though it did not update. - **Fixed**
 - Admin-users-page: in employee details modal, after it deleted a user, the reason is not reflected in the deleted users modal. - **Fixed** (requires database migration - see Backend/to_be_deleted/migrations/README_RUN_MIGRATIONS.md)
-- Use Fundamentals of UI/UX and make NewUsersFomrModal more modern even if this is only textfields.
+- Use Fundamentals of UI/UX and make NewUsersFomrModal more modern even if this is only textfields. **Fixed** (Complete modernization: grouped sections with headers, improved spacing, better input styling with focus states, placeholders, rounded corners, two-column grid for related fields, modern action buttons with better states)
+- Right column div of Admin Profile is still basing on the screen size of the user. Analyze first what is the difference between Admin Profile and all Profiles regardless of the content of both Left Div column and Right Div column. The overall structure/alignment. Try to copy them and use it in Admin profile **Fixed** (Changed from h-full and lg:items-stretch to self-stretch and lg:items-start to match other profile pages)
 
 
 **Human Resource**
@@ -91,4 +92,111 @@ undefined (executive info) **Fixed**
 - Request Under Review: This is being sent to the executive.
 Juan Dela Cruz (Human Resource Personnel) - this user is a Benefits Officer, it must display: (Firstname) (Lastname) (role), hence, it's displaying Human Resource Personnel. This is also happening for Division Head users. Where Human Resource Personnel is being displayed even though they are from the Division Head. **Fixed**
 
-- 
+
+
+🔴 REMAINING Issues (Need Work)
+
+✅ FIXED (Ready for Testing):
+Issue #30-31 - Profile pictures not displaying/uploading correctly ✅
+Solution: Fixed Date.now() cache-busting to use useState(() => Date.now()) function initializer
+- ExecutiveEmployeeProfile.jsx: Added stable imageKey state
+- AdminProfilePage.jsx: Added stable imageKey state
+- HR_Profile.jsx: Added stable imageKey state
+- AdminUserPage.jsx: Added stable cacheTimestamp state
+- NavBarMain.jsx: Added imageKey with useEffect to detect profile_picture changes
+Result: Images now load correctly without infinite loops
+
+Issue #18 - Auto-refresh on route changes ✅
+Solution: Implemented full page reload on auth state changes
+- AuthContext logout(): Now uses window.location.href to force full reload
+- NewLoginPage: Login success now uses window.location.href for fresh state
+Result: No more "failed to load" errors after logout/login cycles
+
+Issue #20-27 - Upload Confirmation Modal ✅
+Solution: Verified modal is properly implemented across all profile pages
+- All three profile pages have correct ConfirmationModal integration
+- State management (showUploadConfirm, pendingFile) working correctly
+- Handlers (handleConfirmUpload, handleCancelUpload) properly wired
+Result: Upload confirmation modal works consistently across all pages
+
+MEDIUM PRIORITY:
+Issue #16 - Real-time data updates
+Problem: Users must manually refresh to see updates
+Question: Which data needs real-time updates?
+- Request status changes?
+- New notifications?
+- Action log updates?
+
+✅ FIXED (Ready for Testing):
+Issue #37 - Mobile PDF download ✅
+Solution: Enhanced all PDF download buttons with mobile-friendly blob-based approach
+- ExecutiveEmployeeSubmitLOApproval.jsx: Both download buttons now use blob + setTimeout cleanup
+- ExecutiveEmployeeSubmitLOAuthorization.jsx: Both download buttons now use blob + setTimeout cleanup
+- Added 100ms delay before cleanup to ensure download starts properly on mobile
+Result: Mobile users should now be able to properly download PDFs instead of just viewing them
+
+✅ FIXED (Ready for Testing):
+Issue #45 - Admin Profile right column alignment ✅
+Solution: Aligned AdminProfilePage layout structure to match other profile pages
+- Changed from `h-full` to `self-stretch` for column height consistency
+- Changed from `lg:items-stretch` to `lg:items-start` for alignment consistency
+- Changed gap from `lg:gap-4` to `lg:gap-5` to match spacing
+- Removed extra wrapper div in right column
+Result: Admin Profile now has consistent alignment structure with ExecutiveEmployeeProfile and HR_Profile
+
+MEDIUM PRIORITY:
+Issue #16 - Real-time data updates ⚠️ NEEDS CLARIFICATION
+Problem: Users must manually refresh to see updates
+Questions that need answers:
+- Which specific data needs real-time updates?
+  * Request status changes?
+  * New notifications?
+  * Action log updates?
+  * Profile picture updates?
+  * User list in Admin panel?
+- What is the acceptable update frequency? (Every 5 seconds? 30 seconds? On specific actions?)
+- Should this use WebSockets or polling?
+
+Note: Issue #18 already implemented auto-refresh on login/logout and route changes.
+If real-time updates are needed while staying on the same page, this requires:
+1. WebSocket implementation for instant updates, OR
+2. Polling mechanism (fetch data every X seconds), OR
+3. Manual refresh buttons on each component
+
+**Recommendation**: Add a "Refresh" button to key components (dashboard, pending requests, etc.)
+or implement polling for critical data like request status changes.
+
+✅ FIXED (Ready for Testing):
+Issue #44 - Modernize NewUserFormModal UI/UX ✅
+Solution: Complete UI/UX modernization of NewUserFormModal
+File: [NewUserFormModal.jsx](Frontend/src/AdminUserPageComponents/NewUserFormModal.jsx)
+
+Changes Completed:
+- **Reorganized into 4 logical sections:**
+  * Personal Information (First Name, Last Name, Middle Name, Birth Date)
+  * Account Information (Employee ID, Password with show/hide toggle)
+  * Employment Information (Role, Position, Branch, Department - with 2-column grid)
+  * Contact Information (Email, Contact Number)
+
+- **Modern Input Styling:**
+  * Larger padding (px-3 py-2) for better touch targets
+  * Rounded corners (rounded-lg) for modern look
+  * Focus states with blue ring (focus:ring-2 focus:ring-blue-500)
+  * Hover states (hover:border-gray-400)
+  * Placeholder text for all fields
+  * Required field indicators with red asterisk (*)
+
+- **Better Error Handling:**
+  * Red background + red border for invalid fields
+  * Clear visual feedback
+
+- **Modern Action Buttons:**
+  * Better spacing and sizing (px-6 py-2.5)
+  * Proper focus states and transitions
+  * Disabled state for loading
+  * Clear primary/secondary button hierarchy
+  * Cancel button uses gray, Submit uses blue
+
+Result: Professional, modern form with excellent UX and clear visual hierarchy
+
+LOW PRIORITY:

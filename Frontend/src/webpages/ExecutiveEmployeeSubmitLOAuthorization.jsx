@@ -356,17 +356,23 @@ export default function SubmitLetterOfAuthorization() {
                   <button
                     onClick={async () => {
                       try {
-                        // Fetch the PDF as a blob to force download instead of opening in browser
+                        // Fetch the PDF as a blob to force download instead of opening in browser (mobile-friendly)
                         const response = await fetch(`${BACKEND_BASE_URL}/uploads/documents/letters/Request Letter of Authorization.pdf`);
                         const blob = await response.blob();
                         const url = window.URL.createObjectURL(blob);
                         const link = document.createElement('a');
                         link.href = url;
                         link.download = 'Request_Letter_of_Authorization.pdf';
+
+                        // Mobile-friendly approach: Add link to DOM and trigger click
                         document.body.appendChild(link);
                         link.click();
-                        document.body.removeChild(link);
-                        window.URL.revokeObjectURL(url); // Clean up
+
+                        // Clean up after a short delay to ensure download started
+                        setTimeout(() => {
+                          document.body.removeChild(link);
+                          window.URL.revokeObjectURL(url);
+                        }, 100);
                       } catch (error) {
                         console.error('Download failed:', error);
                         alert('Failed to download PDF. Please try again.');
@@ -450,13 +456,29 @@ export default function SubmitLetterOfAuthorization() {
                   </button>
 
                   <button
-                    onClick={() => {
-                      const link = document.createElement('a');
-                      link.href = `${BACKEND_BASE_URL}/uploads/documents/letters/Request%20Letter%20of%20Authorization.pdf`;
-                      link.download = 'Request_Letter_of_Authorization.pdf';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
+                    onClick={async () => {
+                      try {
+                        // Fetch the PDF as a blob to force download instead of opening in browser (mobile-friendly)
+                        const response = await fetch(`${BACKEND_BASE_URL}/uploads/documents/letters/Request Letter of Authorization.pdf`);
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = 'Request_Letter_of_Authorization.pdf';
+
+                        // Mobile-friendly approach: Add link to DOM and trigger click
+                        document.body.appendChild(link);
+                        link.click();
+
+                        // Clean up after a short delay to ensure download started
+                        setTimeout(() => {
+                          document.body.removeChild(link);
+                          window.URL.revokeObjectURL(url);
+                        }, 100);
+                      } catch (error) {
+                        console.error('Download failed:', error);
+                        alert('Failed to download PDF. Please try again.');
+                      }
                     }}
                     className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs cursor-pointer"
                   >

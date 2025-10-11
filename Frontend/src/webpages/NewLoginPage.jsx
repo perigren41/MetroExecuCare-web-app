@@ -28,14 +28,14 @@ export function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (with full page reload for fresh state)
   useEffect(() => {
     if (isAuthenticated && user) {
       const from = location.state?.from?.pathname ||
         (user.role?.toLowerCase() === 'admin' ? '/admin-users-page' : '/executive-employee-dashboard');
-      navigate(from, { replace: true });
+      window.location.href = from;
     }
-  }, [isAuthenticated, user, navigate, location]);
+  }, [isAuthenticated, user, location]);
 
   const validateForm = () => {
     let isValid = true;
@@ -72,10 +72,12 @@ export function LoginPage() {
       const result = await login({ email, password });
 
       if (result.success) {
-        // Navigation will be handled by the useEffect above
+        // Determine target path based on role
         const targetPath = location.state?.from?.pathname ||
           (result.user.role?.toLowerCase() === 'admin' ? '/admin-users-page' : '/executive-employee-dashboard');
-        navigate(targetPath, { replace: true });
+
+        // Force full page reload to ensure fresh state and avoid stale data issues
+        window.location.href = targetPath;
       } else {
         setError(result.message || "Login failed. Please try again.");
       }

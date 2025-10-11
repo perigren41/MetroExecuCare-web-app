@@ -85,6 +85,8 @@ function ProfileCard({ profile, setProfile }) {
     const [isRemoving, setIsRemoving] = useState(false);
     const [showUploadConfirm, setShowUploadConfirm] = useState(false);
     const [pendingFile, setPendingFile] = useState(null);
+    // Use function initializer to ensure Date.now() only runs ONCE on mount, not on every render
+    const [imageKey, setImageKey] = useState(() => Date.now());
 
     // Helper function to convert profile picture path to full URL with cache-busting
     const getProfilePictureUrl = (picturePath) => {
@@ -92,8 +94,7 @@ function ProfileCard({ profile, setProfile }) {
         if (picturePath.startsWith('http')) return picturePath;
         if (picturePath.startsWith('data:')) return picturePath;
         const baseUrl = import.meta.env.VITE_API_BASE_URL.replace('/api', '');
-        const timestamp = Date.now();
-        return `${baseUrl}${picturePath}?t=${timestamp}`;
+        return `${baseUrl}${picturePath}?v=${imageKey}`;
     };
 
     const handleImageSelect = (e) => {
@@ -113,6 +114,9 @@ function ProfileCard({ profile, setProfile }) {
             setShowUploadConfirm(false);
             const response = await apiService.uploadProfilePicture(profile.id, pendingFile);
             if (response.success) {
+                // Update imageKey to bust cache for new picture
+                setImageKey(Date.now());
+
                 // Update profile with new picture path (without timestamp - store clean path)
                 setProfile(prev => ({
                     ...prev,

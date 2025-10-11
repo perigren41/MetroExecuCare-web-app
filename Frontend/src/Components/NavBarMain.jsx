@@ -24,6 +24,15 @@ const Navbar = ({
   const [showDropdown, setShowDropdown] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const dropdownRef = useRef(null);
+  // Use function initializer to ensure Date.now() only runs ONCE on mount
+  const [imageKey, setImageKey] = useState(() => Date.now());
+
+  // Update imageKey when user profile picture changes
+  useEffect(() => {
+    if (user?.profile_picture) {
+      setImageKey(Date.now());
+    }
+  }, [user?.profile_picture]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -43,18 +52,18 @@ const Navbar = ({
       customBackHandler();
       return;
     }
-    
+
     // Default back behavior
     navigate(-1);
   };
 
-  // Helper function to get profile picture URL
+  // Helper function to get profile picture URL with cache-busting
   const getProfilePictureUrl = (picturePath) => {
     if (!picturePath) return null;
     if (picturePath.startsWith('http')) return picturePath;
     if (picturePath.startsWith('data:')) return picturePath;
     const baseUrl = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
-    return `${baseUrl}${picturePath}`;
+    return `${baseUrl}${picturePath}?v=${imageKey}`;
   };
 
   const handleHomeClick = () => {

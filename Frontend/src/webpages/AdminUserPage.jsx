@@ -17,6 +17,8 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  // Use function initializer to ensure Date.now() only runs ONCE on mount, not on every render
+  const [cacheTimestamp, setCacheTimestamp] = useState(() => Date.now());
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
@@ -41,12 +43,11 @@ export default function AdminUsersPage() {
         // API returns { success: true, data: { users: [...], pagination: {...} } }
         const userData = response.data?.users || [];
 
-        // Transform user data to include full profile picture URL with cache-busting timestamp
-        const timestamp = Date.now();
+        // Transform user data to include full profile picture URL with stable cache-busting timestamp
         const transformedUsers = (Array.isArray(userData) ? userData : []).map(user => ({
           ...user,
           profile_picture_url: user.profile_picture
-            ? `${apiService.baseURL.replace('/api', '')}${user.profile_picture}?t=${timestamp}`
+            ? `${apiService.baseURL.replace('/api', '')}${user.profile_picture}?v=${cacheTimestamp}`
             : null
         }));
 

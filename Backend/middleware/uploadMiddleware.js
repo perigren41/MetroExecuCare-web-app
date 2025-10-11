@@ -6,12 +6,23 @@ const fs = require('fs');
 const profilePictureDir = path.join(__dirname, '../uploads/profile-pictures');
 const requestFilesDir = path.join(__dirname, '../uploads/request-files');
 
+console.log('📁 [UPLOAD MIDDLEWARE] Profile picture directory:', profilePictureDir);
+console.log('📁 [UPLOAD MIDDLEWARE] Request files directory:', requestFilesDir);
+
 if (!fs.existsSync(profilePictureDir)) {
+  console.log('📁 [UPLOAD MIDDLEWARE] Creating profile picture directory...');
   fs.mkdirSync(profilePictureDir, { recursive: true });
+  console.log('✅ [UPLOAD MIDDLEWARE] Profile picture directory created');
+} else {
+  console.log('✅ [UPLOAD MIDDLEWARE] Profile picture directory already exists');
 }
 
 if (!fs.existsSync(requestFilesDir)) {
+  console.log('📁 [UPLOAD MIDDLEWARE] Creating request files directory...');
   fs.mkdirSync(requestFilesDir, { recursive: true });
+  console.log('✅ [UPLOAD MIDDLEWARE] Request files directory created');
+} else {
+  console.log('✅ [UPLOAD MIDDLEWARE] Request files directory already exists');
 }
 
 // Configure multer for profile picture uploads

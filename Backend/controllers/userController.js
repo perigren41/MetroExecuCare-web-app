@@ -862,9 +862,11 @@ const getUserActivityLogs = async (req, res) => {
 const uploadProfilePicture = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(`📸 [PROFILE PICTURE UPLOAD] User ${req.user.id} uploading picture for user ${id}`);
 
     // Check if user can update this profile (admin or own profile)
     if (req.user.role !== 'admin' && req.user.id !== parseInt(id)) {
+      console.log(`❌ [PROFILE PICTURE UPLOAD] Access denied - User ${req.user.id} cannot update user ${id}`);
       return res.status(403).json({
         success: false,
         error: 'Access denied. You can only update your own profile picture.'
@@ -873,11 +875,14 @@ const uploadProfilePicture = async (req, res) => {
 
     // Check if file was uploaded
     if (!req.file) {
+      console.log(`❌ [PROFILE PICTURE UPLOAD] No file uploaded for user ${id}`);
       return res.status(400).json({
         success: false,
         error: 'No file uploaded'
       });
     }
+
+    console.log(`📁 [PROFILE PICTURE UPLOAD] File received: ${req.file.filename} (${req.file.size} bytes)`);
 
     // Check if user exists
     const [users] = await pool.execute(
@@ -885,6 +890,7 @@ const uploadProfilePicture = async (req, res) => {
       [id]
     );
     if (users.length === 0) {
+      console.log(`❌ [PROFILE PICTURE UPLOAD] User ${id} not found`);
       return res.status(404).json({
         success: false,
         error: 'User not found'
@@ -897,11 +903,15 @@ const uploadProfilePicture = async (req, res) => {
     // Generate the public URL for the uploaded file
     const profilePictureUrl = `/uploads/profile-pictures/${req.file.filename}`;
 
+    console.log(`💾 [PROFILE PICTURE UPLOAD] Saving to database: ${profilePictureUrl}`);
+
     // Update user's profile picture in database
     await pool.execute(
       'UPDATE users SET profile_picture = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [profilePictureUrl, id]
     );
+
+    console.log(`✅ [PROFILE PICTURE UPLOAD] Database updated successfully for user ${id}`);
 
     // Delete old profile picture file if it exists and it's not the default
     if (oldProfilePicture && oldProfilePicture.startsWith('/uploads/')) {

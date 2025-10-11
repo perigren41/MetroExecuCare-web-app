@@ -538,10 +538,12 @@ const updateProfile = async (req, res) => {
 const changePassword = async (req, res) => {
   try {
     const userId = req.user.id;
+    console.log(`🔐 [CHANGE PASSWORD] User ${userId} attempting to change password`);
 
     // Validate input data
     const validation = validatePasswordChange(req.body);
     if (!validation.isValid) {
+      console.log(`❌ [CHANGE PASSWORD] Validation failed for user ${userId}:`, validation.errors);
       return res.status(400).json({
         success: false,
         message: 'Validation failed',
@@ -558,6 +560,7 @@ const changePassword = async (req, res) => {
     );
 
     if (users.length === 0) {
+      console.log(`❌ [CHANGE PASSWORD] User ${userId} not found`);
       return res.status(404).json({
         success: false,
         message: 'User not found',
@@ -570,6 +573,7 @@ const changePassword = async (req, res) => {
     // Verify current password
     const isCurrentPasswordValid = await comparePassword(current_password, user.password_hash);
     if (!isCurrentPasswordValid) {
+      console.log(`❌ [CHANGE PASSWORD] Invalid current password for user ${userId}`);
       return res.status(401).json({
         success: false,
         message: 'Current password is incorrect',
@@ -577,14 +581,20 @@ const changePassword = async (req, res) => {
       });
     }
 
+    console.log(`✓ [CHANGE PASSWORD] Current password verified for user ${userId}`);
+
     // Hash new password
     const hashedNewPassword = await hashPassword(new_password);
+
+    console.log(`💾 [CHANGE PASSWORD] Updating password in database for user ${userId}`);
 
     // Update password
     await pool.execute(
       'UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [hashedNewPassword, userId]
     );
+
+    console.log(`✅ [CHANGE PASSWORD] Password updated successfully for user ${userId}`);
 
     // Log activity
     await logActivity({
@@ -593,6 +603,8 @@ const changePassword = async (req, res) => {
       description: 'Changed account password',
       ...getRequestInfo(req)
     });
+
+    console.log(`📝 [CHANGE PASSWORD] Activity logged for user ${userId}`);
 
     res.json({
       success: true,
