@@ -356,7 +356,7 @@ export default function SubmitLetterOfAuthorization() {
                   <button
                     onClick={() => {
                       const link = document.createElement('a');
-                      link.href = `${BACKEND_BASE_URL}/uploads/documents/letters/Request%20Letter%20of%20Authorization%20Laboratory%20and%20Procedures.pdf`;
+                      link.href = `${BACKEND_BASE_URL}/uploads/documents/letters/Request%20Letter%20of%20Authorization.pdf`;
                       link.download = 'Request_Letter_of_Authorization.pdf';
                       document.body.appendChild(link);
                       link.click();
@@ -432,7 +432,7 @@ export default function SubmitLetterOfAuthorization() {
                 {/* Action Buttons */}
                 <div className="space-y-2">
                   <button
-                    onClick={() => window.open(`${BACKEND_BASE_URL}/uploads/documents/letters/Request%20Letter%20of%20Authorization%20Laboratory%20and%20Procedures.pdf`, '_blank')}
+                    onClick={() => window.open(`${BACKEND_BASE_URL}/uploads/documents/letters/Request%20Letter%20of%20Authorization.pdf`, '_blank')}
                     className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs cursor-pointer"
                   >
                     <Eye className="w-3 h-3" />
@@ -442,7 +442,7 @@ export default function SubmitLetterOfAuthorization() {
                   <button
                     onClick={() => {
                       const link = document.createElement('a');
-                      link.href = `${BACKEND_BASE_URL}/uploads/documents/letters/Request%20Letter%20of%20Authorization%20Laboratory%20and%20Procedures.pdf`;
+                      link.href = `${BACKEND_BASE_URL}/uploads/documents/letters/Request%20Letter%20of%20Authorization.pdf`;
                       link.download = 'Request_Letter_of_Authorization.pdf';
                       document.body.appendChild(link);
                       link.click();

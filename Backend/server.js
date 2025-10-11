@@ -46,6 +46,8 @@
       'http://localhost:3008',
       'http://localhost:3009',
       'http://localhost:3010',
+      // Railway deployment URLs
+      'https://metroexecucare.up.railway.app',
       // Allow IP address for mobile/external device testing
       'http://192.168.1.3:3000',
       'http://192.168.1.3:3001',
