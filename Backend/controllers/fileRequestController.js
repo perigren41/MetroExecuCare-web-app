@@ -33,6 +33,7 @@ const createFileRequest = async (req, res) => {
       `SELECT
         cr.id,
         cr.employee_id,
+        cr.request_number,
         cr.request_type,
         u.email,
         u.first_name,
@@ -75,8 +76,8 @@ const createFileRequest = async (req, res) => {
         to: checkupRequest.email,
         executiveName: `${checkupRequest.first_name} ${checkupRequest.last_name}`,
         requesterName: `${requester.first_name} ${requester.last_name}`,
-        requesterRole: requestedByRole.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase()),
-        requestId: request_id,
+        requesterRole: requestedByRole,
+        requestNumber: checkupRequest.request_number,
         requestType: checkupRequest.request_type,
         message: message
       });
@@ -210,7 +211,7 @@ const respondToFileRequest = async (req, res) => {
 
     // Verify file request exists and belongs to user
     const [fileRequests] = await pool.execute(
-      `SELECT fr.*, cr.employee_id
+      `SELECT fr.*, cr.employee_id, cr.request_number
        FROM file_requests fr
        JOIN checkup_requests cr ON fr.request_id = cr.id
        WHERE fr.id = ?`,
@@ -255,7 +256,7 @@ const respondToFileRequest = async (req, res) => {
           to: requester[0].email,
           requesterName: `${requester[0].first_name} ${requester[0].last_name}`,
           executiveName: `${req.user.first_name} ${req.user.last_name}`,
-          requestId: fileRequest.request_id
+          requestNumber: fileRequest.request_number
         });
       } catch (emailError) {
         console.error('Failed to send file uploaded email:', emailError);
