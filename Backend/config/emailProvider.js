@@ -88,6 +88,10 @@ class EmailService {
 
       // Send via Resend
       if (this.provider === 'resend') {
+        console.log(`📤 [RESEND] Attempting to send email to ${to}`);
+        console.log(`   FROM: ${this.fromEmail}`);
+        console.log(`   SUBJECT: ${subject}`);
+
         const result = await this.resendClient.emails.send({
           from: this.fromEmail,
           to: to,
@@ -96,11 +100,13 @@ class EmailService {
           text: text || 'Please view this email in an HTML-compatible email client.'
         });
 
-        console.log(`✅ Email sent via Resend to ${to}: ${result.data?.id || 'success'}`);
+        console.log(`✅ Email sent via Resend to ${to}`);
+        console.log(`   Message ID: ${result.data?.id || result.id || 'no-id'}`);
+        console.log(`   Full result:`, JSON.stringify(result, null, 2));
 
         return {
           success: true,
-          messageId: result.data?.id,
+          messageId: result.data?.id || result.id,
           provider: 'resend'
         };
       }
@@ -129,10 +135,15 @@ class EmailService {
 
     } catch (error) {
       console.error(`❌ Failed to send email via ${this.provider}:`, error.message);
+      console.error(`   Error details:`, JSON.stringify(error, null, 2));
+      if (error.response) {
+        console.error(`   API Response:`, JSON.stringify(error.response, null, 2));
+      }
 
       return {
         success: false,
         error: error.message,
+        errorDetails: error.response || error,
         provider: this.provider
       };
     }
