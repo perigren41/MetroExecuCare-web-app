@@ -25,17 +25,27 @@ class EmailService {
    */
   initializeProvider() {
     try {
+      // Debug: Log what environment variables are present
+      console.log('🔍 [EMAIL PROVIDER DEBUG] Checking environment variables...');
+      console.log(`   - RESEND_API_KEY: ${process.env.RESEND_API_KEY ? 'SET (length: ' + process.env.RESEND_API_KEY.length + ')' : 'NOT SET'}`);
+      console.log(`   - FROM_EMAIL: ${process.env.FROM_EMAIL || 'NOT SET'}`);
+      console.log(`   - GMAIL_USER: ${process.env.GMAIL_USER ? 'SET' : 'NOT SET'}`);
+      console.log(`   - GMAIL_APP_PASSWORD: ${process.env.GMAIL_APP_PASSWORD ? 'SET' : 'NOT SET'}`);
+
       // Try Resend first (preferred for production/Railway)
-      if (process.env.RESEND_API_KEY) {
+      if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.trim() !== '') {
         this.resendClient = new Resend(process.env.RESEND_API_KEY);
         this.provider = 'resend';
         this.fromEmail = process.env.FROM_EMAIL || 'MetroExecuCare <noreply@metroexecucare.com>';
         console.log('✅ Email service initialized with Resend');
+        console.log(`   FROM: ${this.fromEmail}`);
         return;
       }
 
       // Fall back to Gmail SMTP
       if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+        console.log('⚠️ RESEND_API_KEY not configured, falling back to Gmail SMTP');
+        console.log('⚠️ WARNING: Gmail SMTP may not work on Railway due to port blocking!');
         this.nodemailerTransporter = nodemailer.createTransport({
           service: 'gmail',
           auth: {
@@ -45,7 +55,7 @@ class EmailService {
         });
         this.provider = 'gmail';
         this.fromEmail = `"MetroExecuCare" <${process.env.GMAIL_USER}>`;
-        console.log('✅ Email service initialized with Gmail SMTP');
+        console.log('✅ Gmail SMTP service initialized (fallback mode)');
         return;
       }
 
