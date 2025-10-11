@@ -1,15 +1,21 @@
-const gmailService = require('../config/gmail');
+// Use new unified email provider (supports both Resend and Gmail)
+const emailProvider = require('../config/emailProvider');
 const { pool } = require('../config/database/connection');
 const EmailTemplates = require('../templates/email/emailTemplates');
 
 /**
  * Email Service for MetroExecuCare
  * Handles all email notifications throughout the request approval workflow
+ *
+ * Email Provider: Automatically uses Resend (preferred) or Gmail SMTP (fallback)
  */
 
 class EmailService {
   constructor() {
-    this.gmailService = gmailService;
+    this.emailProvider = emailProvider;
+    // Log which provider is being used
+    const status = this.emailProvider.getStatus();
+    console.log(`📧 EmailService initialized with provider: ${status.provider || 'none'}`);
   }
 
   /**
@@ -216,7 +222,7 @@ class EmailService {
       console.log(`📧 [EMAIL DEBUG] Request ID: ${requestId}`);
 
       // Send email
-      const emailResult = await this.gmailService.sendEmail(emailData);
+      const emailResult = await this.emailProvider.sendEmail(emailData);
 
       console.log(`📧 [EMAIL DEBUG] Email result:`, emailResult);
 
@@ -360,10 +366,10 @@ class EmailService {
    */
   async testEmailService() {
     try {
-      const testResult = await this.gmailService.testConnection();
+      const testResult = await this.emailProvider.testConnection();
       return {
         ...testResult,
-        serviceStatus: this.gmailService.getStatus()
+        serviceStatus: this.emailProvider.getStatus()
       };
     } catch (error) {
       return {
@@ -477,7 +483,7 @@ class EmailService {
         text: `${data.requesterName} (${data.requesterRole}) has requested additional files for your request ${data.requestId}. Message: ${data.message}`
       };
 
-      const result = await this.gmailService.sendEmail(emailData);
+      const result = await this.emailProvider.sendEmail(emailData);
       console.log(`📧 File request notification sent to ${data.to}`);
 
       return result;
@@ -502,7 +508,7 @@ class EmailService {
         text: `${data.executiveName} has uploaded the files you requested for request ${data.requestId}.`
       };
 
-      const result = await this.gmailService.sendEmail(emailData);
+      const result = await this.emailProvider.sendEmail(emailData);
       console.log(`📧 File uploaded notification sent to ${data.to}`);
 
       return result;

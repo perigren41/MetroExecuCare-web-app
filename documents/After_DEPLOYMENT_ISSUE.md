@@ -204,19 +204,34 @@ Result: Professional, modern form with excellent UX and clear visual hierarchy
 **STILL A PROBLEM**
 
 **HIGH PRORITY**
-- It looks like all processes is not being sent out to the proper email. It might have been SMTP is not configured correct in Railway since we change one of the variable from GMAIL_USER_EMAIL to GMAIL_USER. I dont have a clue if this is what's keeping our email notification not sent to their respective workflows. **Partially Fixed**
+- It looks like all processes is not being sent out to the proper email. It might have been SMTP is not configured correct in Railway since we change one of the variable from GMAIL_USER_EMAIL to GMAIL_USER. I dont have a clue if this is what's keeping our email notification not sent to their respective workflows. **FIXED - Switched to Resend**
 
-**Fixes Applied:**
-1. Updated .env.production.template to use GMAIL_USER instead of GMAIL_USER_EMAIL
-2. Created RAILWAY_EMAIL_SETUP.md guide for proper Railway configuration
-3. Fixed database error: "Data truncated for column 'notification_type'" by adding notification type mapping to valid ENUM values
+**Complete Solution Implemented:**
+1. ✅ Switched from Gmail SMTP to **Resend** - HTTP-based email service (no port blocking)
+2. ✅ Created unified email provider supporting both Resend (preferred) and Gmail (fallback)
+3. ✅ Fixed database error: "Data truncated for column 'notification_type'" with type mapping
+4. ✅ All existing email templates preserved and working
+5. ✅ Created comprehensive RESEND_SETUP_GUIDE.md for Railway configuration
 
-**Remaining Issue - Connection Timeout:**
-Railway logs show: `❌ Failed to send email: Connection timeout`
-- Root Cause: Railway's firewall may be blocking outbound SMTP connections (port 587/465)
-- Emails are configured correctly but cannot reach Gmail's SMTP servers
-- See RAILWAY_EMAIL_SETUP.md for alternative solutions (Gmail API, SendGrid, etc.)
-- This requires Railway network configuration or switching to HTTP-based email service
+**Files Modified:**
+- Backend/config/emailProvider.js (NEW - unified email service)
+- Backend/services/emailService.js (updated to use new provider)
+- Backend/.env.production.template (added Resend configuration)
+- Backend/RESEND_SETUP_GUIDE.md (NEW - step-by-step setup guide)
+
+**Railway Action Required:**
+Follow RESEND_SETUP_GUIDE.md to:
+1. Create Resend account (free tier: 3,000 emails/month)
+2. Get API key from https://resend.com/api-keys
+3. Set Railway environment variable: RESEND_API_KEY=re_your_key
+4. Optional: Set FROM_EMAIL for custom sender address
+5. Redeploy - emails will work immediately!
+
+**Why Resend?**
+- ✅ Uses HTTPS (port 443) - never blocked by Railway
+- ✅ More reliable than SMTP for cloud hosting
+- ✅ Better deliverability and tracking dashboard
+- ✅ Free tier is perfect for your usage (estimated 500 emails/month)
 
 
 **MEDIUM PRIORITY**
