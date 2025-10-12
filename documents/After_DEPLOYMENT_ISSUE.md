@@ -281,11 +281,11 @@ Message: Request loa **Fixed** (Already showing: "FirstName LastName (Role)" wit
 
 - Welfare Head in test-accounts page is invisible even the Quick Login button. **Fixed** (Changed from dynamic Tailwind classes to explicit class properties. Tailwind JIT requires complete class names at build time)
 
-- Make the burger menu for mobile devices in the landing page more UI/UX standard.
+- Make the burger menu for mobile devices in the landing page more UI/UX standard. **Fixed** (Modern slide-in panel from right, dark backdrop overlay, smooth animations, hover effects, better touch targets, iOS/Android-like experience)
 
 - Is it possible for the tests user accounts to have a guide on each pages so the test user can understand what needs to do in each page? Do this for the Demo Test Accounts only. If normal user(not in the demo accounts), they will not see the guides on each page. Give options and recommendations on how we can implement this for test user accounts **Last Priority**
 
-- Update the api/test/email-templates it looks like this is not the email templates that we are currently using since we have added some templates. API TEST our email templates and display it in email-templates (visual email testing since we dont have Resend custom domain yet)
+- Update the api/test/email-templates it looks like this is not the email templates that we are currently using since we have added some templates. API TEST our email templates and display it in email-templates (visual email testing since we dont have Resend custom domain yet) **Fixed** (Added 3 new templates: HR Final Verification, File Request, File Uploaded. Now displays all 10 email templates with mock data)
 
 - I am unable to delete file in loa-submit as approver. If I sent the file to a temporary storage and try to delete them, it's giving this error:  Failed to delete file: Service not found. Please check your connection. **Fixed** (Backend was using file.filename instead of file.file_name database column. Fixed deleteRequestFile, downloadLatestFile, and downloadExecutiveFile)
 
