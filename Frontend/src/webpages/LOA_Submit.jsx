@@ -1099,12 +1099,16 @@ export default function LOA_Submit() {
                                     <>
                                         <div className="mb-4">
                                             <h3 className="text-[#023184] font-bold mb-3 text-sm sm:text-base">
-                                                {request?.current_status === 'hr_final_verification' ? 'Human Resource Processed Information:' : 'Human Resource Processing Information:'}
+                                                {(request?.current_status === 'hr_final_verification' ||
+                                                  (user?.role === 'hr_personnel' && ['benefits_review', 'welfare_review'].includes(request?.current_status)))
+                                                    ? 'Human Resource Processed Information:'
+                                                    : 'Human Resource Processing Information:'}
                                             </h3>
                                         </div>
 
-                                        {request?.current_status === 'hr_final_verification' ? (
-                                            /* Read-only display during final verification - Simple paragraph style like Column 1 */
+                                        {(request?.current_status === 'hr_final_verification' ||
+                                          (user?.role === 'hr_personnel' && ['benefits_review', 'welfare_review'].includes(request?.current_status))) ? (
+                                            /* Read-only display when HR has already processed or during final verification */
                                             <>
                                                 {request?.request_type === 'letter_of_approval' ? (
                                                     <>
