@@ -94,34 +94,62 @@ export const NavbarSection = () => {
 
 
              {/*mobile nav */}
-            <button 
+            <button
                 onClick={()=> setIsMenuOpen((prev) => !prev)}
-                className="md:hidden px-7 text-foreground z-50 flex justify-start"
+                className={cn(
+                    "md:hidden fixed top-4 right-4 z-50 p-3 rounded-lg transition-all duration-300",
+                    "hover:bg-primary/10 active:scale-95",
+                    isMenuOpen
+                        ? "bg-white/10 backdrop-blur-sm"
+                        : "bg-transparent"
+                )}
                 aria-label={isMenuOpen ? "Close Menu" : "Open Menu"}
-                > 
-                {isMenuOpen 
-                ? <X className="text-primary-foreground z-50" size={34}/> 
-                : <Menu className="text-primary" size={34}/>}
-
+                >
+                {isMenuOpen
+                ? <X className="text-primary-foreground transition-transform duration-300 rotate-90" size={28}/>
+                : <Menu className={cn(
+                    "transition-all duration-300",
+                    isLoginPage ? "text-white" : "text-primary"
+                )} size={28}/>}
             </button>
 
+            {/* Mobile Menu Overlay */}
             <div className={cn(
-                "fixed h-screen inset-0 bg-background/80 backdrop-blur-md z-40 flex flex-col items-center justify-center",
-                "transition-all duration-300 md:hidden", 
-                isMenuOpen 
-                ? "bg-primary text-primary opacity-95 pointer-events-auto" 
-                : "opacity-0 pointer-events-none"
+                "fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300",
+                isMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+            )} onClick={() => setIsMenuOpen(false)} />
 
+            {/* Mobile Menu Panel */}
+            <div className={cn(
+                "fixed top-0 right-0 h-screen w-[280px] bg-primary z-40 md:hidden",
+                "transition-transform duration-300 ease-out shadow-2xl",
+                isMenuOpen ? "translate-x-0" : "translate-x-full"
             )}>
-                <div className="flex flex-col space-y-15 text-2xl">
-                    {NavItems.map((item, key) =>(
-                        <a key={key}
-                            href={item.href}
-                            className="text-primary-foreground hover:text-primary transition-colors duration-300"
-                            onClick={() => setIsMenuOpen(false)} >
-                            {item.name}
-                        </a>
-                    ))}
+                <div className="flex flex-col h-full pt-20 px-6">
+                    {/* Menu Items */}
+                    <div className="flex flex-col space-y-2">
+                        {NavItems.map((item, key) => (
+                            <a
+                                key={key}
+                                href={item.href}
+                                className={cn(
+                                    "text-primary-foreground px-4 py-3 rounded-lg font-medium transition-all duration-200",
+                                    "hover:bg-white/10 hover:pl-6 active:scale-95",
+                                    item.name === "Login" && "mt-4 bg-white/20 border border-white/30"
+                                )}
+                                onClick={() => setIsMenuOpen(false)}
+                            >
+                                {item.name}
+                            </a>
+                        ))}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="mt-auto pb-8 text-center">
+                        <p className="text-primary-foreground/60 text-xs">
+                            MetroExecuCare © 2025
+                        </p>
+                    </div>
                 </div>
             </div>
         </nav>
