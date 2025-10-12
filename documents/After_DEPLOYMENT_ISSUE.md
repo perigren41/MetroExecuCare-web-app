@@ -271,11 +271,11 @@ Message: Request loa **Fixed** (Already showing: "FirstName LastName (Role)" wit
 
 -In admin-users-page under UserDetailsModal, I believe that the profile picture card is not up to its standard UI/UX Fundamentals. It's oval and not circle, nor it's using its own space to maximize aesthetics. **Fixed** (Profile picture now perfectly circular: 32/40/48 responsive sizing, 4px border, shadow-lg, proper spacing) 
 
-- ViewRequestDetails is not displaying Executive's uploaded files under uploaded files section. It must: Display initial uploaded files, and files that were requested by approvers. They will only be displayed there once it's already in the database and uploaded permanently.
+- ViewRequestDetails is not displaying Executive's uploaded files under uploaded files section. It must: Display initial uploaded files, and files that were requested by approvers. They will only be displayed there once it's already in the database and uploaded permanently. **Fixed** (Now displays all files from database with proper property mapping, shows uploader name and file type)
 
-- In ViewRequestDetails, can you also add the name of the Human Resources that was assigned to the executive for further information if the request has already been claimed.
+- In ViewRequestDetails, can you also add the name of the Human Resources that was assigned to the executive for further information if the request has already been claimed. **Fixed** (Displays "Assigned HR: FirstName LastName" when request is claimed)
 
-- in ViewRequestDetails, you can see in ViewRequestDetails-AdditionalFilesRequested.png that the "From HR Personnel" is not correct, it should be the name of the approver.
+- in ViewRequestDetails, you can see in ViewRequestDetails-AdditionalFilesRequested.png that the "From HR Personnel" is not correct, it should be the name of the approver. **Fixed** (Now shows "From: FirstName LastName (Role)" with proper role formatting)
 
 - Remove Profile picture must also be the same as Change Picture. Where we have confirmation for removing of profile modal, but success modal seems correct for using modal. It seems like we are still using alerts for this.
 
