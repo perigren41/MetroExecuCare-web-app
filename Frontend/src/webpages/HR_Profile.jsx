@@ -78,11 +78,10 @@ function CircleButton({ text, color, onClick }) {
 }
 
 /* ---------------- ProfileCard ---------------- */
-function ProfileCard({ profile, setProfile, showUploadConfirm, setShowUploadConfirm, pendingFile, setPendingFile, onConfirmUpload, onCancelUpload }) {
+function ProfileCard({ profile, setProfile, showUploadConfirm, setShowUploadConfirm, pendingFile, setPendingFile, onConfirmUpload, onCancelUpload, onRemoveClick, isRemoving }) {
     const { updateUser, user } = useAuth();
     const [showSuccessModal, setShowSuccessModal] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
-    const [isRemoving, setIsRemoving] = useState(false);
     // Use function initializer to ensure Date.now() only runs ONCE on mount, not on every render
     const [imageKey, setImageKey] = useState(() => Date.now());
 
@@ -102,38 +101,6 @@ function ProfileCard({ profile, setProfile, showUploadConfirm, setShowUploadConf
             setShowUploadConfirm(true);
             // Reset file input
             e.target.value = '';
-        }
-    };
-
-    const handleRemoveProfilePicture = async () => {
-        if (!window.confirm('Are you sure you want to remove your profile picture?')) {
-            return;
-        }
-
-        try {
-            setIsRemoving(true);
-            const response = await apiService.removeProfilePicture(profile.id);
-
-            if (response.success) {
-                setProfile(prev => ({
-                    ...prev,
-                    profile_picture: null
-                }));
-
-                // Update AuthContext so NavBar reflects the change
-                updateUser({
-                    ...user,
-                    profile_picture: null
-                });
-
-                setSuccessMessage('Profile picture removed successfully!');
-                setShowSuccessModal(true);
-            }
-        } catch (error) {
-            console.error('Error removing profile picture:', error);
-            alert('Failed to remove profile picture. Please try again.');
-        } finally {
-            setIsRemoving(false);
         }
     };
 
@@ -188,7 +155,7 @@ function ProfileCard({ profile, setProfile, showUploadConfirm, setShowUploadConf
 
                         {profile.profile_picture && (
                             <button
-                                onClick={handleRemoveProfilePicture}
+                                onClick={onRemoveClick}
                                 disabled={isRemoving}
                                 className="flex items-center justify-center gap-2 text-red-600 hover:underline text-xs sm:text-sm font-medium transition-colors disabled:opacity-50 cursor-pointer"
                             >
@@ -788,6 +755,10 @@ export default function HRProfilePage() {
     const [showUploadConfirm, setShowUploadConfirm] = useState(false);
     const [pendingFile, setPendingFile] = useState(null);
 
+    // Profile picture remove state
+    const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+    const [isRemoving, setIsRemoving] = useState(false);
+
     // Profile picture upload handlers
     const handleConfirmUpload = async () => {
         if (!pendingFile) return;
@@ -821,6 +792,41 @@ export default function HRProfilePage() {
     const handleCancelUpload = () => {
         setShowUploadConfirm(false);
         setPendingFile(null);
+    };
+
+    // Profile picture remove handlers
+    const handleRemoveClick = () => {
+        setShowRemoveConfirm(true);
+    };
+
+    const handleConfirmRemove = async () => {
+        try {
+            setIsRemoving(true);
+            setShowRemoveConfirm(false);
+
+            const response = await apiService.removeProfilePicture(profile.id);
+
+            if (response.success) {
+                setProfile(prev => ({
+                    ...prev,
+                    profile_picture: null
+                }));
+
+                updateUser({
+                    ...user,
+                    profile_picture: null
+                });
+            }
+        } catch (error) {
+            console.error('Error removing profile picture:', error);
+            alert('Failed to remove profile picture. Please try again.');
+        } finally {
+            setIsRemoving(false);
+        }
+    };
+
+    const handleCancelRemove = () => {
+        setShowRemoveConfirm(false);
     };
 
     // Update profile when user changes
@@ -892,6 +898,8 @@ export default function HRProfilePage() {
                                 setPendingFile={setPendingFile}
                                 onConfirmUpload={handleConfirmUpload}
                                 onCancelUpload={handleCancelUpload}
+                                onRemoveClick={handleRemoveClick}
+                                isRemoving={isRemoving}
                             />
                         </div>
 
@@ -916,6 +924,8 @@ export default function HRProfilePage() {
                                 setPendingFile={setPendingFile}
                                 onConfirmUpload={handleConfirmUpload}
                                 onCancelUpload={handleCancelUpload}
+                                onRemoveClick={handleRemoveClick}
+                                isRemoving={isRemoving}
                             />
                             <PasswordChangeCard user={user} />
                         </div>
@@ -938,6 +948,18 @@ export default function HRProfilePage() {
                 confirmText="Upload"
                 cancelText="Cancel"
                 type="info"
+            />
+
+            {/* Profile Picture Remove Confirmation Modal - Rendered at root level for proper z-index */}
+            <ConfirmationModal
+                isOpen={showRemoveConfirm}
+                onClose={handleCancelRemove}
+                onConfirm={handleConfirmRemove}
+                title="Confirm Remove Profile Picture"
+                message="Are you sure you want to remove your profile picture? This action will replace it with the default profile image."
+                confirmText="Remove"
+                cancelText="Cancel"
+                type="warning"
             />
         </div>
     );
