@@ -825,6 +825,18 @@ export default function LOA_Submit() {
         }
     };
 
+    // Helper function to get the correct approval document name based on request type
+    const getApprovalDocumentName = () => {
+        if (!request) return 'signed document';
+
+        if (request.request_type === 'letter_of_authorization') {
+            return 'Approval Letter of Authorization For Annual Medical Check-up Laboratory and Procedures';
+        } else if (request.request_type === 'letter_of_approval') {
+            return 'Approval For Annual Medical Check-up';
+        }
+        return 'signed document';
+    };
+
     // Helper function to get the most recent staff file and its label
     const getMostRecentStaffFile = () => {
         if (!request?.id) return { file: null, label: 'Staff File:', noFileMessage: 'No Staff File' };
@@ -1729,10 +1741,10 @@ export default function LOA_Submit() {
                                     <img src={UploadIcon} alt="Upload Icon" className="w-20 h-20 sm:w-24 sm:h-24 md:w-30 md:h-30 mb-2" />
 
                                     {/* Upload Text - Responsive */}
-                                    <p className="text-gray-600 text-center text-sm sm:text-base">
+                                    <p className="text-gray-600 text-center text-sm sm:text-base px-2">
                                         {isDragOver
                                             ? 'Drop your file here!'
-                                            : 'Drop signed document here, or click here to browse'
+                                            : `Drop ${getApprovalDocumentName()} here, or click here to browse`
                                         }
                                     </p>
                                     {/* Hidden File Input */}
