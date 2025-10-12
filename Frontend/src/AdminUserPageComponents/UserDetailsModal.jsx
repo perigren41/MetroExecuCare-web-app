@@ -219,13 +219,13 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
             </div>
           )}
 
-          {/* Left Column → Avatar */}
+          {/* Left Column → Avatar - Perfectly Circular */}
           <div className="flex justify-center items-center lg:row-span-2">
-            <div className="relative w-20 h-35 sm:w-30 sm:h-30 flex items-center justify-center">
+            <div className="relative w-32 h-32 sm:w-40 sm:h-40 lg:w-48 lg:h-48 flex items-center justify-center">
               <img
                 src={formData.profile_picture_url || NoProfilePicture}
                 alt="Profile"
-                className="w-full h-full rounded-full object-cover border-2 border-[#00539F] p-1"
+                className="w-full h-full rounded-full object-cover border-4 border-[#00539F] shadow-lg"
               />
             </div>
           </div>
