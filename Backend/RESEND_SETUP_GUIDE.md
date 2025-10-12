@@ -32,28 +32,125 @@ Resend solves the **SMTP connection timeout** issue you're experiencing on Railw
 
 ---
 
-## 📧 Step 3: Add Your Domain (Optional but Recommended)
+## 📧 Step 3: Configure Email Sender (Choose One)
 
-### Option A: Use Your Own Domain (Recommended for Production)
+**IMPORTANT:** Your Railway URL (`metroexecucare.up.railway.app`) is NOT a domain you can use for emails.
+You have 3 options - pick the one that's best for you:
 
+---
+
+### ✅ Option A: Use Your Existing Gmail (EASIEST - Recommended to Start)
+
+**No domain purchase needed!** Use the Gmail address you already have.
+
+1. In Railway, set these variables:
+   ```bash
+   RESEND_API_KEY=re_your_api_key_here
+   FROM_EMAIL=MetroExecuCare <metroexecucare@gmail.com>
+   ```
+
+2. That's it! Emails will come from `metroexecucare@gmail.com`
+
+**Pros:**
+- ✅ Works immediately
+- ✅ No cost
+- ✅ Users recognize Gmail as trusted
+
+**Cons:**
+- ⚠️ Less professional than custom domain
+- ⚠️ Gmail may limit sending rates
+
+---
+
+### ⚡ Option B: Use Resend's Test Domain (FOR TESTING ONLY)
+
+**Perfect for initial setup and testing.**
+
+1. No domain setup needed
+2. Resend provides: `onboarding@resend.dev`
+3. Set in Railway:
+   ```bash
+   RESEND_API_KEY=re_your_api_key_here
+   # Don't set FROM_EMAIL - uses default test domain
+   ```
+
+**Limitation:** Can ONLY send emails to YOUR verified email address (the one you signed up with)
+
+**Use this for:**
+- ✅ Testing that Resend works
+- ✅ Development and staging environments
+- ❌ NOT for production/real users
+
+---
+
+### 🏆 Option C: Buy Your Own Custom Domain (MOST PROFESSIONAL)
+
+**Best for production, but requires purchasing a domain (~$10-15/year)**
+
+**Step 1: Buy a domain**
+- Example: `metroexecucare.com`
+- Where to buy: Namecheap, Google Domains, GoDaddy, etc.
+- Cost: ~$10-15/year
+
+**Step 2: Add domain to Resend**
 1. Go to **https://resend.com/domains**
 2. Click **"Add Domain"**
-3. Enter your domain (e.g., `metroexecucare.com`)
-4. Add the DNS records shown by Resend to your domain provider:
-   - **SPF Record** (TXT)
-   - **DKIM Record** (TXT)
-   - **DMARC Record** (TXT - optional but recommended)
-5. Wait for DNS propagation (usually 5-30 minutes)
-6. Click **"Verify DNS Records"**
+3. Enter your purchased domain (e.g., `metroexecucare.com`)
 
-Once verified, you can send emails from `noreply@metroexecucare.com`
+**Step 3: Add DNS records** (Resend will show you these exact records)
+Go to your domain provider (Namecheap, GoDaddy, etc.) and add these records:
 
-### Option B: Use Resend's Test Domain (Quick Start)
+- **SPF Record (TXT):**
+  ```
+  Host: send
+  Value: v=spf1 include:amazonses.com ~all
+  ```
 
-For testing, you can use Resend's onboarding domain:
-- Send emails from: `onboarding@resend.dev`
-- **Limitation:** Can only send to YOUR verified email address
-- Good for testing before setting up your own domain
+- **MX Record:**
+  ```
+  Host: send
+  Value: feedback-smtp.ap-northeast-1.amazonses.com
+  Priority: 10
+  ```
+
+- **DKIM Record (TXT):**
+  ```
+  Host: resend._domainkey
+  Value: p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCb8ePDntUKA7O5fQUlQZPGLS81hgL8TY1jZf7l/2gCtKkSrFC3U/VHmBOXuAMH/eqfam7fjdaYZjc0Kui56kSVrI6CNooYqOs3pTvEBg1TBkqDKATZj79FVajZkUjDPBjHTf3GEy/oLHKgBpF5eyeSuqBGqlwtuTLuJZrcph72TQIDAQAB
+  ```
+
+- **DMARC Record (TXT) - Optional:**
+  ```
+  Host: _dmarc
+  Value: v=DMARC1; p=none;
+  ```
+
+**Step 4: Wait & Verify**
+- Wait 5-30 minutes for DNS propagation
+- Go back to Resend and click "Verify DNS Records"
+
+**Step 5: Set in Railway**
+```bash
+RESEND_API_KEY=re_your_api_key_here
+FROM_EMAIL=MetroExecuCare <noreply@metroexecucare.com>
+```
+
+**Pros:**
+- ✅ Most professional
+- ✅ Better email deliverability
+- ✅ Custom branding
+
+**Cons:**
+- 💰 Costs $10-15/year for domain
+- ⏱️ Takes more time to set up
+
+---
+
+## 📌 My Recommendation for You:
+
+**Start with Option A (Gmail)** - It's free, works immediately, and requires no setup!
+
+Later, if you want more professional emails, you can buy a domain and switch to Option C.
 
 ---
 
@@ -104,7 +201,7 @@ After deployment, check your Railway logs for:
 ```
 ✅ Email service initialized with Resend
 📧 EmailService initialized with provider: resend
-```
+```   
 
 ### Test Email Sending:
 

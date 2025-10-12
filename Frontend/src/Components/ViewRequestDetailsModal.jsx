@@ -182,11 +182,11 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50 p-2 sm:p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 flex justify-between items-center rounded-t-lg">
-          <h2 className="text-2xl font-bold">Request Details</h2>
+        <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 sm:p-6 flex justify-between items-center rounded-t-lg">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold">Request Details</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-white/20 rounded-full transition"
@@ -210,11 +210,11 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
             </button>
           </div>
         ) : (
-          <div className="p-6 space-y-6">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             {/* Request Information */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Request Information</h3>
-              <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3">Request Information</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
                 <div>
                   <span className="font-semibold text-gray-700">Request ID:</span>
                   <span className="ml-2 text-gray-900">{requestDetails?.request_number || requestDetails?.id}</span>
@@ -413,11 +413,11 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
             </div>
 
             {/* Action Buttons */}
-            <div className="flex justify-end gap-3 pt-4 border-t">
+            <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t">
               {isEditable && (
                 <button
                   onClick={handleDeleteRequest}
-                  className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold flex items-center gap-2"
+                  className="px-4 sm:px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-semibold flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
                   <Trash2 size={18} />
                   Delete Request
@@ -425,7 +425,7 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
               )}
               <button
                 onClick={onClose}
-                className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-semibold"
+                className="px-4 sm:px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-semibold text-sm sm:text-base"
               >
                 Close
               </button>
