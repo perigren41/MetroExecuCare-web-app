@@ -225,7 +225,7 @@ export default function HRDashboard() {
                 };
             } else {
                 return {
-                    message: "No pending requests assigned to you.",
+                    message: "No pending requests pending to be claimed yet.",
                 };
             }
         }
@@ -677,65 +677,65 @@ export default function HRDashboard() {
             </div>
 
             {/* Lower half (white) */}
-            <div className="flex-1 bg-white px-4 sm:px-8 py-6 flex items-center justify-center min-h-[40vh]">
+            <div className="flex-1 bg-white px-4 sm:px-8 py-6 flex items-center justify-center min-h-[300px] sm:min-h-[400px]">
                 {/* Executive Dashboard style container */}
-                <div className="bg-white text-gray-900 rounded-3xl shadow-xl w-full max-w-xs sm:max-w-md lg:max-w-6xl
-                flex flex-col items-center py-6 px-8 sm:py-8 sm:px-10 border-2 border-gray-100">
+                <div className="bg-white text-gray-900 rounded-3xl shadow-xl w-full max-w-xs sm:max-w-md lg:max-w-4xl xl:max-w-6xl
+                flex flex-col items-center py-4 px-4 sm:py-6 sm:px-8 lg:py-8 lg:px-10 border-2 border-gray-100">
                     {/* Header */}
-                    <h2 className="text-lg sm:text-xl lg:text-2xl font-semibold text-center mb-6 text-gray-800">
+                    <h2 className="text-base sm:text-lg lg:text-xl xl:text-2xl font-semibold text-center mb-4 sm:mb-6 text-gray-800">
                         Claimed Requests
                     </h2>
 
                     {/* Content Container with gradient background */}
                     <div
-                        className="rounded-3xl shadow-lg w-full flex flex-col items-center py-6 px-8 sm:py-8 sm:px-10
-                        border-2 min-h-[200px] sm:min-h-[250px] lg:min-h-[350px]"
+                        className="rounded-2xl sm:rounded-3xl shadow-lg w-full flex flex-col items-center py-4 px-4 sm:py-6 sm:px-8 lg:py-8 lg:px-10
+                        border-2 min-h-[180px] sm:min-h-[220px] md:min-h-[280px] lg:min-h-[350px]"
                         style={{
                             background: "linear-gradient(45deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)"
                         }}
                     >
                         {/* Table/Grid - Show claimed requests */}
-                        <div className="w-full mb-6 overflow-y-auto max-h-[200px] sm:max-h-[250px] lg:max-h-[300px]">
+                        <div className="w-full mb-4 sm:mb-6 overflow-y-auto max-h-[150px] sm:max-h-[200px] md:max-h-[230px] lg:max-h-[280px] xl:max-h-[320px]">
                         {/* Table Header */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 text-white font-semibold mb-4 px-4 border-b border-white/20 pb-2">
-                            <div className={screenSize === 'laptop' ? 'text-sm' : 'text-base'}>Employee & Request Info</div>
-                            <div className={screenSize === 'laptop' ? 'text-sm' : 'text-base'}>Status & Date</div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 text-white font-semibold mb-3 sm:mb-4 px-2 sm:px-4 border-b border-white/20 pb-2">
+                            <div className="text-xs sm:text-sm lg:text-base">Employee & Request Info</div>
+                            <div className="text-xs sm:text-sm lg:text-base hidden md:block">Status & Date</div>
                         </div>
 
                         {/* Table Rows */}
                         {claimedRequests.length > 0 ? claimedRequests.map((request, index) => (
                             <div
                                 key={request.id}
-                                className={`grid grid-cols-1 lg:grid-cols-2 gap-6 text-white px-4 py-3 rounded-lg hover:bg-white/10 cursor-pointer transition-colors ${index < claimedRequests.length - 1 ? 'mb-2' : ''}`}
+                                className={`grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 lg:gap-6 text-white px-2 sm:px-4 py-2 sm:py-3 rounded-lg hover:bg-white/10 cursor-pointer transition-colors ${index < claimedRequests.length - 1 ? 'mb-2' : ''}`}
                                 onClick={() => navigate(`/loa-submit/${request.id}`, { state: { user } })}
                             >
                                 {/* Left Column - Employee & Request Info */}
-                                <div className="space-y-2">
+                                <div className="space-y-1 sm:space-y-2">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 flex items-center justify-center">
+                                        <div className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 flex items-center justify-center flex-shrink-0">
                                             {request.request_type === 'letter_of_authorization' ? (
-                                                <img src={LOAuthIcon} alt="LOAuth" className="w-5 h-5" />
+                                                <img src={LOAuthIcon} alt="LOAuth" className="w-full h-full" />
                                             ) : request.request_type === 'letter_of_approval' ? (
-                                                <img src={LOAppIcon} alt="LOApp" className="w-5 h-5" />
+                                                <img src={LOAppIcon} alt="LOApp" className="w-full h-full" />
                                             ) : (
                                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-white">
                                                     <circle cx="12" cy="12" r="3" fill="currentColor" />
                                                 </svg>
                                             )}
                                         </div>
-                                        <span className={`font-medium ${screenSize === 'laptop' ? 'text-sm' : 'text-base'}`}>
+                                        <span className="font-medium text-xs sm:text-sm lg:text-base truncate">
                                             {request.employee?.first_name || 'Unknown'} {request.employee?.last_name || 'User'}
                                         </span>
                                     </div>
-                                    <div className={`text-white/80 ${screenSize === 'laptop' ? 'text-xs' : 'text-sm'}`}>
+                                    <div className="text-white/80 text-xs sm:text-sm pl-6 sm:pl-7 lg:pl-8">
                                         #{request.request_number || request.id} • {formatRequestType(request.request_type)}
                                     </div>
                                 </div>
 
                                 {/* Right Column - Status & Date */}
-                                <div className="space-y-2">
+                                <div className="space-y-1 sm:space-y-2 pl-6 sm:pl-0">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-5 h-5 flex items-center justify-center">
+                                        <div className="w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center">
                                             {request.current_status === 'hr_processing' ? (
                                                 <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
                                             ) : request.current_status === 'benefits_review' ? (
@@ -748,19 +748,19 @@ export default function HRDashboard() {
                                                 <span className="text-white">•</span>
                                             )}
                                         </div>
-                                        <span className={screenSize === 'laptop' ? 'text-sm' : 'text-base'}>
+                                        <span className="text-xs sm:text-sm lg:text-base truncate">
                                             {formatRequestStatus(request.current_status)}
                                         </span>
                                     </div>
-                                    <div className={`text-white/80 ${screenSize === 'laptop' ? 'text-xs' : 'text-sm'}`}>
+                                    <div className="text-white/80 text-xs sm:text-sm">
                                         Claimed: {request.assigned_at ? new Date(request.assigned_at).toLocaleDateString() :
                                          new Date(request.created_at).toLocaleDateString()}
                                     </div>
                                 </div>
                             </div>
                         )) : (
-                            <div className="text-center text-white/70 py-8">
-                                <p className={screenSize === 'laptop' ? 'text-sm' : 'text-base'}>
+                            <div className="text-center text-white/70 py-6 sm:py-8">
+                                <p className="text-xs sm:text-sm lg:text-base px-4">
                                     No claimed requests found. Visit Pending Requests to claim new requests.
                                 </p>
                             </div>
@@ -770,12 +770,12 @@ export default function HRDashboard() {
                         {/* View full history button */}
                         <button
                             className="flex items-center justify-center gap-2 bg-white rounded-full cursor-pointer
-                            hover:bg-gray-50 transition-colors text-sm font-medium px-4 py-2 mt-4"
+                            hover:bg-gray-50 transition-colors text-xs sm:text-sm font-medium px-3 sm:px-4 py-1.5 sm:py-2 mt-3 sm:mt-4"
                             style={{ color: '#023184' }}
                             onClick={() => navigate(getHistoryRoute(), { state: { user } })}
                         >
                             View full history
-                            <img src={RoundArrowIconBlue} alt="Arrow" className="w-4 h-4" />
+                            <img src={RoundArrowIconBlue} alt="Arrow" className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
                     </div>
                 </div>
