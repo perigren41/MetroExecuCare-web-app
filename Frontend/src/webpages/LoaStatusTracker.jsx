@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSearchParams, useLocation, useNavigate } from "react-router-dom";
 import NavBarMain from "@/Components/NavBarMain";
 import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
@@ -30,6 +30,8 @@ export default function LOAStatusTracker() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [requestDetails, setRequestDetails] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Handle authenticated file download
   const handleDownload = async (endpoint, filename) => {
@@ -64,14 +66,76 @@ export default function LOAStatusTracker() {
     }
   };
 
-  // Get data from URL params or navigation state
-  const getRequestDetails = () => {
+  // Fetch latest request status from API
+  useEffect(() => {
+    const fetchRequestStatus = async () => {
+      try {
+        setIsLoading(true);
+
+        // Try to get request ID from navigation state or URL params
+        const requestId = location.state?.request?.id ||
+                         location.state?.requestDetails?.request_id ||
+                         parseInt(searchParams.get('id'));
+
+        if (requestId) {
+          // Fetch latest request data from API
+          const response = await apiService.getRequestById(requestId);
+          if (response.success && response.data?.request) {
+            const req = response.data.request;
+            setRequestDetails({
+              ...req,
+              request_type: req.request_type,
+              request_id: req.id,
+              id: req.id,
+              request_number: req.request_number,
+              requested_on: new Date(req.created_at).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              }),
+              requested_by: req.first_name && req.last_name ? `${req.first_name} ${req.last_name}` : user?.first_name + ' ' + user?.last_name,
+              current_status: req.current_status,
+            });
+          } else {
+            // Fallback to navigation state data
+            setRequestDetails(getInitialRequestDetails());
+          }
+        } else {
+          // No request ID, show default state
+          setRequestDetails({
+            request_type: "Letter of Authorization",
+            request_id: null,
+            requested_on: new Date().toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }),
+            requested_by: user?.first_name + ' ' + user?.last_name,
+            current_status: "no_request",
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching request status:', error);
+        // Fallback to navigation state data
+        setRequestDetails(getInitialRequestDetails());
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchRequestStatus();
+  }, [location.state, searchParams, user]);
+
+  // Get initial data from URL params or navigation state (fallback)
+  const getInitialRequestDetails = () => {
     // Priority 1: Data from navigation state (from Active Request modal)
     if (location.state?.request) {
       const req = location.state.request;
       return {
+        ...req,
         request_type: req.request_type,
         request_id: req.id,
+        id: req.id,
         request_number: req.request_number,
         requested_on: new Date(req.created_at).toLocaleDateString('en-US', {
           year: 'numeric',
@@ -92,13 +156,13 @@ export default function LOAStatusTracker() {
     if (searchParams.get('status')) {
       return {
         request_type: searchParams.get('type') || "Letter of Authorization",
-        request_id: parseInt(searchParams.get('id')) || 12345,
+        request_id: parseInt(searchParams.get('id')) || null,
         requested_on: searchParams.get('date') || new Date().toLocaleDateString('en-US', {
           year: 'numeric',
           month: 'long',
           day: 'numeric'
         }),
-        requested_by: searchParams.get('user') || "Thor Odinson",
+        requested_by: searchParams.get('user') || user?.first_name + ' ' + user?.last_name,
         current_status: searchParams.get('status'),
         request_number: searchParams.get('requestNumber'),
       };
@@ -107,14 +171,16 @@ export default function LOAStatusTracker() {
     // Priority 4: Default/fallback data
     return {
       request_type: "Letter of Authorization",
-      request_id: 123458,
-      requested_on: "April 18, 2025",
-      requested_by: "Thor Odinson",
-      current_status: "no_request", // Default status
+      request_id: null,
+      requested_on: new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      }),
+      requested_by: user?.first_name + ' ' + user?.last_name,
+      current_status: "no_request",
     };
   };
-
-  const requestDetails = getRequestDetails();
 
   // Status display configuration - Database status mappings
   const getStatusDisplay = (status) => {
@@ -316,11 +382,40 @@ export default function LOAStatusTracker() {
     return BlankSquare; // For future steps
   };
 
+  // Show loading state while fetching
+  if (isLoading || !requestDetails) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <NavBarMain
+          user={{
+            ...user,
+            name: user ? `${user.first_name} ${user.last_name}` : "Loading..."
+          }}
+          onLogout={() => {
+            sessionStorage.removeItem("user");
+            sessionStorage.clear();
+            localStorage.removeItem('authToken');
+            navigate("/login", { replace: true });
+          }}
+          showHomeButton={true}
+          backButtonIcon={BackSquareIconWhite}
+          logo={MetroBankLogo}
+        />
+        <div className="flex items-center justify-center flex-1">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading request status...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const currentStatusDisplay = getStatusDisplay(requestDetails.current_status);
   const steps = getStepsForRequestType(requestDetails.request_type, requestDetails.current_status);
 
   // Add rejected step if status is rejected
-  const allSteps = requestDetails.current_status === "rejected" 
+  const allSteps = requestDetails.current_status === "rejected"
     ? [...steps, {
         id: steps.length + 1,
         label: "Rejected",
