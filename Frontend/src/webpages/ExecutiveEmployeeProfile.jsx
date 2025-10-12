@@ -79,13 +79,11 @@ function CircleButton({ text, color, onClick }) {
 }
 
 // ProfileCard component
-function ProfileCard({ profile, setProfile }) {
+function ProfileCard({ profile, setProfile, showUploadConfirm, setShowUploadConfirm, pendingFile, setPendingFile, onConfirmUpload, onCancelUpload }) {
   const { updateUser, user } = useAuth();
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [isRemoving, setIsRemoving] = useState(false);
-  const [showUploadConfirm, setShowUploadConfirm] = useState(false);
-  const [pendingFile, setPendingFile] = useState(null);
   // Use function initializer to ensure Date.now() only runs ONCE on mount, not on every render
   const [imageKey, setImageKey] = useState(() => Date.now());
 
@@ -107,46 +105,6 @@ function ProfileCard({ profile, setProfile }) {
       // Reset file input
       e.target.value = '';
     }
-  };
-
-  const handleConfirmUpload = async () => {
-    if (!pendingFile) return;
-
-    try {
-      setShowUploadConfirm(false);
-      // Upload the image to the backend
-      const response = await apiService.uploadProfilePicture(profile.id, pendingFile);
-      if (response.success) {
-        // Update imageKey to bust cache for new picture
-        setImageKey(Date.now());
-
-        // Update profile with new picture path (without timestamp - store clean path)
-        const updatedProfile = {
-          ...profile,
-          profile_picture: response.data.profile_picture
-        };
-        setProfile(updatedProfile);
-
-        // Update AuthContext so NavBar reflects the change
-        updateUser({
-          ...user,
-          profile_picture: response.data.profile_picture
-        });
-
-        setPendingFile(null);
-        setSuccessMessage('Profile picture updated successfully!');
-        setShowSuccessModal(true);
-      }
-    } catch (error) {
-      console.error('Error uploading profile picture:', error);
-      alert('Failed to upload profile picture. Please try again.');
-      setPendingFile(null);
-    }
-  };
-
-  const handleCancelUpload = () => {
-    setShowUploadConfirm(false);
-    setPendingFile(null);
   };
 
   const handleRemoveProfilePicture = async () => {
@@ -261,18 +219,6 @@ function ProfileCard({ profile, setProfile }) {
           </div>
         </div>
       </div>
-
-      {/* Upload Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={showUploadConfirm}
-        onClose={handleCancelUpload}
-        onConfirm={handleConfirmUpload}
-        title="Confirm Profile Picture Upload"
-        message={`Are you sure you want to upload this picture as your profile picture?${pendingFile ? ` (${pendingFile.name})` : ''}`}
-        confirmText="Upload"
-        cancelText="Cancel"
-        type="info"
-      />
 
       {/* Success Alert Modal */}
       <AlertModal
@@ -699,7 +645,7 @@ function PasswordChangeCard() {
 
 // Main ExecutiveEmployeeProfile component
 export default function ExecutiveEmployeeProfile() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState({
     id: null,
@@ -721,6 +667,47 @@ export default function ExecutiveEmployeeProfile() {
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // Profile picture upload state (lifted from ProfileCard to render modal at root level)
+  const [showUploadConfirm, setShowUploadConfirm] = useState(false);
+  const [pendingFile, setPendingFile] = useState(null);
+
+  // Profile picture upload handlers
+  const handleConfirmUpload = async () => {
+    if (!pendingFile) return;
+
+    try {
+      setShowUploadConfirm(false);
+      // Upload the image to the backend
+      const response = await apiService.uploadProfilePicture(profile.id, pendingFile);
+      if (response.success) {
+        // Update profile with new picture path
+        const updatedProfile = {
+          ...profile,
+          profile_picture: response.data.profile_picture
+        };
+        setProfile(updatedProfile);
+
+        // Update AuthContext so NavBar reflects the change
+        updateUser({
+          ...user,
+          profile_picture: response.data.profile_picture
+        });
+
+        setPendingFile(null);
+        // Success will be handled by ProfileCard's AlertModal
+      }
+    } catch (error) {
+      console.error('Error uploading profile picture:', error);
+      alert('Failed to upload profile picture. Please try again.');
+      setPendingFile(null);
+    }
+  };
+
+  const handleCancelUpload = () => {
+    setShowUploadConfirm(false);
+    setPendingFile(null);
+  };
 
   // Load user profile data
   useEffect(() => {
@@ -812,7 +799,16 @@ export default function ExecutiveEmployeeProfile() {
             <div className="flex flex-col lg:flex-row gap-2 sm:gap-3 lg:gap-5 lg:justify-center lg:items-start max-w-7xl mx-auto">
               {/* Mobile: Basic Info */}
               <div className="lg:hidden">
-                <ProfileCard profile={profile} setProfile={setProfile} />
+                <ProfileCard
+                  profile={profile}
+                  setProfile={setProfile}
+                  showUploadConfirm={showUploadConfirm}
+                  setShowUploadConfirm={setShowUploadConfirm}
+                  pendingFile={pendingFile}
+                  setPendingFile={setPendingFile}
+                  onConfirmUpload={handleConfirmUpload}
+                  onCancelUpload={handleCancelUpload}
+                />
               </div>
 
               {/* Mobile: Summary */}
@@ -832,7 +828,16 @@ export default function ExecutiveEmployeeProfile() {
 
               {/* Desktop: Left Column - Profile and Password Change */}
               <div className="hidden lg:flex flex-col gap-3 lg:w-[480px] xl:w-[520px] self-stretch">
-                <ProfileCard profile={profile} setProfile={setProfile} />
+                <ProfileCard
+                  profile={profile}
+                  setProfile={setProfile}
+                  showUploadConfirm={showUploadConfirm}
+                  setShowUploadConfirm={setShowUploadConfirm}
+                  pendingFile={pendingFile}
+                  setPendingFile={setPendingFile}
+                  onConfirmUpload={handleConfirmUpload}
+                  onCancelUpload={handleCancelUpload}
+                />
                 <PasswordChangeCard />
               </div>
 
@@ -848,6 +853,18 @@ export default function ExecutiveEmployeeProfile() {
             </div>
           </div>
         </div>
+
+        {/* Profile Picture Upload Confirmation Modal - Rendered at root level for proper z-index */}
+        <ConfirmationModal
+          isOpen={showUploadConfirm}
+          onClose={handleCancelUpload}
+          onConfirm={handleConfirmUpload}
+          title="Confirm Profile Picture Upload"
+          message={`Are you sure you want to upload this picture as your profile picture?${pendingFile ? ` (${pendingFile.name})` : ''}`}
+          confirmText="Upload"
+          cancelText="Cancel"
+          type="info"
+        />
       </div>
   );
 }
