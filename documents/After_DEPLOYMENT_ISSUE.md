@@ -287,21 +287,7 @@ Message: Request loa **Fixed** (Already showing: "FirstName LastName (Role)" wit
 
 - Update the api/test/email-templates it looks like this is not the email templates that we are currently using since we have added some templates. API TEST our email templates and display it in email-templates (visual email testing since we dont have Resend custom domain yet)
 
-- I am unable to delete file in loa-submit as approver. If I sent the file to a temporary storage and try to delete them, it's giving this error:  Failed to delete file: Service not found. Please check your connection. metroexecucare-backend.up.railway.app/api/requests/5/files/1760253905571:1   Failed to load resource: the server responded with a status of 404 ()
-index-Daug_TLA.js:67  API Error Response (Full): {
-  "success": false,
-  "error": "File not found"
-}
-handleResponse @ index-Daug_TLA.js:67
-index-Daug_TLA.js:67  API Error Status: 404
-handleResponse @ index-Daug_TLA.js:67
-index-Daug_TLA.js:67  API Error URL: https://metroexecucare-backend.up.railway.app/api/requests/5/files/1760253905571
-handleResponse @ index-Daug_TLA.js:67
-index-Daug_TLA.js:67  Delete file error: Error: Service not found. Please check your connection.
-    at M0.handleResponse (index-Daug_TLA.js:67:2502)
-    at async M0.deleteRequestFile (index-Daug_TLA.js:67:13385)
-    at async Yx (index-Daug_TLA.js:335:43117)
-
+- I am unable to delete file in loa-submit as approver. If I sent the file to a temporary storage and try to delete them, it's giving this error:  Failed to delete file: Service not found. Please check your connection. **Fixed** (Backend was using file.filename instead of file.file_name database column. Fixed deleteRequestFile, downloadLatestFile, and downloadExecutiveFile)
 
 - loa-submit more UI/UX handling error like: index-Daug_TLA.js:67  API Error Response (Full): {
   "success": false,
@@ -309,6 +295,6 @@ index-Daug_TLA.js:67  Delete file error: Error: Service not found. Please check 
   "details": [
     "Approved date cannot be in the past"
   ]
-}. This is only a backend handling error. We must have a UI/UX error handling. Be specific with error handling.
+}. This is only a backend handling error. We must have a UI/UX error handling. Be specific with error handling. **Fixed** (Error modal now parses and displays validation details array as numbered list with whitespace-pre-line formatting)
 
-- Claimed Requests in HRDashboard is not responsive to other screen sizes. It seems that smaller sceens cannot see the Claimed Requests.
+- Claimed Requests in HRDashboard is not responsive to other screen sizes. It seems that smaller sceens cannot see the Claimed Requests. **Fixed** (Improved container sizing, grid breakpoints changed to md:grid-cols-2, responsive text/icon sizes, better padding/gaps, truncate for overflow text)
