@@ -277,9 +277,9 @@ Message: Request loa **Fixed** (Already showing: "FirstName LastName (Role)" wit
 
 - in ViewRequestDetails, you can see in ViewRequestDetails-AdditionalFilesRequested.png that the "From HR Personnel" is not correct, it should be the name of the approver. **Fixed** (Now shows "From: FirstName LastName (Role)" with proper role formatting)
 
-- Remove Profile picture must also be the same as Change Picture. Where we have confirmation for removing of profile modal, but success modal seems correct for using modal. It seems like we are still using alerts for this.
+- Remove Profile picture must also be the same as Change Picture. Where we have confirmation for removing of profile modal, but success modal seems correct for using modal. It seems like we are still using alerts for this. **Fixed** (Replaced window.confirm() with ConfirmationModal, lifted state to parent component, rendered modal at root level. Applied to ExecutiveEmployeeProfile, HR_Profile, and AdminProfilePage)
 
-- Welfare Head in test-accounts page is invisible even the Quick Login button.
+- Welfare Head in test-accounts page is invisible even the Quick Login button. **Fixed** (Changed from dynamic Tailwind classes to explicit class properties. Tailwind JIT requires complete class names at build time)
 
 - Make the burger menu for mobile devices in the landing page more UI/UX standard.
 
