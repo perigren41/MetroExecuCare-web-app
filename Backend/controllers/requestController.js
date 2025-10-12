@@ -821,7 +821,7 @@ const deleteRequestFile = async (req, res) => {
     const path = require('path');
 
     try {
-      const filePath = path.join(__dirname, '../uploads/request-files', file.filename);
+      const filePath = path.join(__dirname, '../uploads/request-files', file.file_name);
       await fs.unlink(filePath);
       console.log(`📂 Physical file deleted: ${filePath}`);
     } catch (fileError) {
@@ -838,7 +838,7 @@ const deleteRequestFile = async (req, res) => {
     // Log activity
     await logActivity(id, userId, 'file_deleted',
       `File "${file.original_file_name}" was permanently deleted`,
-      { file_id: fileId, filename: file.original_file_name, filepath: file.filename },
+      { file_id: fileId, filename: file.original_file_name, filepath: file.file_name },
       { deleted: true }
     );
 
@@ -898,7 +898,7 @@ const downloadLatestFile = async (req, res) => {
     }
 
     const latestFile = files[0];
-    const filePath = path.join(__dirname, '..', 'uploads', latestFile.filename);
+    const filePath = path.join(__dirname, '..', 'uploads', latestFile.file_name);
 
     // Check if file exists
     if (!fs.existsSync(filePath)) {
@@ -968,7 +968,7 @@ const downloadExecutiveFile = async (req, res) => {
     // If only one file, send it directly
     if (files.length === 1) {
       const executiveFile = files[0];
-      const filePath = path.join(__dirname, '..', 'uploads', executiveFile.filename);
+      const filePath = path.join(__dirname, '..', 'uploads', executiveFile.file_name);
 
       if (!fs.existsSync(filePath)) {
         return res.status(404).json({
@@ -1010,7 +1010,7 @@ const downloadExecutiveFile = async (req, res) => {
 
     // Add each file to the archive
     for (const file of files) {
-      const filePath = path.join(__dirname, '..', 'uploads', file.filename);
+      const filePath = path.join(__dirname, '..', 'uploads', file.file_name);
 
       if (fs.existsSync(filePath)) {
         archive.file(filePath, { name: file.original_file_name });
