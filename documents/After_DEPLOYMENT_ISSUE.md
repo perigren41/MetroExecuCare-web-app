@@ -272,3 +272,43 @@ Message: Request loa **Fixed** (Already showing: "FirstName LastName (Role)" wit
 -In admin-users-page under UserDetailsModal, I believe that the profile picture card is not up to its standard UI/UX Fundamentals. It's oval and not circle, nor it's using its own space to maximize aesthetics. **Fixed** (Profile picture now perfectly circular: 32/40/48 responsive sizing, 4px border, shadow-lg, proper spacing) 
 
 - ViewRequestDetails is not displaying Executive's uploaded files under uploaded files section. It must: Display initial uploaded files, and files that were requested by approvers. They will only be displayed there once it's already in the database and uploaded permanently.
+
+- In ViewRequestDetails, can you also add the name of the Human Resources that was assigned to the executive for further information if the request has already been claimed.
+
+- in ViewRequestDetails, you can see in ViewRequestDetails-AdditionalFilesRequested.png that the "From HR Personnel" is not correct, it should be the name of the approver.
+
+- Remove Profile picture must also be the same as Change Picture. Where we have confirmation for removing of profile modal, but success modal seems correct for using modal. It seems like we are still using alerts for this.
+
+- Welfare Head in test-accounts page is invisible even the Quick Login button.
+
+- Make the burger menu for mobile devices in the landing page more UI/UX standard.
+
+- Is it possible for the tests user accounts to have a guide on each pages so the test user can understand what needs to do in each page? Do this for the Demo Test Accounts only. If normal user(not in the demo accounts), they will not see the guides on each page. Give options and recommendations on how we can implement this for test user accounts **Last Priority**
+
+- Update the api/test/email-templates it looks like this is not the email templates that we are currently using since we have added some templates. API TEST our email templates and display it in email-templates (visual email testing since we dont have Resend custom domain yet)
+
+- I am unable to delete file in loa-submit as approver. If I sent the file to a temporary storage and try to delete them, it's giving this error:  Failed to delete file: Service not found. Please check your connection. metroexecucare-backend.up.railway.app/api/requests/5/files/1760253905571:1   Failed to load resource: the server responded with a status of 404 ()
+index-Daug_TLA.js:67  API Error Response (Full): {
+  "success": false,
+  "error": "File not found"
+}
+handleResponse @ index-Daug_TLA.js:67
+index-Daug_TLA.js:67  API Error Status: 404
+handleResponse @ index-Daug_TLA.js:67
+index-Daug_TLA.js:67  API Error URL: https://metroexecucare-backend.up.railway.app/api/requests/5/files/1760253905571
+handleResponse @ index-Daug_TLA.js:67
+index-Daug_TLA.js:67  Delete file error: Error: Service not found. Please check your connection.
+    at M0.handleResponse (index-Daug_TLA.js:67:2502)
+    at async M0.deleteRequestFile (index-Daug_TLA.js:67:13385)
+    at async Yx (index-Daug_TLA.js:335:43117)
+
+
+- loa-submit more UI/UX handling error like: index-Daug_TLA.js:67  API Error Response (Full): {
+  "success": false,
+  "error": "HR processing validation failed",
+  "details": [
+    "Approved date cannot be in the past"
+  ]
+}. This is only a backend handling error. We must have a UI/UX error handling. Be specific with error handling.
+
+- Claimed Requests in HRDashboard is not responsive to other screen sizes. It seems that smaller sceens cannot see the Claimed Requests.

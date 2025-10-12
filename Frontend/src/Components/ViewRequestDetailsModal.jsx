@@ -37,7 +37,8 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
       const requestResponse = await apiService.getRequestById(requestId);
       if (requestResponse.success) {
         setRequestDetails(requestResponse.data.request);
-        setUploadedFiles(requestResponse.data.files || []);
+        // Map files from backend response - includes all executive and approver uploaded files
+        setUploadedFiles(requestResponse.data.request.files || []);
       }
 
       // Fetch file requests for this request
@@ -240,6 +241,14 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
                     {new Date(requestDetails?.created_at).toLocaleDateString()}
                   </span>
                 </div>
+                {requestDetails?.assigned_hr_id && (
+                  <div className="col-span-1 sm:col-span-2">
+                    <span className="font-semibold text-gray-700">Assigned HR:</span>
+                    <span className="ml-2 text-gray-900">
+                      {requestDetails.assigned_hr_first_name} {requestDetails.assigned_hr_last_name}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -398,11 +407,14 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
                       <div className="flex items-center space-x-3">
                         <FileText className="text-blue-600" size={20} />
                         <div>
-                          <p className="text-sm font-medium text-gray-900">{file.original_filename}</p>
+                          <p className="text-sm font-medium text-gray-900">{file.original_file_name}</p>
                           <p className="text-xs text-gray-500">
-                            {file.submission_type === 'initial_submission' ? 'Initial Submission' : 'Additional Files'}
+                            {file.submission_type === 'initial_submission' ? 'Initial Submission' :
+                             file.file_request_id ? 'Requested Files' : 'Additional Files'}
                             {' • '}
-                            Uploaded: {new Date(file.uploaded_at).toLocaleDateString()}
+                            Uploaded by: {file.uploader_first_name} {file.uploader_last_name}
+                            {' • '}
+                            {new Date(file.created_at).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
