@@ -495,7 +495,14 @@ export default function LOA_Submit() {
                 }, 2000);
             } else {
                 console.error('❌ Request processing failed:', response);
-                setErrorMessage('Failed to approve request: ' + (response.error || response.message || 'Unknown error'));
+                // Display specific validation errors if available
+                let errorMsg = 'Failed to approve request: ';
+                if (response.details && Array.isArray(response.details) && response.details.length > 0) {
+                    errorMsg += '\n\n' + response.details.map((err, idx) => `${idx + 1}. ${err}`).join('\n');
+                } else {
+                    errorMsg += (response.error || response.message || 'Unknown error');
+                }
+                setErrorMessage(errorMsg);
                 setShowErrorModal(true);
             }
         } catch (error) {
@@ -540,7 +547,14 @@ export default function LOA_Submit() {
                     navigate(dashboardRoute, { state: { user } });
                 }, 2000);
             } else {
-                setErrorMessage('Failed to reject request: ' + (response.message || 'Unknown error'));
+                // Display specific validation errors if available
+                let errorMsg = 'Failed to reject request: ';
+                if (response.details && Array.isArray(response.details) && response.details.length > 0) {
+                    errorMsg += '\n\n' + response.details.map((err, idx) => `${idx + 1}. ${err}`).join('\n');
+                } else {
+                    errorMsg += (response.error || response.message || 'Unknown error');
+                }
+                setErrorMessage(errorMsg);
                 setShowErrorModal(true);
             }
         } catch (error) {
@@ -1854,9 +1868,9 @@ export default function LOA_Submit() {
 
                         {/* Modal Body */}
                         <div className="p-6">
-                            <p className="text-gray-700 text-center mb-6">
+                            <div className="text-gray-700 mb-6 whitespace-pre-line">
                                 {errorMessage}
-                            </p>
+                            </div>
 
                             {/* Action Button */}
                             <div className="flex justify-center">
