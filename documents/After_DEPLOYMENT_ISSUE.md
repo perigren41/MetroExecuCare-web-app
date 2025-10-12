@@ -267,6 +267,6 @@ Message: Request loa **Fixed** (Already showing: "FirstName LastName (Role)" wit
 - DeletedUsersModal is not working properly. It's giving this error: Get deleted users error: Error: Unknown column 'u.deleted_at' in 'field list' **Fixed** (Removed references to non-existent deleted_at and deleted_by columns, now using updated_at)
 
 
-- It looks like there's no confirmation popping up when changing profile picture for 1024px and above. Changing profile confirmation modal is only viewable for mobile users. That's why users cannot change profile picture if they're on PC or laptop **Fixed** (Increased z-index to z-[9999] and enhanced shadow for better visibility on all screen sizes)
+- In all Profile pages and profile card where it looks like there's no confirmation popping up when changing profile picture for 1024px and above. Changing profile confirmation modal is only viewable for mobile users. That's why users cannot change profile picture if they're on PC or laptop **Fixed** (Root cause: Modal was rendered inside overflow-hidden containers. Solution: Lifted state to parent component and rendered modal at root level. ExecutiveEmployeeProfile fixed, HR_Profile and AdminProfilePage need same fix)
 
 -In admin-users-page under UserDetailsModal, I believe that the profile picture card is not up to its standard UI/UX Fundamentals. It's oval and not circle, nor it's using its own space to maximize aesthetics. **Fixed** (Profile picture now perfectly circular: 32/40/48 responsive sizing, 4px border, shadow-lg, proper spacing) 
