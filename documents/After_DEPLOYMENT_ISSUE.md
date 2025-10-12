@@ -265,3 +265,8 @@ Message: Request loa **Fixed** (Already showing: "FirstName LastName (Role)" wit
 - loa-submit page, HRDashboard, RequestDetailsModal, and LoaStatusTracker(only the legend part) is not responsive to smaller devices such as phones, Details is overlapping to each other. Make sure to make this responsive and use UI/UX Fundamentals to create a modern responsive page. **Fixed** (LOA_Submit and HRDashboard already responsive; ViewRequestDetailsModal and LoaStatusTracker legend now responsive with proper grid layouts)
 
 - DeletedUsersModal is not working properly. It's giving this error: Get deleted users error: Error: Unknown column 'u.deleted_at' in 'field list' **Fixed** (Removed references to non-existent deleted_at and deleted_by columns, now using updated_at)
+
+
+- It looks like there's no confirmation popping up when changing profile picture for 1024px and above. Changing profile confirmation modal is only viewable for mobile users. That's why users cannot change profile picture if they're on PC or laptop **Fixed** (Increased z-index to z-[9999] and enhanced shadow for better visibility on all screen sizes)
+
+-In admin-users-page under UserDetailsModal, I believe that the profile picture card is not up to its standard UI/UX Fundamentals. It's oval and not circle, nor it's using its own space to maximize aesthetics. **Fixed** (Profile picture now perfectly circular: 32/40/48 responsive sizing, 4px border, shadow-lg, proper spacing) 
