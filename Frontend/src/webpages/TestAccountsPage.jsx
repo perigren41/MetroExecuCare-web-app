@@ -13,35 +13,45 @@ export default function TestAccountsPage() {
       description: 'Can submit LOA/Authorization requests and track status',
       email: 'executive@metroexecucare.com',
       password: 'Executive@123',
-      color: 'blue'
+      borderColor: 'border-blue-500',
+      bgColor: 'bg-blue-500',
+      hoverBgColor: 'hover:bg-blue-600'
     },
     {
       role: 'HR Personnel',
       description: 'Can claim and process incoming requests',
       email: 'hr@metroexecucare.com',
       password: 'HR@12345',
-      color: 'purple'
+      borderColor: 'border-purple-500',
+      bgColor: 'bg-purple-500',
+      hoverBgColor: 'hover:bg-purple-600'
     },
     {
       role: 'Benefits Officer',
       description: 'Reviews and approves/rejects requests after HR processing',
       email: 'benefits@metroexecucare.com',
       password: 'Benefits@123',
-      color: 'green'
+      borderColor: 'border-green-500',
+      bgColor: 'bg-green-500',
+      hoverBgColor: 'hover:bg-green-600'
     },
     {
       role: 'Welfare Head',
       description: 'Final approval authority for requests',
       email: 'welfare@metroexecucare.com',
       password: 'Welfare@123',
-      color: 'orange'
+      borderColor: 'border-orange-500',
+      bgColor: 'bg-orange-500',
+      hoverBgColor: 'hover:bg-orange-600'
     },
     {
       role: 'Administrator',
       description: 'Manages users and system settings (view only for testing)',
       email: 'admintest@metroexecucare.com',
       password: 'Admin@123',
-      color: 'red'
+      borderColor: 'border-red-500',
+      bgColor: 'bg-red-500',
+      hoverBgColor: 'hover:bg-red-600'
     }
   ];
 
@@ -120,9 +130,9 @@ export default function TestAccountsPage() {
           {testAccounts.map((account, index) => (
             <div
               key={index}
-              className={`bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow border-t-4 border-${account.color}-500`}
+              className={`bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow border-t-4 ${account.borderColor}`}
             >
-              <div className={`bg-${account.color}-500 px-6 py-4`}>
+              <div className={`${account.bgColor} px-6 py-4`}>
                 <h3 className="text-lg font-bold text-white">{account.role}</h3>
                 <p className="text-xs text-white/90 mt-1">{account.description}</p>
               </div>
@@ -179,7 +189,7 @@ export default function TestAccountsPage() {
                 {/* Quick Login Button */}
                 <button
                   onClick={() => handleQuickLogin(account.email, account.password)}
-                  className={`w-full py-3 bg-${account.color}-500 hover:bg-${account.color}-600 text-white rounded-lg transition-colors text-sm font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2`}
+                  className={`w-full py-3 ${account.bgColor} ${account.hoverBgColor} text-white rounded-lg transition-colors text-sm font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2`}
                 >
                   <LogIn className="w-4 h-4" />
                   Quick Login as {account.role}
