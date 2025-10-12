@@ -540,17 +540,22 @@ export default function LOAStatusTracker() {
             Request Progress
           </h2>
 
-          {/* Status pill - Same styling as dashboard */}
+          {/* Status pill - Matching dashboard styling */}
           <div className="flex justify-center mb-6">
             <div
-              className="font-bold rounded-full shadow-xl/20 px-3 sm:px-4 pt-2 pb-1 flex flex-col items-center border mx-auto w-full max-w-xs sm:max-w-sm md:w-60 h-auto min-h-20"
+              className="rounded-full shadow-lg px-6 py-4 sm:px-8 sm:py-6 flex flex-col items-center
+              border-2 w-full max-w-xs sm:max-w-sm min-h-[100px] sm:min-h-[120px] justify-center space-y-2"
               style={currentStatusDisplay.pillStyle}
             >
-              <div className="flex items-center flex-wrap justify-center gap-1">
+              <div className="flex items-center space-x-2">
                 <img src={currentStatusDisplay.icon} alt="Status" className="w-8 h-8 sm:w-10 sm:h-10" />
-                <span className="text-sm sm:text-base text-center">{currentStatusDisplay.text}</span>
+                <span className="font-semibold text-sm sm:text-base text-center">
+                  {currentStatusDisplay.text}
+                </span>
               </div>
-              <p className="text-xs text-gray-500 text-center mt-1">{currentStatusDisplay.note}</p>
+              <p className="text-xs sm:text-sm text-center opacity-80 leading-relaxed">
+                {currentStatusDisplay.note}
+              </p>
             </div>
           </div>
 

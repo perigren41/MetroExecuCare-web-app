@@ -103,9 +103,9 @@ function GreetingStatusCard({
             Current Request Status
           </h2>
 
-          {/* Status Pill - Bigger with more padding */}
+          {/* Status Pill - Fully Rounded */}
           <div
-            className="rounded-2xl shadow-lg px-6 py-4 sm:px-8 sm:py-6 flex flex-col items-center
+            className="rounded-full shadow-lg px-6 py-4 sm:px-8 sm:py-6 flex flex-col items-center
             border-2 w-full max-w-xs sm:max-w-sm min-h-[100px] sm:min-h-[120px] justify-center space-y-2"
             style={requestStatus.pillStyle}
           >
