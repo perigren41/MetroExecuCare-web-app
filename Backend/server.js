@@ -46,8 +46,9 @@
       'http://localhost:3008',
       'http://localhost:3009',
       'http://localhost:3010',
-      // Railway deployment URLs
+      // Railway deployment URLs - frontend and backend
       'https://metroexecucare.up.railway.app',
+      'https://metroexecucare-backend.up.railway.app',
       // Allow IP address for mobile/external device testing
       'http://192.168.1.3:3000',
       'http://192.168.1.3:3001',
@@ -55,9 +56,11 @@
     ],
     credentials: true,
     optionsSuccessStatus: 200,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-    preflightContinue: false
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+    exposedHeaders: ['Content-Length', 'Content-Type'],
+    preflightContinue: false,
+    maxAge: 86400 // Cache preflight response for 24 hours
   };
   app.use(cors(corsOptions));
 
