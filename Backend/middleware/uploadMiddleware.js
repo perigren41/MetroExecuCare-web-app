@@ -52,7 +52,14 @@ const requestFileStorage = multer.diskStorage({
     const timestamp = Date.now();
     const extension = path.extname(file.originalname);
     const baseName = path.basename(file.originalname, extension);
-    const filename = `${requestId}_${userId}_${timestamp}_${baseName}${extension}`;
+
+    // Sanitize filename: replace spaces and special characters with underscores
+    const sanitizedBaseName = baseName
+      .replace(/\s+/g, '_')  // Replace spaces (including multiple spaces) with single underscore
+      .replace(/[^a-zA-Z0-9_-]/g, '_')  // Replace special characters with underscore
+      .replace(/_+/g, '_');  // Replace multiple underscores with single underscore
+
+    const filename = `${requestId}_${userId}_${timestamp}_${sanitizedBaseName}${extension}`;
     cb(null, filename);
   }
 });

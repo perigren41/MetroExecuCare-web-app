@@ -736,16 +736,38 @@ const downloadRequestFile = async (req, res) => {
     const file = files[0];
     // Construct the correct file path using file_name, not file_path
     // file_path contains the full path at upload time, but we need to build it from file_name
-    const filePath = path.join(__dirname, '..', 'uploads', 'request-files', file.file_name);
+    let filePath = path.join(__dirname, '..', 'uploads', 'request-files', file.file_name);
 
     // Check if file exists on disk
     const fs = require('fs');
+
+    // If file doesn't exist, try sanitized version (for backwards compatibility with old files that had spaces)
     if (!fs.existsSync(filePath)) {
-      console.error(`File not found on disk: ${filePath}`);
-      return res.status(404).json({
-        success: false,
-        error: 'File not found on disk'
-      });
+      console.log(`❌ File not found at original path: ${filePath}`);
+
+      // Try sanitized filename (spaces and special characters replaced with underscores)
+      const sanitizedFileName = file.file_name
+        .replace(/\s+/g, '_')  // Replace spaces with underscores
+        .replace(/[^a-zA-Z0-9_.-]/g, '_')  // Replace special characters
+        .replace(/_+/g, '_');  // Replace multiple underscores with single
+
+      const sanitizedPath = path.join(__dirname, '..', 'uploads', 'request-files', sanitizedFileName);
+      console.log(`🔍 Trying sanitized path: ${sanitizedPath}`);
+
+      if (fs.existsSync(sanitizedPath)) {
+        console.log(`✅ File found at sanitized path!`);
+        filePath = sanitizedPath;
+      } else {
+        console.error(`❌ File not found at either path:
+          Original: ${filePath}
+          Sanitized: ${sanitizedPath}`);
+        return res.status(404).json({
+          success: false,
+          error: 'File not found on disk'
+        });
+      }
+    } else {
+      console.log(`✅ File found at original path: ${filePath}`);
     }
 
     // Set appropriate headers
