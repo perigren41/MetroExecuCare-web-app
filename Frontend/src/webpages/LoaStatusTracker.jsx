@@ -488,7 +488,7 @@ export default function LOAStatusTracker() {
           </div>
 
           {/* Download Buttons */}
-          {requestDetails.current_status === 'completed' ? (
+          {(requestDetails.current_status === 'completed' || requestDetails.current_status === 'approved') ? (
             <div className="flex flex-col gap-3 text-sm">
               <button
                 onClick={() => handleDownload(
@@ -515,7 +515,7 @@ export default function LOAStatusTracker() {
                 disabled
                 className="px-4 py-2 rounded-full bg-gray-300 text-gray-600 cursor-not-allowed shadow-md"
               >
-                Download (Available when completed)
+                Download (Available when approved)
               </button>
             </div>
           )}
