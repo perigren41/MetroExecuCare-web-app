@@ -298,3 +298,160 @@ Message: Request loa **Fixed** (Already showing: "FirstName LastName (Role)" wit
 }. This is only a backend handling error. We must have a UI/UX error handling. Be specific with error handling. **Fixed** (Error modal now parses and displays validation details array as numbered list with whitespace-pre-line formatting)
 
 - Claimed Requests in HRDashboard is not responsive to other screen sizes. It seems that smaller sceens cannot see the Claimed Requests. **Fixed** (Improved container sizing, grid breakpoints changed to md:grid-cols-2, responsive text/icon sizes, better padding/gaps, truncate for overflow text)
+
+- I am unable to delete users as Admin, it's giving me this error: Delete user error: Error: Unknown column 'deleted_at' in 'field list'
+    at PromisePool.execute (/app/node_modules/mysql2/lib/promise/pool.js:54:22)
+    at deleteUser (/app/controllers/userController.js:452:16)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
+  code: 'ER_BAD_FIELD_ERROR',
+  errno: 1054,
+  sql: 'UPDATE users SET\n' +
+    '        is_active = 0,\n' +
+    '        deleted_at = CURRENT_TIMESTAMP,\n' +
+    '        deletion_reason = ?,\n' +
+    '        deleted_by = ?,\n' +
+    '        updated_at = CURRENT_TIMESTAMP\n' +
+    '      WHERE id = ?',
+  sqlState: '42S22',
+  sqlMessage: "Unknown column 'deleted_at' in 'field list'"
+}
+100.64.0.2 - - [13/Oct/2025:03:32:27 +0000] "DELETE /api/users/12 HTTP/1.1" 500 49 "https://metroexecucare.up.railway.app/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0"
+Token authentication error: TokenExpiredError: jwt expired
+    at /app/node_modules/jsonwebtoken/verify.js:190:21
+    at getSecret (/app/node_modules/jsonwebtoken/verify.js:97:14)
+    at module.exports [as verify] (/app/node_modules/jsonwebtoken/verify.js:101:10)
+    at authenticateToken (/app/middleware/authMiddleware.js:18:25)
+    at Layer.handle [as handle_request] (/app/node_modules/express/lib/router/layer.js:95:5)
+    at trim_prefix (/app/node_modules/express/lib/router/index.js:328:13)
+    at /app/node_modules/express/lib/router/index.js:286:9
+    at Function.process_params (/app/node_modules/express/lib/router/index.js:346:12)
+    at next (/app/node_modules/express/lib/router/index.js:280:10)
+    at Function.handle (/app/node_modules/express/lib/router/index.js:175:3) {
+  expiredAt: 2025-10-13T03:17:50.000Z
+}
+100.64.0.2 - - [13/Oct/2025:03:32:59 +0000] "GET /api/requests/9 HTTP/1.1" 403 41 "https://metroexecucare.up.railway.app/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
+Token authentication error: TokenExpiredError: jwt expired
+    at /app/node_modules/jsonwebtoken/verify.js:190:21
+    at getSecret (/app/node_modules/jsonwebtoken/verify.js:97:14)
+    at module.exports [as verify] (/app/node_modules/jsonwebtoken/verify.js:101:10)
+    at authenticateToken (/app/middleware/authMiddleware.js:18:25)
+    at Layer.handle [as handle_request] (/app/node_modules/express/lib/router/layer.js:95:5)
+    at next (/app/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/app/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/app/node_modules/express/lib/router/layer.js:95:5)
+    at /app/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/app/node_modules/express/lib/router/index.js:346:12) {
+  expiredAt: 2025-10-13T03:17:50.000Z
+}
+
+- in AdminProfile, the notes card textfield must expand and maximize the white space that he can use inside the Summary div
+
+- under hr-History for HR, Benefits Officer, and Division head are doubled per request ID. It should only display 1 per request.
+
+- Cannot download approved letter and original request letters in LoaStatusTracker if executive is already fully approved
+
+- HR, Benefits officer and Division head cannot download Files under Documents Preview
+
+- unable to download executive file in LOAuthorization page: Failed to download file: HTTP error! status: 404
+
+- If approver uploads file in loa-submit and tries to remove uploaded file, they are unable to remove temporary upload by approvers(HR,BO,Division Head) it's giving this error: metroexecucare-backend.up.railway.app/api/requests/5/files/1760333738472:1   Failed to load resource: the server responded with a status of 404 ()
+hook.js:608  API Error Response (Full): {
+  "success": false,
+  "error": "File not found"
+}
+overrideMethod @ hook.js:608
+hook.js:608  API Error Status: 404
+overrideMethod @ hook.js:608
+hook.js:608  API Error URL: https://metroexecucare-backend.up.railway.app/api/requests/5/files/1760333738472
+overrideMethod @ hook.js:608
+hook.js:608  Delete file error: Error: Service not found. Please check your connection.
+    at M0.handleResponse (index-38QGRpCq.js:67:2502)
+    at async M0.deleteRequestFile (index-38QGRpCq.js:67:13385)
+    at async Yx (index-38QGRpCq.js:341:542)
+
+- unable to approve in loa-submit under LOAuthorization, it's giving this error: hook.js:608  API Error Response (Full): {
+  "success": false,
+  "error": "HR processing validation failed",
+  "details": [
+    "Valid hospital contact number is required if provided"
+  ]
+}
+overrideMethod @ hook.js:608
+hook.js:608  API Error Status: 400
+overrideMethod @ hook.js:608
+hook.js:608  API Error URL: https://metroexecucare-backend.up.railway.app/api/requests/9/process
+overrideMethod @ hook.js:608
+hook.js:608  Process request error: Error: HR processing validation failed
+    at M0.handleResponse (index-38QGRpCq.js:67:2502)
+    at async M0.processRequest (index-38QGRpCq.js:67:5940)
+    at async Vx (index-38QGRpCq.js:335:42309)
+overrideMethod @ hook.js:608
+hook.js:608  ❌ Request processing error: Error: HR processing validation failed
+    at M0.handleResponse (index-38QGRpCq.js:67:2502)
+    at async M0.processRequest (index-38QGRpCq.js:67:5940) It looks like the contact number under loa-submit is not being passed in Hospital contact number **Fixed**
+
+
+- ***LAST PRIORITY***Unable to remove/change profile picture in Admin Page error: hook.js:608
+ Remove profile picture error: TypeError: Failed to fetch
+    at M0.removeProfilePicture (index-38QGRpCq.js:67:9798)
+    at _ (index-38QGRpCq.js:290:3659)
+    at c (index-38QGRpCq.js:287:2849)
+    at Object.Hp (index-38QGRpCq.js:37:9855)
+    at Vp (index-38QGRpCq.js:37:10009)
+    at Gp (index-38QGRpCq.js:37:10066)
+    at _c (index-38QGRpCq.js:37:31446)
+    at Vu (index-38QGRpCq.js:37:31863)
+    at index-38QGRpCq.js:37:36776
+    at Fi (index-38QGRpCq.js:40:36896)
+overrideMethod	@	hook.js:608 **REMOVING**
+
+index-38QGRpCq.js:290  Error uploading profile picture: TypeError: Failed to fetch
+    at M0.uploadProfilePicture (index-38QGRpCq.js:67:9562)
+    at w (index-38QGRpCq.js:290:3176)
+    at c (index-38QGRpCq.js:287:2849)
+    at Object.Hp (index-38QGRpCq.js:37:9855)
+    at Vp (index-38QGRpCq.js:37:10009)
+    at Gp (index-38QGRpCq.js:37:10066)
+    at _c (index-38QGRpCq.js:37:31446)
+    at Vu (index-38QGRpCq.js:37:31863)
+    at index-38QGRpCq.js:37:36776
+    at Fi (index-38QGRpCq.js:40:36896) **UPLOADING** **Fixed** (Root cause: CORS configuration - see Issue #10)
+
+- ***LAST PRIORITY*** Why am I getting Failed to fetch error even if my backend is deployed and active. Error:
+loginpage:1  Access to fetch at 'https://metroexecucare-backend.up.railway.app/api/auth/login' from origin 'https://metroexecucare.up.railway.app' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+index-38QGRpCq.js:67   POST https://metroexecucare-backend.up.railway.app/api/auth/login net::ERR_FAILED
+login @ index-38QGRpCq.js:67
+login @ index-38QGRpCq.js:67
+C @ index-38QGRpCq.js:242
+Hp @ index-38QGRpCq.js:37
+Vp @ index-38QGRpCq.js:37
+Gp @ index-38QGRpCq.js:37
+_c @ index-38QGRpCq.js:37
+Vu @ index-38QGRpCq.js:37
+(anonymous) @ index-38QGRpCq.js:37
+Fi @ index-38QGRpCq.js:40
+fu @ index-38QGRpCq.js:37
+Na @ index-38QGRpCq.js:37
+oi @ index-38QGRpCq.js:37
+ch @ index-38QGRpCq.js:37
+index-38QGRpCq.js:67  Login error: TypeError: Failed to fetch
+    at M0.login (index-38QGRpCq.js:67:2823)
+    at login (index-38QGRpCq.js:67:16837)
+    at C (index-38QGRpCq.js:242:46830)
+    at Object.Hp (index-38QGRpCq.js:37:9855)
+    at Vp (index-38QGRpCq.js:37:10009)
+    at Gp (index-38QGRpCq.js:37:10066)
+    at _c (index-38QGRpCq.js:37:31446)
+    at Vu (index-38QGRpCq.js:37:31863)
+    at index-38QGRpCq.js:37:36776
+    at Fi (index-38QGRpCq.js:40:36896) **Fixed**
+
+**Solution:**
+Updated Backend/server.js CORS configuration to:
+- Add backend URL to allowed origins: https://metroexecucare-backend.up.railway.app
+- Add PATCH method to allowed methods
+- Add additional headers: Origin, X-Requested-With
+- Add exposedHeaders for proper response handling
+- Increase maxAge to 86400 (24 hours) for preflight caching
+
+Root cause: Frontend at metroexecucare.up.railway.app was making requests to backend at metroexecucare-backend.up.railway.app, but CORS only allowed the frontend URL. The backend URL itself needed to be in the allowed origins list for preflight requests to pass.
