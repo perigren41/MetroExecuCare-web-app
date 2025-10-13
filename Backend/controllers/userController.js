@@ -448,16 +448,14 @@ const deleteUser = async (req, res) => {
       });
     }
 
-    // Soft delete by setting is_active = 0 and recording deletion details
+    // Soft delete by setting is_active = 0
+    // Note: deleted_at, deletion_reason, deleted_by columns don't exist in schema
     await pool.execute(
       `UPDATE users SET
         is_active = 0,
-        deleted_at = CURRENT_TIMESTAMP,
-        deletion_reason = ?,
-        deleted_by = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?`,
-      [deletion_reason || null, req.user.id, id]
+      [id]
     );
 
     // Log user deletion activity
@@ -508,13 +506,12 @@ const getDeletedUsers = async (req, res) => {
     const offset = (page - 1) * limit;
     const search = req.query.search || '';
 
-    // Build query for inactive users (is_active = 0) with deletion tracking info
-    // Note: deleted_at and deleted_by columns don't exist yet, using updated_at as fallback
+    // Build query for inactive users (is_active = 0)
+    // Note: deleted_at, deleted_by, deletion_reason columns don't exist in schema
     let query = `
       SELECT
         u.id, u.employee_id, u.email, u.first_name, u.last_name, u.middle_name, u.role,
-        u.department, u.position, u.branch, u.contact_number, u.birth_date, u.updated_at,
-        u.deletion_reason
+        u.department, u.position, u.branch, u.contact_number, u.birth_date, u.updated_at
       FROM users u
       WHERE u.is_active = 0
     `;

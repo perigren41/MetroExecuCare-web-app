@@ -898,7 +898,7 @@ const downloadLatestFile = async (req, res) => {
     }
 
     const latestFile = files[0];
-    const filePath = path.join(__dirname, '..', 'uploads', latestFile.file_name);
+    const filePath = path.join(__dirname, '..', 'uploads', 'request-files', latestFile.file_name);
 
     // Check if file exists
     if (!fs.existsSync(filePath)) {
@@ -968,7 +968,7 @@ const downloadExecutiveFile = async (req, res) => {
     // If only one file, send it directly
     if (files.length === 1) {
       const executiveFile = files[0];
-      const filePath = path.join(__dirname, '..', 'uploads', executiveFile.file_name);
+      const filePath = path.join(__dirname, '..', 'uploads', 'request-files', executiveFile.file_name);
 
       if (!fs.existsSync(filePath)) {
         return res.status(404).json({
@@ -1010,7 +1010,7 @@ const downloadExecutiveFile = async (req, res) => {
 
     // Add each file to the archive
     for (const file of files) {
-      const filePath = path.join(__dirname, '..', 'uploads', file.file_name);
+      const filePath = path.join(__dirname, '..', 'uploads', 'request-files', file.file_name);
 
       if (fs.existsSync(filePath)) {
         archive.file(filePath, { name: file.original_file_name });
