@@ -435,7 +435,28 @@ Na	@	index-CZlHhtub.js:37
 oi	@	index-CZlHhtub.js:37
 ch	@	index-CZlHhtub.js:37
 
-- HR, Benefits officer and Division head cannot download Files under Documents Preview **FIXED**
+- HR, Benefits officer and Division head cannot download Files under Documents Preview **Fixed**
+
+Root cause: downloadRequestFile was using file.file_path directly which contained the full server path at upload time, but file system structure requires path reconstruction.
+
+Solution: Updated [requestController.js:737-739](Backend/controllers/requestController.js#L737-L739)
+- Changed from: `const filePath = file.file_path;`
+- Changed to: `const filePath = path.join(__dirname, '..', 'uploads', 'request-files', file.file_name);`
+- Added error logging for debugging
+- Now properly constructs path from file_name for all download requests
+
+Error details (resolved):
+index-Cf66XNFH.js:67   GET https://metroexecucare-backend.up.railway.app/api/requests/14/files/53/download 404 (Not Found)
+downloadRequestFile @ index-Cf66XNFH.js:67
+Download file error: Error: HTTP error! status: 404
+
+- in Request Progress under loastatustracker, if it's the current progress, instead of using blank box, use the waiting box in the legends. For example: If request is still being reviewed by HR, HR progress must have waiting legend. **Fixed**
+
+Solution: Updated [LoaStatusTracker.jsx:374-386](Frontend/src/webpages/LoaStatusTracker.jsx#L374-L386)
+- Simplified getStepIcon logic to always show ClockSquare (waiting icon) for active in-progress steps
+- Previously only specific state strings showed waiting icon
+- Now all active states (pending, hr_processing, benefits_review, welfare_review, hr_final_verification) show waiting icon
+- Future steps still show BlankSquare, completed steps show CheckSquare 
 
 - unable to download executive file in LOAuthorization page: Failed to download file: HTTP error! status: 404 **FIXED**
 
