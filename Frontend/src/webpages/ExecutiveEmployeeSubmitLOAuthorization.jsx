@@ -358,7 +358,7 @@ export default function SubmitLetterOfAuthorization() {
                       try {
                         // Fetch the PDF as a blob to force download instead of opening in browser (mobile-friendly)
                         // URL encode the filename to handle spaces
-                        const encodedPath = encodeURI(`${BACKEND_BASE_URL}/uploads/documents/letters/Request Letter of Authorization.pdf`);
+                        const encodedPath = encodeURI(`${BACKEND_BASE_URL}/templates/documents/Request Letter of Authorization.pdf`);
                         const response = await fetch(encodedPath);
 
                         if (!response.ok) {
@@ -455,7 +455,7 @@ export default function SubmitLetterOfAuthorization() {
                 {/* Action Buttons */}
                 <div className="space-y-2">
                   <button
-                    onClick={() => window.open(`${BACKEND_BASE_URL}/uploads/documents/letters/Request%20Letter%20of%20Authorization.pdf`, '_blank')}
+                    onClick={() => window.open(`${BACKEND_BASE_URL}/templates/documents/Request%20Letter%20of%20Authorization.pdf`, '_blank')}
                     className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs cursor-pointer"
                   >
                     <Eye className="w-3 h-3" />
@@ -467,7 +467,7 @@ export default function SubmitLetterOfAuthorization() {
                       try {
                         // Fetch the PDF as a blob to force download instead of opening in browser (mobile-friendly)
                         // URL encode the filename to handle spaces
-                        const encodedPath = encodeURI(`${BACKEND_BASE_URL}/uploads/documents/letters/Request Letter of Authorization.pdf`);
+                        const encodedPath = encodeURI(`${BACKEND_BASE_URL}/templates/documents/Request Letter of Authorization.pdf`);
                         const response = await fetch(encodedPath);
 
                         if (!response.ok) {

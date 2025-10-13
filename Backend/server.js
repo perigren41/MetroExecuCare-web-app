@@ -82,6 +82,13 @@
     next();
   }, express.static(path.join(__dirname, 'uploads')));
 
+  // Static file serving for templates (Letter templates that are part of the codebase)
+  app.use('/templates', (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  }, express.static(path.join(__dirname, 'templates')));
+
 
   // Root endpoint
   app.get('/', (req, res) => {

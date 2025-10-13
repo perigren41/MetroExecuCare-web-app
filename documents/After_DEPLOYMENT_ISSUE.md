@@ -650,7 +650,7 @@ Root cause: Frontend at metroexecucare.up.railway.app was making requests to bac
 2. Under Request Information, aside from "Assigned HR" it must also display the assigned Benefits Officer and Division Head. Add this: Change "Assigned HR" to "Assigned Human Resource Personnel". Use proper naming convention for users to understand. **Fixed** (Backend: Added LEFT JOINs to get Benefits Officer and Division Head assignments from request_approvals. Frontend: Added display fields for "Assigned Human Resource Personnel", "Assigned Benefits Officer", and "Assigned Division Head")
 
 **UPLOAD FILES**
-1. It looks like Letter of Approval and Letter of Authorization cannot be download properly in executive-employee-submit-loauthorization/loapproval. It's not in the volume storage yet.
+1. It looks like Letter of Approval and Letter of Authorization cannot be download properly in executive-employee-submit-loauthorization/loapproval. It's not in the volume storage yet. **Fixed** (Moved template PDFs from uploads/documents/letters/ to templates/documents/ directory which is part of the git repo. Added /templates static route in server.js with CORS headers. Updated frontend to use new /templates/documents/ path for all template downloads. Templates now persist across Railway deployments as they're part of the codebase)
 
 **COMMENTS and REASON FOR REQUEST**
 1. I see no value where our Comments is being put. I think what we can do is  the Reason For Request in loa-submit, display this for the "Reason For Request" or "Letter Purpose" during clearance stage instead of the pre-comment.
