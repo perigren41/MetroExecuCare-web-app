@@ -437,13 +437,24 @@ ch	@	index-CZlHhtub.js:37
 
 - HR, Benefits officer and Division head cannot download Files under Documents Preview **Fixed**
 
-Root cause: downloadRequestFile was using file.file_path directly which contained the full server path at upload time, but file system structure requires path reconstruction.
+**ROOT CAUSE:** Filenames with spaces in uploads causing 404 errors
+- Example: `pending_11_1760357181798_Request  Letter of Approval .pdf`
+- Railway's filesystem has issues with spaces in filenames
+- Database stores filename with spaces, but file system doesn't find it
 
-Solution: Updated [requestController.js:737-739](Backend/controllers/requestController.js#L737-L739)
-- Changed from: `const filePath = file.file_path;`
-- Changed to: `const filePath = path.join(__dirname, '..', 'uploads', 'request-files', file.file_name);`
-- Added error logging for debugging
-- Now properly constructs path from file_name for all download requests
+**TWO-PART SOLUTION:**
+
+1. **For NEW uploads** - [uploadMiddleware.js:56-60](Backend/middleware/uploadMiddleware.js#L56-L60)
+   - Sanitize filenames during upload
+   - Replace spaces with underscores
+   - Replace special characters with underscores
+   - Clean up multiple underscores
+
+2. **For LEGACY files** - [requestController.js:744-771](Backend/controllers/requestController.js#L744-L771)
+   - Try original filename first (with spaces)
+   - If not found, try sanitized version (backward compatibility)
+   - Added detailed logging for debugging
+   - Handles both old and new files
 
 Error details (resolved):
 index-Cf66XNFH.js:67   GET https://metroexecucare-backend.up.railway.app/api/requests/14/files/53/download 404 (Not Found)
