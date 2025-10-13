@@ -601,16 +601,14 @@ const restoreUser = async (req, res) => {
       });
     }
 
-    // Restore user - set is_active = 1 and record restoration details
+    // Restore user - set is_active = 1
+    // Note: restored_at, restoration_reason, restored_by columns don't exist in schema
     await pool.execute(
       `UPDATE users SET
         is_active = 1,
-        restored_at = CURRENT_TIMESTAMP,
-        restoration_reason = ?,
-        restored_by = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?`,
-      [restored_reason || null, req.user.id, id]
+      [id]
     );
 
     // Get restored user data
