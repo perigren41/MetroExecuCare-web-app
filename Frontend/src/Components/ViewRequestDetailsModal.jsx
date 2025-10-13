@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Upload, FileText, Trash2, AlertCircle } from 'lucide-react';
+import { X, Upload, FileText, Trash2, AlertCircle, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import apiService from '@/services/api';
 import AlertModal from './AlertModal';
@@ -172,6 +172,46 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
         type: 'error',
         title: 'Deletion Failed',
         message: error.message || 'Failed to delete request. It may have already been claimed by HR.',
+        onConfirm: () => setAlertConfig({ ...alertConfig, isOpen: false })
+      });
+    }
+  };
+
+  const handleDownloadFile = async (fileId, fileName) => {
+    try {
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+      const token = localStorage.getItem('authToken');
+
+      const response = await fetch(`${API_BASE_URL}/requests/${requestId}/files/${fileId}/download`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }
+
+      // Get the blob from response
+      const blob = await response.blob();
+
+      // Create a download link and trigger it
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (error) {
+      console.error('Download error:', error);
+      setAlertConfig({
+        isOpen: true,
+        type: 'error',
+        title: 'Download Failed',
+        message: 'Failed to download file. Please try again.',
         onConfirm: () => setAlertConfig({ ...alertConfig, isOpen: false })
       });
     }
@@ -404,10 +444,10 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
                       key={file.id}
                       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100"
                     >
-                      <div className="flex items-center space-x-3">
-                        <FileText className="text-blue-600" size={20} />
-                        <div>
-                          <p className="text-sm font-medium text-gray-900">{file.original_file_name}</p>
+                      <div className="flex items-center space-x-3 flex-1 min-w-0">
+                        <FileText className="text-blue-600 flex-shrink-0" size={20} />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-900 truncate">{file.original_file_name}</p>
                           <p className="text-xs text-gray-500">
                             {file.submission_type === 'initial_submission' ? 'Initial Submission' :
                              file.file_request_id ? 'Requested Files' : 'Additional Files'}
@@ -418,6 +458,13 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
                           </p>
                         </div>
                       </div>
+                      <button
+                        onClick={() => handleDownloadFile(file.id, file.original_file_name)}
+                        className="flex-shrink-0 ml-3 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        title="Download file"
+                      >
+                        <Download size={16} />
+                      </button>
                     </div>
                   ))}
                 </div>
