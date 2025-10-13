@@ -413,9 +413,9 @@ const getRequestById = async (req, res) => {
     const userId = req.user.id;
     const userRole = req.user.role;
 
-    // Get request with full details
+    // Get request with full details including assigned approvers
     const [requests] = await pool.execute(`
-      SELECT 
+      SELECT
         cr.*,
         u.first_name, u.last_name, u.email, u.employee_id as employee_number,
         u.department, u.position, u.contact_number,
@@ -427,12 +427,24 @@ const getRequestById = async (req, res) => {
         hr_hospital.name as hr_assigned_hospital_name,
         hr_hospital.address as hr_assigned_hospital_address,
         hr_hospital.contact_number as hr_assigned_hospital_contact,
+        bo_approver.id as assigned_bo_id,
+        bo_approver.first_name as assigned_bo_first_name,
+        bo_approver.last_name as assigned_bo_last_name,
+        bo_approver.email as assigned_bo_email,
+        wh_approver.id as assigned_wh_id,
+        wh_approver.first_name as assigned_wh_first_name,
+        wh_approver.last_name as assigned_wh_last_name,
+        wh_approver.email as assigned_wh_email,
         DATEDIFF(cr.due_date, CURDATE()) as days_until_due
       FROM checkup_requests cr
       JOIN users u ON cr.employee_id = u.id
       LEFT JOIN hospitals h ON cr.hospital_id = h.id
       LEFT JOIN users assigned_hr ON cr.assigned_hr_id = assigned_hr.id
       LEFT JOIN hospitals hr_hospital ON cr.hr_assigned_hospital_id = hr_hospital.id
+      LEFT JOIN request_approvals ra_bo ON cr.id = ra_bo.request_id AND ra_bo.approval_stage = 'benefits_stage'
+      LEFT JOIN users bo_approver ON ra_bo.approver_id = bo_approver.id
+      LEFT JOIN request_approvals ra_wh ON cr.id = ra_wh.request_id AND ra_wh.approval_stage = 'welfare_stage'
+      LEFT JOIN users wh_approver ON ra_wh.approver_id = wh_approver.id
       WHERE cr.id = ?
     `, [id]);
 

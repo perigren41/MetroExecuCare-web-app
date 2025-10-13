@@ -283,9 +283,25 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
                 </div>
                 {requestDetails?.assigned_hr_id && (
                   <div className="col-span-1 sm:col-span-2">
-                    <span className="font-semibold text-gray-700">Assigned HR:</span>
+                    <span className="font-semibold text-gray-700">Assigned Human Resource Personnel:</span>
                     <span className="ml-2 text-gray-900">
                       {requestDetails.assigned_hr_first_name} {requestDetails.assigned_hr_last_name}
+                    </span>
+                  </div>
+                )}
+                {requestDetails?.assigned_bo_id && (
+                  <div className="col-span-1 sm:col-span-2">
+                    <span className="font-semibold text-gray-700">Assigned Benefits Officer:</span>
+                    <span className="ml-2 text-gray-900">
+                      {requestDetails.assigned_bo_first_name} {requestDetails.assigned_bo_last_name}
+                    </span>
+                  </div>
+                )}
+                {requestDetails?.assigned_wh_id && (
+                  <div className="col-span-1 sm:col-span-2">
+                    <span className="font-semibold text-gray-700">Assigned Division Head:</span>
+                    <span className="ml-2 text-gray-900">
+                      {requestDetails.assigned_wh_first_name} {requestDetails.assigned_wh_last_name}
                     </span>
                   </div>
                 )}

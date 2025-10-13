@@ -647,7 +647,7 @@ Root cause: Frontend at metroexecucare.up.railway.app was making requests to bac
 **VIEW REQUEST DETAILS MODAL**
 1. As you can see in RequestDetailsModal.png in backend/uploads, there are 2 additional Files requested, to be visually appealing, if uploading a file on one additional request, it must display the uploaded file in that specific request concern. ie request file 1: uploaded concept_paper.pdf - it must not be displayed in request file 2 to not be visually confusing. Or you have any best recommendation that we can do.
 
-2. Under Request Information, aside from "Assigned HR" it must also display the assigned Benefits Officer and Division Head. Add this: Change "Assigned HR" to "Assigned Human Resource Personnel". Use proper naming convention for users to understand.
+2. Under Request Information, aside from "Assigned HR" it must also display the assigned Benefits Officer and Division Head. Add this: Change "Assigned HR" to "Assigned Human Resource Personnel". Use proper naming convention for users to understand. **Fixed** (Backend: Added LEFT JOINs to get Benefits Officer and Division Head assignments from request_approvals. Frontend: Added display fields for "Assigned Human Resource Personnel", "Assigned Benefits Officer", and "Assigned Division Head")
 
 **UPLOAD FILES**
 1. It looks like Letter of Approval and Letter of Authorization cannot be download properly in executive-employee-submit-loauthorization/loapproval. It's not in the volume storage yet.
