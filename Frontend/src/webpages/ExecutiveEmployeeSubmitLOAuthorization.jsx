@@ -357,7 +357,14 @@ export default function SubmitLetterOfAuthorization() {
                     onClick={async () => {
                       try {
                         // Fetch the PDF as a blob to force download instead of opening in browser (mobile-friendly)
-                        const response = await fetch(`${BACKEND_BASE_URL}/uploads/documents/letters/Request Letter of Authorization.pdf`);
+                        // URL encode the filename to handle spaces
+                        const encodedPath = encodeURI(`${BACKEND_BASE_URL}/uploads/documents/letters/Request Letter of Authorization.pdf`);
+                        const response = await fetch(encodedPath);
+
+                        if (!response.ok) {
+                          throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
                         const blob = await response.blob();
                         const url = window.URL.createObjectURL(blob);
                         const link = document.createElement('a');
@@ -375,7 +382,7 @@ export default function SubmitLetterOfAuthorization() {
                         }, 100);
                       } catch (error) {
                         console.error('Download failed:', error);
-                        alert('Failed to download PDF. Please try again.');
+                        alert(`Failed to download PDF: ${error.message}. The template file may not exist on the server. Please contact your administrator.`);
                       }
                     }}
                     className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm cursor-pointer"
@@ -459,7 +466,14 @@ export default function SubmitLetterOfAuthorization() {
                     onClick={async () => {
                       try {
                         // Fetch the PDF as a blob to force download instead of opening in browser (mobile-friendly)
-                        const response = await fetch(`${BACKEND_BASE_URL}/uploads/documents/letters/Request Letter of Authorization.pdf`);
+                        // URL encode the filename to handle spaces
+                        const encodedPath = encodeURI(`${BACKEND_BASE_URL}/uploads/documents/letters/Request Letter of Authorization.pdf`);
+                        const response = await fetch(encodedPath);
+
+                        if (!response.ok) {
+                          throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+
                         const blob = await response.blob();
                         const url = window.URL.createObjectURL(blob);
                         const link = document.createElement('a');
@@ -477,7 +491,7 @@ export default function SubmitLetterOfAuthorization() {
                         }, 100);
                       } catch (error) {
                         console.error('Download failed:', error);
-                        alert('Failed to download PDF. Please try again.');
+                        alert(`Failed to download PDF: ${error.message}. The template file may not exist on the server. Please contact your administrator.`);
                       }
                     }}
                     className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs cursor-pointer"
