@@ -60,7 +60,23 @@ export default function HR_HistoryPage() {
                     action: log.action,
                     approval_stage: log.approval_stage
                 }));
-                setRequests(transformedRequests);
+
+                // Deduplicate by request_id - keep only the most recent action per request
+                const uniqueRequests = [];
+                const seenRequestIds = new Set();
+
+                // Sort by created_at descending to get most recent actions first
+                transformedRequests.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                // Keep only first occurrence of each request_id (most recent)
+                transformedRequests.forEach(req => {
+                    if (!seenRequestIds.has(req.id)) {
+                        seenRequestIds.add(req.id);
+                        uniqueRequests.push(req);
+                    }
+                });
+
+                setRequests(uniqueRequests);
             } else {
                 setError('Failed to fetch requests');
             }
