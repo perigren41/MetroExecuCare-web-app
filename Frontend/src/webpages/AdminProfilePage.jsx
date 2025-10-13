@@ -404,40 +404,42 @@ function SummaryCard({ notes, setNotes, userId }) {
         )}
         </GradientCard>
 
-        <GradientCard className="rounded-[24px] flex-1 flex flex-col">
-        <h2 className="text-blue-900 text-sm font-semibold mb-2 text-left sm:text-sm">Notes: Write down notes or reminders of yourself ...</h2>
-        <textarea
-          className={`w-full rounded-lg px-3 py-2 flex-1 resize-none border text-sm ${
-            isEditing
-              ? "border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-[repeating-linear-gradient(white,white_23px,#e5e7eb_24px)]"
-              : "border-gray-200 bg-gray-50 cursor-default"
-          }`}
-          placeholder={isEditing ? "Write your notes here..." : "No notes yet. Click Edit to add some."}
-          value={isEditing ? tempNotes : notes}
-          onChange={(e) => setTempNotes(e.target.value)}
-          readOnly={!isEditing}
-        ></textarea>
-        <div className="flex gap-2 mt-2 justify-end">
-          {!isEditing ? (
-            <CircleButton
-              text="Edit"
-              color="bg-blue-600"
-              onClick={handleEdit}
-            />
-          ) : (
-            <>
+        <GradientCard className="rounded-[24px] flex-1 min-h-0">
+        <div className="flex flex-col h-full">
+          <h2 className="text-blue-900 text-sm font-semibold mb-2 text-left sm:text-sm flex-shrink-0">Notes: Write down notes or reminders of yourself ...</h2>
+          <textarea
+            className={`w-full rounded-lg px-3 py-2 flex-1 min-h-0 resize-none border text-sm ${
+              isEditing
+                ? "border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-[repeating-linear-gradient(white,white_23px,#e5e7eb_24px)]"
+                : "border-gray-200 bg-gray-50 cursor-default"
+            }`}
+            placeholder={isEditing ? "Write your notes here..." : "No notes yet. Click Edit to add some."}
+            value={isEditing ? tempNotes : notes}
+            onChange={(e) => setTempNotes(e.target.value)}
+            readOnly={!isEditing}
+          ></textarea>
+          <div className="flex gap-2 mt-2 justify-end flex-shrink-0">
+            {!isEditing ? (
               <CircleButton
-                text={savingNotes ? "Saving..." : "Save"}
+                text="Edit"
                 color="bg-blue-600"
-                onClick={handleSave}
+                onClick={handleEdit}
               />
-              <CircleButton
-                text="Cancel"
-                color="bg-gray-400"
-                onClick={handleCancel}
-              />
-            </>
-          )}
+            ) : (
+              <>
+                <CircleButton
+                  text={savingNotes ? "Saving..." : "Save"}
+                  color="bg-blue-600"
+                  onClick={handleSave}
+                />
+                <CircleButton
+                  text="Cancel"
+                  color="bg-gray-400"
+                  onClick={handleCancel}
+                />
+              </>
+            )}
+          </div>
         </div>
         </GradientCard>
       </div>
