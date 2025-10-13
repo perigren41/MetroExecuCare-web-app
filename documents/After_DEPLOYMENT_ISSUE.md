@@ -458,7 +458,52 @@ Solution: Updated [LoaStatusTracker.jsx:374-386](Frontend/src/webpages/LoaStatus
 - Now all active states (pending, hr_processing, benefits_review, welfare_review, hr_final_verification) show waiting icon
 - Future steps still show BlankSquare, completed steps show CheckSquare 
 
-- unable to download executive file in LOAuthorization page: Failed to download file: HTTP error! status: 404 **FIXED**
+- unable to download files in LOAuthorization page and LOApproval page: Failed to download file: HTTP error! status: 404 **Fixed** (Same root cause as Issue #15 - downloadRequestFile now constructs path from file_name)
+
+Solution: Already fixed in Issue #15 - [requestController.js:739](Backend/controllers/requestController.js#L739)
+- downloadRequestFile now constructs file path: `path.join(__dirname, '..', 'uploads', 'request-files', file.file_name)`
+- This fix applies to ALL file downloads via the downloadRequestFile endpoint
+- Works for LOAuthorization, LOApproval, and any other page using this endpoint
+
+ERROR (resolved): requests.js:1
+
+ GET https://metroexecucare-backend.up.railway.app/api/requests/5/files/12/download 404 (Not Found)
+(anonymous)	@	requests.js:1
+(anonymous)	@	traffic.js:1
+fetch	@	traffic.js:1
+downloadRequestFile	@	index-BatNcnWU.js:67
+Qi	@	index-BatNcnWU.js:341
+onClick	@	index-BatNcnWU.js:341
+Hp	@	index-BatNcnWU.js:37
+Vp	@	index-BatNcnWU.js:37
+Gp	@	index-BatNcnWU.js:37
+_c	@	index-BatNcnWU.js:37
+Vu	@	index-BatNcnWU.js:37
+(anonymous)	@	index-BatNcnWU.js:37
+Fi	@	index-BatNcnWU.js:40
+fu	@	index-BatNcnWU.js:37
+Na	@	index-BatNcnWU.js:37
+oi	@	index-BatNcnWU.js:37
+ch	@	index-BatNcnWU.js:37
+index-BatNcnWU.js:67 
+ Download file error: Error: HTTP error! status: 404
+    at M0.downloadRequestFile (index-BatNcnWU.js:67:13123)
+    at async Qi (index-BatNcnWU.js:341:168)
+downloadRequestFile	@	index-BatNcnWU.js:67
+await in downloadRequestFile		
+Qi	@	index-BatNcnWU.js:341
+onClick	@	index-BatNcnWU.js:341
+Hp	@	index-BatNcnWU.js:37
+Vp	@	index-BatNcnWU.js:37
+Gp	@	index-BatNcnWU.js:37
+_c	@	index-BatNcnWU.js:37
+Vu	@	index-BatNcnWU.js:37
+(anonymous)	@	index-BatNcnWU.js:37
+Fi	@	index-BatNcnWU.js:40
+fu	@	index-BatNcnWU.js:37
+Na	@	index-BatNcnWU.js:37
+oi	@	index-BatNcnWU.js:37
+ch	@	index-BatNcnWU.js:37
 
 - If approver uploads file in loa-submit and tries to remove uploaded file, they are unable to remove temporary upload by approvers(HR,BO,Division Head) it's giving this error:
 metroexecucare-backe…les/1760339618929:1
