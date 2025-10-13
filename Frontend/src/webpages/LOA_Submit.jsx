@@ -721,9 +721,9 @@ export default function LOA_Submit() {
 
                 // Set the newly uploaded file to show confirmation
                 const uploadedFileInfo = {
-                    id: uploadResult.data?.file?.id || Date.now(),
+                    id: uploadResult.data?.file_id || uploadResult.data?.id,
                     original_file_name: tempFile.name,
-                    file_path: uploadResult.data?.file?.file_path || '',
+                    file_path: uploadResult.data?.file_path || '',
                     uploaded_by: user?.id,
                     isPending: false,
                     created_at: new Date().toISOString()
