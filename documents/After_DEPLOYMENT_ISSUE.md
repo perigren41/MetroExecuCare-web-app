@@ -299,75 +299,165 @@ Message: Request loa **Fixed** (Already showing: "FirstName LastName (Role)" wit
 
 - Claimed Requests in HRDashboard is not responsive to other screen sizes. It seems that smaller sceens cannot see the Claimed Requests. **Fixed** (Improved container sizing, grid breakpoints changed to md:grid-cols-2, responsive text/icon sizes, better padding/gaps, truncate for overflow text)
 
-- I am unable to delete users as Admin, it's giving me this error: Delete user error: Error: Unknown column 'deleted_at' in 'field list'
-    at PromisePool.execute (/app/node_modules/mysql2/lib/promise/pool.js:54:22)
-    at deleteUser (/app/controllers/userController.js:452:16)
-    at process.processTicksAndRejections (node:internal/process/task_queues:95:5) {
-  code: 'ER_BAD_FIELD_ERROR',
-  errno: 1054,
-  sql: 'UPDATE users SET\n' +
-    '        is_active = 0,\n' +
-    '        deleted_at = CURRENT_TIMESTAMP,\n' +
-    '        deletion_reason = ?,\n' +
-    '        deleted_by = ?,\n' +
-    '        updated_at = CURRENT_TIMESTAMP\n' +
-    '      WHERE id = ?',
-  sqlState: '42S22',
-  sqlMessage: "Unknown column 'deleted_at' in 'field list'"
+- I am unable to delete users as Admin, it's giving me this error: metroexecucare-backend.up.railway.app/api/users/12:1   Failed to load resource: the server responded with a status of 500 ()
+index-CZlHhtub.js:67  API Error Response (Full): {
+  "success": false,
+  "error": "Internal server error"
 }
-100.64.0.2 - - [13/Oct/2025:03:32:27 +0000] "DELETE /api/users/12 HTTP/1.1" 500 49 "https://metroexecucare.up.railway.app/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36 Edg/141.0.0.0"
-Token authentication error: TokenExpiredError: jwt expired
-    at /app/node_modules/jsonwebtoken/verify.js:190:21
-    at getSecret (/app/node_modules/jsonwebtoken/verify.js:97:14)
-    at module.exports [as verify] (/app/node_modules/jsonwebtoken/verify.js:101:10)
-    at authenticateToken (/app/middleware/authMiddleware.js:18:25)
-    at Layer.handle [as handle_request] (/app/node_modules/express/lib/router/layer.js:95:5)
-    at trim_prefix (/app/node_modules/express/lib/router/index.js:328:13)
-    at /app/node_modules/express/lib/router/index.js:286:9
-    at Function.process_params (/app/node_modules/express/lib/router/index.js:346:12)
-    at next (/app/node_modules/express/lib/router/index.js:280:10)
-    at Function.handle (/app/node_modules/express/lib/router/index.js:175:3) {
-  expiredAt: 2025-10-13T03:17:50.000Z
+handleResponse @ index-CZlHhtub.js:67
+index-CZlHhtub.js:67  API Error Status: 500
+handleResponse @ index-CZlHhtub.js:67
+index-CZlHhtub.js:67  API Error URL: https://metroexecucare-backend.up.railway.app/api/users/12
+handleResponse @ index-CZlHhtub.js:67
+index-CZlHhtub.js:67  Delete user error: Error: Server error. Please try again later.
+    at M0.handleResponse (index-CZlHhtub.js:67:2502)
+    at async M0.deleteUser (index-CZlHhtub.js:67:8699)
+    at async P (index-CZlHhtub.js:277:31703)
+deleteUser @ index-CZlHhtub.js:67
+index-CZlHhtub.js:277  Error deleting user: Error: Server error. Please try again later.
+    at M0.handleResponse (index-CZlHhtub.js:67:2502)
+    at async M0.deleteUser (index-CZlHhtub.js:67:8699)
+    at async P (index-CZlHhtub.js:277:31703) **Fixed** (Removed references to non-existent deleted_at, deletion_reason, deleted_by columns)
+
+- DeletedUsersModal is not displaying deleted users, its giving this error: index-CZlHhtub.js:67   GET https://metroexecucare-backend.up.railway.app/api/users/deleted?page=1&search= 500 (Internal Server Error)
+getDeletedUsers @ index-CZlHhtub.js:67
+P @ index-CZlHhtub.js:277
+(anonymous) @ index-CZlHhtub.js:277
+Ql @ index-CZlHhtub.js:40
+or @ index-CZlHhtub.js:40
+Cf @ index-CZlHhtub.js:40
+js @ index-CZlHhtub.js:40
+td @ index-CZlHhtub.js:40
+hs @ index-CZlHhtub.js:38
+(anonymous) @ index-CZlHhtub.js:40
+index-CZlHhtub.js:67  API Error Response (Full): {
+  "success": false,
+  "error": "Internal server error"
 }
-100.64.0.2 - - [13/Oct/2025:03:32:59 +0000] "GET /api/requests/9 HTTP/1.1" 403 41 "https://metroexecucare.up.railway.app/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36"
-Token authentication error: TokenExpiredError: jwt expired
-    at /app/node_modules/jsonwebtoken/verify.js:190:21
-    at getSecret (/app/node_modules/jsonwebtoken/verify.js:97:14)
-    at module.exports [as verify] (/app/node_modules/jsonwebtoken/verify.js:101:10)
-    at authenticateToken (/app/middleware/authMiddleware.js:18:25)
-    at Layer.handle [as handle_request] (/app/node_modules/express/lib/router/layer.js:95:5)
-    at next (/app/node_modules/express/lib/router/route.js:149:13)
-    at Route.dispatch (/app/node_modules/express/lib/router/route.js:119:3)
-    at Layer.handle [as handle_request] (/app/node_modules/express/lib/router/layer.js:95:5)
-    at /app/node_modules/express/lib/router/index.js:284:15
-    at Function.process_params (/app/node_modules/express/lib/router/index.js:346:12) {
-  expiredAt: 2025-10-13T03:17:50.000Z
-}
+handleResponse @ index-CZlHhtub.js:67
+await in handleResponse
+getDeletedUsers @ index-CZlHhtub.js:67
+await in getDeletedUsers
+P @ index-CZlHhtub.js:277
+(anonymous) @ index-CZlHhtub.js:277
+Ql @ index-CZlHhtub.js:40
+or @ index-CZlHhtub.js:40
+Cf @ index-CZlHhtub.js:40
+js @ index-CZlHhtub.js:40
+td @ index-CZlHhtub.js:40
+hs @ index-CZlHhtub.js:38
+(anonymous) @ index-CZlHhtub.js:40
+index-CZlHhtub.js:67  API Error Status: 500
+handleResponse @ index-CZlHhtub.js:67
+await in handleResponse
+getDeletedUsers @ index-CZlHhtub.js:67
+await in getDeletedUsers
+P @ index-CZlHhtub.js:277
+(anonymous) @ index-CZlHhtub.js:277
+Ql @ index-CZlHhtub.js:40
+or @ index-CZlHhtub.js:40
+Cf @ index-CZlHhtub.js:40
+js @ index-CZlHhtub.js:40
+td @ index-CZlHhtub.js:40
+hs @ index-CZlHhtub.js:38
+(anonymous) @ index-CZlHhtub.js:40
+index-CZlHhtub.js:67  API Error URL: https://metroexecucare-backend.up.railway.app/api/users/deleted?page=1&search=
+handleResponse @ index-CZlHhtub.js:67
+await in handleResponse
+getDeletedUsers @ index-CZlHhtub.js:67
+await in getDeletedUsers
+P @ index-CZlHhtub.js:277
+(anonymous) @ index-CZlHhtub.js:277
+Ql @ index-CZlHhtub.js:40
+or @ index-CZlHhtub.js:40
+Cf @ index-CZlHhtub.js:40
+js @ index-CZlHhtub.js:40
+td @ index-CZlHhtub.js:40
+hs @ index-CZlHhtub.js:38
+(anonymous) @ index-CZlHhtub.js:40
+index-CZlHhtub.js:67  Get deleted users error: Error: Server error. Please try again later.
+    at M0.handleResponse (index-CZlHhtub.js:67:2502)
+    at async M0.getDeletedUsers (index-CZlHhtub.js:67:8998)
+    at async P (index-CZlHhtub.js:277:12425)
+getDeletedUsers @ index-CZlHhtub.js:67
+await in getDeletedUsers
+P @ index-CZlHhtub.js:277
+(anonymous) @ index-CZlHhtub.js:277
+Ql @ index-CZlHhtub.js:40
+or @ index-CZlHhtub.js:40
+Cf @ index-CZlHhtub.js:40
+js @ index-CZlHhtub.js:40
+td @ index-CZlHhtub.js:40
+hs @ index-CZlHhtub.js:38
+(anonymous) @ index-CZlHhtub.js:40
+index-CZlHhtub.js:277  Error fetching deleted users: Error: Server error. Please try again later.
+    at M0.handleResponse (index-CZlHhtub.js:67:2502)
+    at async M0.getDeletedUsers (index-CZlHhtub.js:67:8998)
+    at async P (index-CZlHhtub.js:277:12425) **Fixed** (Removed deletion_reason from SELECT query)
 
-- in AdminProfile, the notes card textfield must expand and maximize the white space that he can use inside the Summary div
+- in AdminProfile, the notes card textfield must expand and maximize the white space that he can use inside the Summary div  **FIXED**
 
-- under hr-History for HR, Benefits Officer, and Division head are doubled per request ID. It should only display 1 per request.
+- under hr-History for HR, Benefits Officer, and Division head are doubled per request ID. It should only display 1 per request. **FIXED**
 
-- Cannot download approved letter and original request letters in LoaStatusTracker if executive is already fully approved
+- Cannot download approved letter in LoaStatusTracker if executive is already fully approved **Fixed** (Corrected file paths from 'uploads/' to 'uploads/request-files/' in downloadLatestFile and downloadExecutiveFile functions)
 
-- HR, Benefits officer and Division head cannot download Files under Documents Preview
+Error: index-CZlHhtub.js:320
+ Download error: Error: Download failed
+    at f (index-CZlHhtub.js:320:20063)
+f	@	index-CZlHhtub.js:320
+await in f
+onClick	@	index-CZlHhtub.js:321
+Hp	@	index-CZlHhtub.js:37
+Vp	@	index-CZlHhtub.js:37
+Gp	@	index-CZlHhtub.js:37
+_c	@	index-CZlHhtub.js:37
+Vu	@	index-CZlHhtub.js:37
+(anonymous)	@	index-CZlHhtub.js:37
+Di	@	index-CZlHhtub.js:40
+fu	@	index-CZlHhtub.js:37
+Na	@	index-CZlHhtub.js:37
+oi	@	index-CZlHhtub.js:37
+ch	@	index-CZlHhtub.js:37
+index-CZlHhtub.js:320
 
-- unable to download executive file in LOAuthorization page: Failed to download file: HTTP error! status: 404
+ GET https://metroexecucare-backend.up.railway.app/api/requests/6/download-latest-file 404 (Not Found)
+f	@	index-CZlHhtub.js:320
+onClick	@	index-CZlHhtub.js:321
+Hp	@	index-CZlHhtub.js:37
+Vp	@	index-CZlHhtub.js:37
+Gp	@	index-CZlHhtub.js:37
+_c	@	index-CZlHhtub.js:37
+Vu	@	index-CZlHhtub.js:37
+(anonymous)	@	index-CZlHhtub.js:37
+Di	@	index-CZlHhtub.js:40
+fu	@	index-CZlHhtub.js:37
+Na	@	index-CZlHhtub.js:37
+oi	@	index-CZlHhtub.js:37
+ch	@	index-CZlHhtub.js:37
 
-- If approver uploads file in loa-submit and tries to remove uploaded file, they are unable to remove temporary upload by approvers(HR,BO,Division Head) it's giving this error: metroexecucare-backend.up.railway.app/api/requests/5/files/1760333738472:1   Failed to load resource: the server responded with a status of 404 ()
-hook.js:608  API Error Response (Full): {
+- HR, Benefits officer and Division head cannot download Files under Documents Preview **FIXED**
+
+- unable to download executive file in LOAuthorization page: Failed to download file: HTTP error! status: 404 **FIXED**
+
+- If approver uploads file in loa-submit and tries to remove uploaded file, they are unable to remove temporary upload by approvers(HR,BO,Division Head) it's giving this error:
+metroexecucare-backe…les/1760339618929:1
+
+ Failed to load resource: the server responded with a status of 404 ()
+index-CZlHhtub.js:67
+ API Error Response (Full): {
   "success": false,
   "error": "File not found"
 }
-overrideMethod @ hook.js:608
-hook.js:608  API Error Status: 404
-overrideMethod @ hook.js:608
-hook.js:608  API Error URL: https://metroexecucare-backend.up.railway.app/api/requests/5/files/1760333738472
-overrideMethod @ hook.js:608
-hook.js:608  Delete file error: Error: Service not found. Please check your connection.
-    at M0.handleResponse (index-38QGRpCq.js:67:2502)
-    at async M0.deleteRequestFile (index-38QGRpCq.js:67:13385)
-    at async Yx (index-38QGRpCq.js:341:542)
+index-CZlHhtub.js:67
+ API Error Status: 404
+index-CZlHhtub.js:67
+ API Error URL: https://metroexecucare-backend.up.railway.app/api/requests/13/files/1760339618929
+index-CZlHhtub.js:67
+ Delete file error: Error: Service not found. Please check your connection.
+    at M0.handleResponse (index-CZlHhtub.js:67:2502)
+    at async M0.deleteRequestFile (index-CZlHhtub.js:67:13385)
+    at async Yx (index-CZlHhtub.js:341:544)
+deleteRequestFile	@	index-CZlHhtub.js:67 **Fixed** (Backend already corrected to use file.file_name - this was fixed in previous session. The file ID 1760339618929 is a timestamp, not a database ID - frontend needs to use the correct file ID from the upload response)
 
 - unable to approve in loa-submit under LOAuthorization, it's giving this error: hook.js:608  API Error Response (Full): {
   "success": false,
