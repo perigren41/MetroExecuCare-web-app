@@ -1852,33 +1852,50 @@ export default function LOA_Submit() {
                 </div>
             )}
 
-            {/* Error Modal */}
+            {/* Error Modal - Enhanced with better formatting */}
             {showErrorModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
                         {/* Modal Header */}
                         <div className="bg-gradient-to-r from-red-500 via-red-600 to-red-700 text-white px-6 py-4">
                             <h2 className="text-lg font-semibold flex items-center gap-2">
-                                <div className="w-6 h-6 bg-red-100 rounded-full flex items-center justify-center">
-                                    <X className="w-4 h-4 text-red-600" />
+                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    </svg>
                                 </div>
-                                Error
+                                Action Failed
                             </h2>
                         </div>
 
-                        {/* Modal Body */}
+                        {/* Modal Body with enhanced formatting */}
                         <div className="p-6">
-                            <div className="text-gray-700 mb-6 whitespace-pre-line">
-                                {errorMessage}
+                            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-r-lg">
+                                <div className="flex items-start">
+                                    <div className="flex-shrink-0">
+                                        <svg className="h-5 w-5 text-red-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div className="ml-3 flex-1">
+                                        <div className="text-sm text-red-800 whitespace-pre-line leading-relaxed">
+                                            {errorMessage}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="text-xs text-gray-500 mb-4 italic">
+                                Please review the errors above and try again after making the necessary corrections.
                             </div>
 
                             {/* Action Button */}
                             <div className="flex justify-center">
                                 <button
                                     onClick={() => setShowErrorModal(false)}
-                                    className="px-6 py-3 bg-red-600 text-white rounded-full font-medium hover:bg-red-700 transition-colors text-sm sm:text-base"
+                                    className="px-8 py-3 bg-red-600 text-white rounded-full font-medium hover:bg-red-700 transition-all shadow-md hover:shadow-lg text-sm sm:text-base"
                                 >
-                                    Close
+                                    I Understand
                                 </button>
                             </div>
                         </div>
