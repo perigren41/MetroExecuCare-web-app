@@ -457,7 +457,17 @@ index-CZlHhtub.js:67
     at M0.handleResponse (index-CZlHhtub.js:67:2502)
     at async M0.deleteRequestFile (index-CZlHhtub.js:67:13385)
     at async Yx (index-CZlHhtub.js:341:544)
-deleteRequestFile	@	index-CZlHhtub.js:67 **Fixed** (Backend already corrected to use file.file_name - this was fixed in previous session. The file ID 1760339618929 is a timestamp, not a database ID - frontend needs to use the correct file ID from the upload response)
+deleteRequestFile	@	index-CZlHhtub.js:67 **Fixed**
+
+**Root Cause:** Frontend was looking for file ID in wrong response property
+- Backend returns: `uploadResult.data.file_id`
+- Frontend was expecting: `uploadResult.data.file.id`
+- When not found, frontend used `Date.now()` (timestamp) as fallback ID
+
+**Solution:** Updated [LOA_Submit.jsx:724](Frontend/src/webpages/LOA_Submit.jsx#L724)
+- Changed from: `uploadResult.data?.file?.id || Date.now()`
+- Changed to: `uploadResult.data?.file_id || uploadResult.data?.id`
+- Now properly captures real database file ID from upload response
 
 - unable to approve in loa-submit under LOAuthorization, it's giving this error: hook.js:608  API Error Response (Full): {
   "success": false,
