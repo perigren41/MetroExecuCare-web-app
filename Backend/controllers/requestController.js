@@ -734,11 +734,14 @@ const downloadRequestFile = async (req, res) => {
     }
 
     const file = files[0];
-    const filePath = file.file_path;
+    // Construct the correct file path using file_name, not file_path
+    // file_path contains the full path at upload time, but we need to build it from file_name
+    const filePath = path.join(__dirname, '..', 'uploads', 'request-files', file.file_name);
 
     // Check if file exists on disk
     const fs = require('fs');
     if (!fs.existsSync(filePath)) {
+      console.error(`File not found on disk: ${filePath}`);
       return res.status(404).json({
         success: false,
         error: 'File not found on disk'

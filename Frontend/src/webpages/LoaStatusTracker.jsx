@@ -374,10 +374,13 @@ export default function LOAStatusTracker() {
   const getStepIcon = (step) => {
     if (step.isCompleted) return CheckSquare;
     if (step.isActive) {
+      // Current active step: show appropriate icon based on state
       if (step.state === "no_request") return AddSquare;
-      if (step.state === "pending" || step.state === "in_progress" || step.state.includes("approved")) return ClockSquare;
       if (step.state === "completed") return CheckSquare;
       if (step.state === "rejected") return XSquare;
+      // For all other active states (pending, in_progress, hr_processing, benefits_review, etc.)
+      // Show waiting/clock icon
+      return ClockSquare;
     }
     return BlankSquare; // For future steps
   };
