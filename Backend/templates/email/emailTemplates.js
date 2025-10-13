@@ -438,7 +438,7 @@ const EmailTemplates = {
         <span class="detail-value"><span class="status ${status}">${status.toUpperCase()}</span></span>
 
         <span class="detail-label">Updated By:</span>
-        <span class="detail-value">${approver ? `${approver.first_name} ${approver.last_name} (${this.formatRoleName(approver.role) || approver.position || 'Human Resource Personnel'})` : 'System Administrator'}</span>
+        <span class="detail-value">${approver ? `${approver.first_name} ${approver.last_name} (${this.formatRoleName(approver.role)})` : 'System Administrator'}</span>
 
         <span class="detail-label">Date:</span>
         <span class="detail-value">${new Date().toLocaleDateString()}</span>

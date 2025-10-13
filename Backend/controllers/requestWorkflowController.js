@@ -630,7 +630,7 @@ const processRequest = async (req, res) => {
           position: requestData.position
         };
 
-        // Notify ALL Benefits Officers
+        // Notify ALL Benefits Officers - they are the NEXT approvers after HR
         const [benefitsOfficers] = await pool.execute(
           'SELECT id, first_name, last_name, email, role, position FROM users WHERE role = "benefits_officer" AND is_active = 1'
         );
@@ -643,18 +643,8 @@ const processRequest = async (req, res) => {
             .catch(error => console.error('Email notification error:', error.message));
         });
 
-        // Notify ALL Welfare Heads (they can see it's coming after benefits)
-        const [welfareHeads] = await pool.execute(
-          'SELECT id, first_name, last_name, email, role, position FROM users WHERE role = "welfare_head" AND is_active = 1'
-        );
-
-        welfareHeads.forEach(head => {
-          emailService.sendApprovalRequestNotification(
-            requestData, executive, head, 'welfare_review'
-          )
-            .then(() => console.log(`📧 Approval request notification sent to ${head.email} for welfare_review`))
-            .catch(error => console.error('Email notification error:', error.message));
-        });
+        // ❌ REMOVED: Do NOT notify Welfare Heads yet - they should only be notified AFTER Benefits Officer approves
+        // Welfare Heads will receive their notification from the approveRequest function when Benefits Officer approves
 
         // Send status update to Executive
         const [hrUser] = await pool.execute(

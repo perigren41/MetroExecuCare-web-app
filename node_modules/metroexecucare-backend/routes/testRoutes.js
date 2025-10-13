@@ -57,7 +57,21 @@ router.get('/email-templates', (req, res) => {
             statusUpdateNotification: EmailTemplates.statusUpdateNotification(mockRequestData, mockExecutive, 'accepted', 'Request has been approved for processing', mockApprover),
             executiveFinalApprovalNotification: EmailTemplates.executiveFinalApprovalNotification(mockRequestData, mockExecutive, mockApprovedFiles, mockHRPersonnel),
             executiveFinalRejectionNotification: EmailTemplates.executiveFinalRejectionNotification(mockRequestData, mockExecutive, 'Incomplete documentation provided', mockHRPersonnel, mockHRPersonnel),
-            finalApprovalNotification: EmailTemplates.finalApprovalNotification(mockRequestData, mockExecutive, mockHRPersonnel)
+            finalApprovalNotification: EmailTemplates.finalApprovalNotification(mockRequestData, mockExecutive, mockHRPersonnel),
+            hrFinalVerificationNotification: EmailTemplates.hrFinalVerificationNotification(mockRequestData, mockExecutive, mockHRPersonnel, mockApprover),
+            fileRequestNotification: EmailTemplates.fileRequestNotification({
+                executiveName: `${mockExecutive.first_name} ${mockExecutive.last_name}`,
+                requesterName: `${mockApprover.first_name} ${mockApprover.last_name}`,
+                requesterRole: EmailTemplates.formatRoleName(mockApprover.role),
+                requestNumber: mockRequestData.request_number,
+                requestType: mockRequestData.request_type,
+                message: 'Please upload a copy of your recent medical certificate and blood test results from the last 6 months.'
+            }),
+            fileUploadedNotification: EmailTemplates.fileUploadedNotification({
+                requesterName: `${mockApprover.first_name} ${mockApprover.last_name}`,
+                executiveName: `${mockExecutive.first_name} ${mockExecutive.last_name}`,
+                requestNumber: mockRequestData.request_number
+            })
         };
 
         const html = `
@@ -90,6 +104,9 @@ router.get('/email-templates', (req, res) => {
         <a href="#final-approval">Final Approval</a>
         <a href="#final-rejection">Final Rejection</a>
         <a href="#original-approval">Original Approval</a>
+        <a href="#hr-verification">HR Verification</a>
+        <a href="#file-request">File Request</a>
+        <a href="#file-uploaded">File Uploaded</a>
     </div>
 
     <div class="container">
@@ -155,9 +172,30 @@ router.get('/email-templates', (req, res) => {
             </div>
         </div>
 
+        <div id="hr-verification" class="template-section">
+            <div class="template-title">8. 📋 HR Final Verification Task (to HR Personnel)</div>
+            <div class="template-preview">
+                <iframe class="template-iframe" srcdoc="${templates.hrFinalVerificationNotification.replace(/"/g, '&quot;')}"></iframe>
+            </div>
+        </div>
+
+        <div id="file-request" class="template-section">
+            <div class="template-title">9. 📎 Additional Files Requested (to Executive)</div>
+            <div class="template-preview">
+                <iframe class="template-iframe" srcdoc="${templates.fileRequestNotification.replace(/"/g, '&quot;')}"></iframe>
+            </div>
+        </div>
+
+        <div id="file-uploaded" class="template-section">
+            <div class="template-title">10. ✅ Requested Files Uploaded (to Approver)</div>
+            <div class="template-preview">
+                <iframe class="template-iframe" srcdoc="${templates.fileUploadedNotification.replace(/"/g, '&quot;')}"></iframe>
+            </div>
+        </div>
+
         <div style="text-align: center; margin: 40px 0; padding: 20px; background: #f8f9fa; border-radius: 8px;">
             <h3 style="color: #3F6EC0;">✅ Email Templates Test Complete</h3>
-            <p style="color: #666;">All templates have been generated successfully with mock data.</p>
+            <p style="color: #666;">All 10 templates have been generated successfully with mock data.</p>
             <p style="color: #666; font-size: 12px;">Generated at: ${new Date().toLocaleString()}</p>
         </div>
     </div>

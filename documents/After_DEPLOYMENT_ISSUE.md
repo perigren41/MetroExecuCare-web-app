@@ -632,3 +632,54 @@ Updated Backend/server.js CORS configuration to:
 - Increase maxAge to 86400 (24 hours) for preflight caching
 
 Root cause: Frontend at metroexecucare.up.railway.app was making requests to backend at metroexecucare-backend.up.railway.app, but CORS only allowed the frontend URL. The backend URL itself needed to be in the allowed origins list for preflight requests to pass.
+
+
+**EMAIL SENDING**
+1. It looks like in email notification, if we're sending notification for Benefits officer, Welfare is also being sent email notification for Approval Required. **Fixed** (Removed premature Welfare Head email notification in processRequest. Welfare Heads now only receive notification AFTER Benefits Officer approves)
+
+2. Request Under Review is being sent to executive with "Updated By: (FirstName) (LastName) (Human Resource Personnel). Even if Benefits officer or Welfare Head is the one currently reviewing, it's displaying HR Personnel. Make it accurate to the actual role of the user. In addition, Request Under Review by Benefits Officer or Welfare Head is being sent only after Benefits Officer/Welfare Head has already approved/rejected the request. Double check the workflow email notification if it's accurate and place in this documents what is the supposed workflow email notification. **Fixed** (Removed fallback that defaulted to "Human Resource Personnel" in email template. Now uses formatRoleName to display correct role: "Benefits Officer" or "Division Head")
+
+3. Additional Files Requested. Under "Requested By:(firstname)(lastname)(role)" use modern naming convention for role, not backend naming. Human Resource Personnel, Benefits Officer, and Division Head. **Fixed** (Added role name formatting in fileRequestController before sending email - converts hr_personnel to "Human Resource Personnel", benefits_officer to "Benefits Officer", welfare_head to "Division Head")
+
+**DOWNLOAD LETTER WHEN FULLY APPROVED**
+1. If executive is fully approved, make sure that the "Download Approval Letter" will be the file from the last process flow (supposedly from welfare's latest uploaded file). And I believe we can remove the "Download Original Request" since we already have downloadable files that the executive uploaded inside View Full Details **Fixed** (Backend: downloadLatestFile now specifically queries for welfare_head role files instead of any staff file. Frontend: Removed "Download Original Request" button from LoaStatusTracker - files available in View Full Details modal)
+
+**VIEW REQUEST DETAILS MODAL**
+1. As you can see in RequestDetailsModal.png in backend/uploads, there are 2 additional Files requested, to be visually appealing, if uploading a file on one additional request, it must display the uploaded file in that specific request concern. ie request file 1: uploaded concept_paper.pdf - it must not be displayed in request file 2 to not be visually confusing. Or you have any best recommendation that we can do.
+
+2. Under Request Information, aside from "Assigned HR" it must also display the assigned Benefits Officer and Division Head. Add this: Change "Assigned HR" to "Assigned Human Resource Personnel". Use proper naming convention for users to understand.
+
+**UPLOAD FILES**
+1. It looks like Letter of Approval and Letter of Authorization cannot be download properly in executive-employee-submit-loauthorization/loapproval. It's not in the volume storage yet.
+
+**COMMENTS and REASON FOR REQUEST**
+1. I see no value where our Comments is being put. I think what we can do is  the Reason For Request in loa-submit, display this for the "Reason For Request" or "Letter Purpose" during clearance stage instead of the pre-comment.
+
+2. The Comment that are optional when confirming approves, these comments can be used and place in email templates (just like in Additional Files Requested where it has "Message from (role)"). To give heads up to the next approver. The comment can also be in loa-submit in the middle for Benefits Officer and Division head to see previous the comment(optional). If there are no comments, leave them as is(blank) with no trace for comments to make the page clean.
+
+**ERROR HANDLING**
+1. Make proper error handling UI/UX in loa-submit. Analyze what you think doesn't have any UI error handling. One example that has no clear error handling is: hook.js:608  API Error Response (Full): {
+  "success": false,
+  "error": "HR processing validation failed",
+  "details": [
+    "Approved date cannot be in the past"
+  ]}. Make an understandable error handling for all types in loa-submit.
+
+**LOA RECORD SUMMARY**
+1. Under request details, change RequestID into "Request Number" using the request_number in table checkup_requests
+
+2. Add information about who was assigned to the request in Benefits Officer, and Division Head.
+
+**HR HISTORY**
+1. Remove the icon on the right and create a new column for "Request Number" displaying the request_number in table checkup_requests for a more better identification. Make this responsive as well.
+
+
+
+**GO BACK and GO HOME NAVBAR**
+1. We know that all navbar are using the same navbar. But I want to clarify that Go Back function is not working as intended(where its repeating to the previous page where we just got from) and for go home. In addition, use UI/UX Fundamentals for mobile responsiveness and if the current position is okay for mobile users.
+
+
+**HR DASHBOARD mobile responsiveness**
+1. Mobile users that has 488px below, pending request card is overlapping and we must make this responsive.
+
+2. Claim Request card is not responsive enough for 1023px and below, it cannot see claimed requests properly. Make this also responsive for mobile users.

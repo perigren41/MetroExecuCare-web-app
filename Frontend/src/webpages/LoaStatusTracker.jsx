@@ -490,9 +490,9 @@ export default function LOAStatusTracker() {
             />
           </div>
 
-          {/* Download Buttons */}
+          {/* Download Button */}
           {(requestDetails.current_status === 'completed' || requestDetails.current_status === 'approved') ? (
-            <div className="flex flex-col gap-3 text-sm">
+            <div className="flex justify-center text-sm">
               <button
                 onClick={() => handleDownload(
                   `${API_BASE_URL}/requests/${requestDetails.id}/download-latest-file`,
@@ -501,15 +501,6 @@ export default function LOAStatusTracker() {
                 className="px-4 py-2 rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white cursor-pointer shadow-md hover:shadow-lg transition-all text-center"
               >
                 📄 Download Approval Letter
-              </button>
-              <button
-                onClick={() => handleDownload(
-                  `${API_BASE_URL}/requests/${requestDetails.id}/download-executive-file`,
-                  `Original_Request_${requestDetails.request_number || requestDetails.request_id}.pdf`
-                )}
-                className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-500 to-blue-600 text-white cursor-pointer shadow-md hover:shadow-lg transition-all text-center"
-              >
-                📋 Download Original Request
               </button>
             </div>
           ) : (

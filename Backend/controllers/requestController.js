@@ -904,16 +904,17 @@ const downloadLatestFile = async (req, res) => {
 
     const request = requests[0];
 
-    // Get the latest staff file (most recent non-executive file)
+    // Get the Welfare Head's (Division Head's) final approval file
+    // This is the official approval letter from the last stage of the workflow
     const [files] = await pool.execute(`
       SELECT rf.*, u.role as uploader_role
       FROM request_files rf
       LEFT JOIN users u ON rf.uploaded_by = u.id
       WHERE rf.request_id = ?
-        AND rf.uploaded_by != ?
+        AND u.role = 'welfare_head'
       ORDER BY rf.created_at DESC
       LIMIT 1
-    `, [id, request.employee_id]);
+    `, [id]);
 
     if (files.length === 0) {
       return res.status(404).json({

@@ -245,7 +245,7 @@ export default function HR_HistoryPage() {
                                 : {}
                         }
                     >
-                        <span className="block sm:hidden">LOA</span>
+                        <span className="block sm:hidden">Letter of Approval</span>
                         <span className="hidden sm:block">Letter of Approval</span>
                     </button>
                     <button
@@ -261,7 +261,7 @@ export default function HR_HistoryPage() {
                                 : {}
                         }
                     >
-                        <span className="block sm:hidden">LOAuth</span>
+                        <span className="block sm:hidden">Letter of Authorization</span>
                         <span className="hidden sm:block">Letter of Authorization</span>
                     </button>
                 </div>

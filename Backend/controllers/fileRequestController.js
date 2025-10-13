@@ -70,13 +70,21 @@ const createFileRequest = async (req, res) => {
 
     const requester = requesterInfo[0];
 
+    // Format role name for email
+    const roleNames = {
+      'hr_personnel': 'Human Resource Personnel',
+      'benefits_officer': 'Benefits Officer',
+      'welfare_head': 'Division Head'
+    };
+    const formattedRole = roleNames[requestedByRole] || requestedByRole;
+
     // Send email notification to executive
     try {
       await emailService.sendFileRequestNotification({
         to: checkupRequest.email,
         executiveName: `${checkupRequest.first_name} ${checkupRequest.last_name}`,
         requesterName: `${requester.first_name} ${requester.last_name}`,
-        requesterRole: requestedByRole,
+        requesterRole: formattedRole,
         requestNumber: checkupRequest.request_number,
         requestType: checkupRequest.request_type,
         message: message
