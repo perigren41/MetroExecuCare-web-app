@@ -454,35 +454,142 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
               {uploadedFiles.length === 0 ? (
                 <p className="text-gray-500 text-sm">No files uploaded yet</p>
               ) : (
-                <div className="space-y-2">
-                  {uploadedFiles.map((file) => (
-                    <div
-                      key={file.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100"
-                    >
-                      <div className="flex items-center space-x-3 flex-1 min-w-0">
-                        <FileText className="text-blue-600 flex-shrink-0" size={20} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{file.original_file_name}</p>
-                          <p className="text-xs text-gray-500">
-                            {file.submission_type === 'initial_submission' ? 'Initial Submission' :
-                             file.file_request_id ? 'Requested Files' : 'Additional Files'}
-                            {' • '}
-                            Uploaded by: {file.uploader_first_name} {file.uploader_last_name}
-                            {' • '}
-                            {new Date(file.created_at).toLocaleDateString()}
-                          </p>
+                <div className="space-y-4">
+                  {/* Initial Submission Files */}
+                  {(() => {
+                    const initialFiles = uploadedFiles.filter(file => file.submission_type === 'initial_submission');
+                    if (initialFiles.length > 0) {
+                      return (
+                        <div className="border border-gray-200 rounded-lg p-3">
+                          <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            Initial Submission
+                          </h4>
+                          <div className="space-y-2">
+                            {initialFiles.map((file) => (
+                              <div
+                                key={file.id}
+                                className="flex items-center justify-between p-2 bg-gray-50 rounded-lg hover:bg-gray-100"
+                              >
+                                <div className="flex items-center space-x-2 flex-1 min-w-0">
+                                  <FileText className="text-blue-600 flex-shrink-0" size={18} />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-gray-900 truncate">{file.original_file_name}</p>
+                                    <p className="text-xs text-gray-500">
+                                      Uploaded by: {file.uploader_first_name} {file.uploader_last_name}
+                                      {' • '}
+                                      {new Date(file.created_at).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => handleDownloadFile(file.id, file.original_file_name)}
+                                  className="flex-shrink-0 ml-2 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                  title="Download file"
+                                >
+                                  <Download size={16} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                      <button
-                        onClick={() => handleDownloadFile(file.id, file.original_file_name)}
-                        className="flex-shrink-0 ml-3 p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                        title="Download file"
-                      >
-                        <Download size={16} />
-                      </button>
-                    </div>
-                  ))}
+                      );
+                    }
+                    return null;
+                  })()}
+
+                  {/* Files grouped by File Request */}
+                  {fileRequests.map((fileRequest) => {
+                    const requestFiles = uploadedFiles.filter(file => file.file_request_id === fileRequest.id);
+                    if (requestFiles.length > 0) {
+                      return (
+                        <div key={fileRequest.id} className="border border-yellow-200 rounded-lg p-3 bg-yellow-50/30">
+                          <h4 className="text-sm font-semibold text-gray-700 mb-1 flex items-center gap-2">
+                            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                            Requested Files
+                          </h4>
+                          <p className="text-xs text-gray-600 mb-2">
+                            <span className="font-medium">Request from:</span> {fileRequest.requested_by_first_name} {fileRequest.requested_by_last_name}
+                            {' • '}
+                            {fileRequest.message}
+                          </p>
+                          <div className="space-y-2">
+                            {requestFiles.map((file) => (
+                              <div
+                                key={file.id}
+                                className="flex items-center justify-between p-2 bg-white rounded-lg hover:bg-gray-50 border border-gray-200"
+                              >
+                                <div className="flex items-center space-x-2 flex-1 min-w-0">
+                                  <FileText className="text-yellow-600 flex-shrink-0" size={18} />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-gray-900 truncate">{file.original_file_name}</p>
+                                    <p className="text-xs text-gray-500">
+                                      Uploaded by: {file.uploader_first_name} {file.uploader_last_name}
+                                      {' • '}
+                                      {new Date(file.created_at).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => handleDownloadFile(file.id, file.original_file_name)}
+                                  className="flex-shrink-0 ml-2 p-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors"
+                                  title="Download file"
+                                >
+                                  <Download size={16} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })}
+
+                  {/* Additional Files (no file_request_id and not initial submission) */}
+                  {(() => {
+                    const additionalFiles = uploadedFiles.filter(file =>
+                      !file.file_request_id && file.submission_type !== 'initial_submission'
+                    );
+                    if (additionalFiles.length > 0) {
+                      return (
+                        <div className="border border-green-200 rounded-lg p-3 bg-green-50/30">
+                          <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            Additional Files
+                          </h4>
+                          <div className="space-y-2">
+                            {additionalFiles.map((file) => (
+                              <div
+                                key={file.id}
+                                className="flex items-center justify-between p-2 bg-white rounded-lg hover:bg-gray-50 border border-gray-200"
+                              >
+                                <div className="flex items-center space-x-2 flex-1 min-w-0">
+                                  <FileText className="text-green-600 flex-shrink-0" size={18} />
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium text-gray-900 truncate">{file.original_file_name}</p>
+                                    <p className="text-xs text-gray-500">
+                                      Uploaded by: {file.uploader_first_name} {file.uploader_last_name}
+                                      {' • '}
+                                      {new Date(file.created_at).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => handleDownloadFile(file.id, file.original_file_name)}
+                                  className="flex-shrink-0 ml-2 p-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                                  title="Download file"
+                                >
+                                  <Download size={16} />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
                 </div>
               )}
             </div>

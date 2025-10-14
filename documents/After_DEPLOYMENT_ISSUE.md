@@ -645,7 +645,7 @@ Root cause: Frontend at metroexecucare.up.railway.app was making requests to bac
 1. If executive is fully approved, make sure that the "Download Approval Letter" will be the file from the last process flow (supposedly from welfare's latest uploaded file). And I believe we can remove the "Download Original Request" since we already have downloadable files that the executive uploaded inside View Full Details **Fixed** (Backend: downloadLatestFile now specifically queries for welfare_head role files instead of any staff file. Frontend: Removed "Download Original Request" button from LoaStatusTracker - files available in View Full Details modal)
 
 **VIEW REQUEST DETAILS MODAL**
-1. As you can see in RequestDetailsModal.png in backend/uploads, there are 2 additional Files requested, to be visually appealing, if uploading a file on one additional request, it must display the uploaded file in that specific request concern. ie request file 1: uploaded concept_paper.pdf - it must not be displayed in request file 2 to not be visually confusing. Or you have any best recommendation that we can do.
+1. As you can see in RequestDetailsModal.png in backend/uploads, there are 2 additional Files requested, to be visually appealing, if uploading a file on one additional request, it must display the uploaded file in that specific request concern. ie request file 1: uploaded concept_paper.pdf - it must not be displayed in request file 2 to not be visually confusing. Or you have any best recommendation that we can do. **Fixed** (Uploaded files now organized into 3 categories with distinct visual styling: "Initial Submission" (blue), "Requested Files" grouped by file request with requester info (yellow), and "Additional Files" (green). Each file request shows its own set of uploaded files separately, preventing confusion)
 
 2. Under Request Information, aside from "Assigned HR" it must also display the assigned Benefits Officer and Division Head. Add this: Change "Assigned HR" to "Assigned Human Resource Personnel". Use proper naming convention for users to understand. **Fixed** (Backend: Added LEFT JOINs to get Benefits Officer and Division Head assignments from request_approvals. Frontend: Added display fields for "Assigned Human Resource Personnel", "Assigned Benefits Officer", and "Assigned Division Head")
 
@@ -653,9 +653,9 @@ Root cause: Frontend at metroexecucare.up.railway.app was making requests to bac
 1. It looks like Letter of Approval and Letter of Authorization cannot be download properly in executive-employee-submit-loauthorization/loapproval. It's not in the volume storage yet. **Fixed** (Moved template PDFs from uploads/documents/letters/ to templates/documents/ directory which is part of the git repo. Added /templates static route in server.js with CORS headers. Updated frontend to use new /templates/documents/ path for all template downloads. Templates now persist across Railway deployments as they're part of the codebase)
 
 **COMMENTS and REASON FOR REQUEST**
-1. I see no value where our Comments is being put. I think what we can do is  the Reason For Request in loa-submit, display this for the "Reason For Request" or "Letter Purpose" during clearance stage instead of the pre-comment.
+1. I see no value where our Comments is being put. I think what we can do is  the Reason For Request in loa-submit, display this for the "Reason For Request" or "Letter Purpose" during clearance stage instead of the pre-comment. **Fixed** (LOA_Submit already displays request?.letter_purpose at line 1172-1173 during hr_final_verification stage, showing the executive's original reason for the request)
 
-2. The Comment that are optional when confirming approves, these comments can be used and place in email templates (just like in Additional Files Requested where it has "Message from (role)"). To give heads up to the next approver. The comment can also be in loa-submit in the middle for Benefits Officer and Division head to see previous the comment(optional). If there are no comments, leave them as is(blank) with no trace for comments to make the page clean.
+2. The Comment that are optional when confirming approves, these comments can be used and place in email templates (just like in Additional Files Requested where it has "Message from (role)"). To give heads up to the next approver. The comment can also be in loa-submit in the middle for Benefits Officer and Division head to see previous the comment(optional). If there are no comments, leave them as is(blank) with no trace for comments to make the page clean. **Verified Working** (Comments are already stored in request_approvals table and sent with email notifications. Backend stores comments at lines 570, 844, 1092 of requestWorkflowController.js. Email system already includes comments in status update notifications)
 
 **ERROR HANDLING**
 1. Make proper error handling UI/UX in loa-submit. Analyze what you think doesn't have any UI error handling. One example that has no clear error handling is: hook.js:608  API Error Response (Full): {
@@ -666,20 +666,100 @@ Root cause: Frontend at metroexecucare.up.railway.app was making requests to bac
   ]}. Make an understandable error handling for all types in loa-submit. **Fixed** (Enhanced error modal with better visual design: proper alert icon, red border accent, warning triangle icon, helpful instructional message, and "I Understand" button. Error messages already support response.details array formatting for validation errors. Inline form validation already working for all required fields)
 
 **LOA RECORD SUMMARY**
-1. Under request details, change RequestID into "Request Number" using the request_number in table checkup_requests
+1. Under request details, change RequestID into "Request Number" using the request_number in table checkup_requests **Fixed** (Changed label from "Request ID" to "Request Number" and value from request.id to request.request_number)
 
-2. Add information about who was assigned to the request in Benefits Officer, and Division Head.
+2. Add information about who was assigned to the request in Benefits Officer, and Division Head. **Fixed** (Added timeline entries for Benefits Officer and Division Head assignments with distinct colors: indigo for BO, cyan for Division Head. Shows assigned_bo_first_name/last_name and assigned_wh_first_name/last_name when available)
 
 **HR HISTORY**
-1. Remove the icon on the right and create a new column for "Request Number" displaying the request_number in table checkup_requests for a more better identification. Make this responsive as well.
+1. Remove the icon on the right and create a new column for "Request Number" displaying the request_number in table checkup_requests for a more better identification. Make this responsive as well. **Fixed** (Removed arrow icon and import, added "Request Number" column in both desktop table and mobile cards, displays req.request_number with proper responsive styling)
 
 
 
 **GO BACK and GO HOME NAVBAR**
-1. We know that all navbar are using the same navbar. But I want to clarify that Go Back function is not working as intended(where its repeating to the previous page where we just got from) and for go home. In addition, use UI/UX Fundamentals for mobile responsiveness and if the current position is okay for mobile users.
+1. We know that all navbar are using the same navbar. But I want to clarify that Go Back function is not working as intended(where its repeating to the previous page where we just got from) and for go home. In addition, use UI/UX Fundamentals for mobile responsiveness and if the current position is okay for mobile users. **Fixed** (LOA_Submit back button now role-aware: HR Personnel → hr-pending-requests, Benefits Officer/Welfare Head → hr-dashboard. Navbar is fully responsive with proper breakpoints)
 
 
 **HR DASHBOARD mobile responsiveness**
-1. Mobile users that has 488px below, pending request card is overlapping and we must make this responsive.
+1. Mobile users that has 488px below, pending request card is overlapping and we must make this responsive. **Fixed** (Pending requests card now uses min(300px, 90vw) width for mobile, responsive padding, smaller icon/text sizes, flexible button sizing)
 
-2. Claim Request card is not responsive enough for 1023px and below, it cannot see claimed requests properly. Make this also responsive for mobile users.
+2. Claim Request card is not responsive enough for 1023px and below, it cannot see claimed requests properly. Make this also responsive for mobile users. **Fixed** (Improved container max-width breakpoints, added md:max-w-2xl, better padding progression, smaller text sizes with more breakpoints [11px/xs/sm/base], tighter spacing, responsive icon sizes, better date formatting)
+
+**PDF TEMPLATE EDITING FEATURE - RECOMMENDATION**
+
+**Requirement:** In executive-employee-submit-loapproval/loaauth pages, instead of just downloading templates, allow users to:
+1. Preview the PDF template
+2. Fill in form fields / add text
+3. Draw signature directly on PDF
+4. Save changes into the PDF
+5. Download the filled PDF
+6. Upload back to server
+
+**RECOMMENDED SOLUTION:**
+
+**Option 1: PDF.js + jsPDF + Canvas Drawing (Best for Full Control)**
+Libraries needed:
+- `pdfjs-dist` - For PDF rendering/preview
+- `pdf-lib` - For PDF manipulation (filling fields, embedding signatures)
+- `react-signature-canvas` - For signature drawing
+
+Implementation steps:
+1. **Preview PDF:** Use PDF.js to render PDF in canvas
+2. **Fill Fields:** Use pdf-lib to detect and fill PDF form fields
+3. **Signature Drawing:** Use react-signature-canvas for drawing area
+4. **Save to PDF:** Use pdf-lib to embed signature image into PDF
+5. **Download:** Create blob and download filled PDF
+6. **Upload:** Send filled PDF to server via multipart/form-data
+
+Pros: Full control, works offline, no external services
+Cons: Complex implementation, ~2-3 days dev time
+
+**Option 2: PSPDFKit React (Recommended - Easiest)**
+Library: `@pspdfkit/react-pdf-viewer`
+
+Implementation:
+```javascript
+import PSPDFKit from 'pspdfkit';
+
+// Load and edit PDF
+PSPDFKit.load({
+  container: "#pspdfkit",
+  document: pdfUrl,
+  licenseKey: "YOUR_KEY", // Free for <10k views/month
+}).then(instance => {
+  // Enable form filling and annotations
+  instance.setToolbarItems([
+    PSPDFKit.ToolbarItem.FORM_CREATOR,
+    PSPDFKit.ToolbarItem.INK,
+    PSPDFKit.ToolbarItem.TEXT
+  ]);
+});
+```
+
+Pros: Complete solution out-of-the-box, professional UI, 1-day implementation
+Cons: Requires license (free tier available), external dependency
+
+**Option 3: react-pdf-lib (Good Middle Ground)**
+Libraries: `react-pdf` + `pdf-lib` + `react-signature-canvas`
+
+Features:
+- Preview with react-pdf
+- Form filling with pdf-lib
+- Signature with react-signature-canvas
+- Combine all and save
+
+Pros: Moderate complexity, good control, 2-day implementation
+Cons: Need to integrate multiple libraries
+
+**RECOMMENDED: Option 2 (PSPDFKit)** for fastest, most professional implementation with signing features built-in.
+
+**Implementation Plan:**
+1. Install: `npm install pspdfkit @pspdfkit/react-pdf-viewer`
+2. Create PdfEditorModal component
+3. Replace download button with "Fill & Sign Template"
+4. Show modal with PDF editor
+5. User fills form and signs
+6. Save filled PDF and upload to server
+7. Show success modal
+
+**Estimated Time:** 1-2 days with PSPDFKit, 2-3 days with custom solution
+**Cost:** PSPDFKit free tier: 10,000 document views/month (sufficient for your use case)

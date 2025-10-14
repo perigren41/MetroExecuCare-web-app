@@ -322,10 +322,10 @@ export default function LOA_RecordSummary() {
                 </div>
                 <div>
                   <label className="text-gray-600 text-xs md:text-sm font-medium block">
-                    Request ID
+                    Request Number
                   </label>
                   <p className="text-gray-900 text-sm md:text-lg font-medium">
-                    #{request.id ? request.id.toString().padStart(6, "0") : "N/A"}
+                    {request.request_number || "N/A"}
                   </p>
                 </div>
               </div>
@@ -464,22 +464,52 @@ export default function LOA_RecordSummary() {
                   </div>
                 </div>
 
-                {/* Show assignment if available */}
+                {/* Show HR assignment if available */}
                 {request.assigned_hr_first_name && (
                   <div className="flex items-start gap-3 md:gap-4 p-3 md:p-4 bg-yellow-50 rounded-lg">
                     <div className="w-3 h-3 bg-yellow-500 rounded-full mt-1 flex-shrink-0" />
                     <div className="flex flex-col min-w-0 flex-1">
                       <p className="font-medium text-gray-900 text-sm md:text-base">
-                        Request Assigned
+                        Human Resource Personnel Assigned
                       </p>
                       <p className="text-xs md:text-sm text-gray-600">
-                        Assigned to {request.assigned_hr_first_name} {request.assigned_hr_last_name}
+                        {request.assigned_hr_first_name} {request.assigned_hr_last_name}
                       </p>
                       {request.assigned_at && (
                         <p className="text-xs md:text-sm text-gray-500">
                           {new Date(request.assigned_at).toLocaleDateString()}
                         </p>
                       )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Show Benefits Officer assignment if available */}
+                {request.assigned_bo_first_name && (
+                  <div className="flex items-start gap-3 md:gap-4 p-3 md:p-4 bg-indigo-50 rounded-lg">
+                    <div className="w-3 h-3 bg-indigo-500 rounded-full mt-1 flex-shrink-0" />
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <p className="font-medium text-gray-900 text-sm md:text-base">
+                        Benefits Officer Assigned
+                      </p>
+                      <p className="text-xs md:text-sm text-gray-600">
+                        {request.assigned_bo_first_name} {request.assigned_bo_last_name}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Show Division Head assignment if available */}
+                {request.assigned_wh_first_name && (
+                  <div className="flex items-start gap-3 md:gap-4 p-3 md:p-4 bg-cyan-50 rounded-lg">
+                    <div className="w-3 h-3 bg-cyan-500 rounded-full mt-1 flex-shrink-0" />
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <p className="font-medium text-gray-900 text-sm md:text-base">
+                        Division Head Assigned
+                      </p>
+                      <p className="text-xs md:text-sm text-gray-600">
+                        {request.assigned_wh_first_name} {request.assigned_wh_last_name}
+                      </p>
                     </div>
                   </div>
                 )}
