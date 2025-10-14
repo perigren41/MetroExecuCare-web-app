@@ -40,21 +40,34 @@ export default function PdfEditorModal({
         setIsLoading(true);
         setError(null);
 
-        // Load PDF for viewing (PDF.js)
-        const loadingTask = pdfjsLib.getDocument(pdfUrl);
+        console.log('Loading PDF from URL:', pdfUrl);
+
+        // First, fetch the PDF to get the bytes (this handles CORS better)
+        const response = await fetch(pdfUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`);
+        }
+        const pdfBytes = await response.arrayBuffer();
+        console.log('PDF fetched successfully, size:', pdfBytes.byteLength, 'bytes');
+
+        // Load PDF for viewing (PDF.js) - use the bytes directly
+        const loadingTask = pdfjsLib.getDocument({ data: pdfBytes });
         const pdf = await loadingTask.promise;
         setPdfDoc(pdf);
         setTotalPages(pdf.numPages);
+        console.log('PDF.js loaded successfully, pages:', pdf.numPages);
 
-        // Load PDF for editing (pdf-lib)
-        const pdfBytes = await fetch(pdfUrl).then(res => res.arrayBuffer());
+        // Load PDF for editing (pdf-lib) - reuse the same bytes
         const pdfLibDocument = await PDFDocument.load(pdfBytes);
         setPdfLibDoc(pdfLibDocument);
+        console.log('pdf-lib loaded successfully');
 
         setIsLoading(false);
       } catch (err) {
         console.error('Error loading PDF:', err);
-        setError('Failed to load PDF. Please try again.');
+        console.error('PDF URL:', pdfUrl);
+        console.error('Error details:', err.message, err.stack);
+        setError(`Failed to load PDF: ${err.message}. Please check the console for details.`);
         setIsLoading(false);
       }
     };

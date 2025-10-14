@@ -18,7 +18,7 @@ export default function TestAccountsPage() {
       hoverBgColor: 'hover:bg-blue-600'
     },
     {
-      role: 'HR Personnel',
+      role: 'Human Resource Personnel',
       description: 'Can claim and process incoming requests',
       email: 'hr@metroexecucare.com',
       password: 'HR@12345',
@@ -36,10 +36,10 @@ export default function TestAccountsPage() {
       hoverBgColor: 'hover:bg-green-600'
     },
     {
-      role: 'Welfare Head',
+      role: 'Division Head',
       description: 'Final approval authority for requests',
-      email: 'welfare@metroexecucare.com',
-      password: 'Welfare@123',
+      email: 'divisionhead@metroexecucare.com',
+      password: 'divhead@123',
       borderColor: 'border-orange-500',
       bgColor: 'bg-orange-500',
       hoverBgColor: 'hover:bg-orange-600'
