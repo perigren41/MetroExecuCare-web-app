@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {  X, Check, Download, ExternalLink, Eye} from "lucide-react";
+import {  X, Check, Download, ExternalLink, Eye, Edit3} from "lucide-react";
 import NavBarMain from "@/Components/NavBarMain";
 import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
 import MetroBankLogo from "@/assets/mainLogo-foreground.svg";
@@ -11,6 +11,7 @@ import ErrorIcon from "@/assets/error.svg";
 import apiService from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import PdfEditorModal from "@/Components/PdfEditorModal";
 
 export default function SubmitLetterOfAuthorization() {
   const { user, logout } = useAuth();
@@ -26,6 +27,7 @@ export default function SubmitLetterOfAuthorization() {
   const [activeRequest, setActiveRequest] = useState(null);
   const [isCheckingRequest, setIsCheckingRequest] = useState(true);
   const [showDuplicateModal, setShowDuplicateModal] = useState(false);
+  const [showPdfEditor, setShowPdfEditor] = useState(false);
 
   // Check for active request on component mount
   useEffect(() => {
@@ -170,6 +172,12 @@ export default function SubmitLetterOfAuthorization() {
       console.error('❌ Error submitting request:', error);
       setModalState('error');
     }
+  };
+
+  // Handle PDF editor save
+  const handlePdfEditorSave = async (file) => {
+    // Add the filled PDF to uploaded files
+    setUploadedFiles(prev => [...prev, file]);
   };
 
   // Show loading while checking for active request
@@ -351,6 +359,13 @@ export default function SubmitLetterOfAuthorization() {
 
                 {/* Action Buttons */}
                 <div className="space-y-2">
+                  <button
+                    onClick={() => setShowPdfEditor(true)}
+                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors text-sm cursor-pointer font-semibold"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    <span>Fill & Sign PDF</span>
+                  </button>
 
                   <button
                     onClick={async () => {
@@ -380,12 +395,12 @@ export default function SubmitLetterOfAuthorization() {
                     className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
-                    <span>Download PDF</span>
+                    <span>Download Only</span>
                   </button>
 
                   <div className="text-center">
                     <p className="text-xs text-gray-500 mt-2">
-                      Please fill out, and sign this document and upload here
+                      Fill & sign online or download, fill manually, and upload
                     </p>
                   </div>
                 </div>
@@ -446,6 +461,14 @@ export default function SubmitLetterOfAuthorization() {
 
                 {/* Action Buttons */}
                 <div className="space-y-2">
+                  <button
+                    onClick={() => setShowPdfEditor(true)}
+                    className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors text-xs cursor-pointer font-semibold"
+                  >
+                    <Edit3 className="w-3 h-3" />
+                    <span>Fill & Sign PDF</span>
+                  </button>
+
                   <button
                     onClick={() => window.open(`${BACKEND_BASE_URL}/templates/documents/Request%20Letter%20of%20Approval.pdf`, '_blank')}
                     className="w-full flex items-center justify-center space-x-2 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs cursor-pointer"
@@ -763,6 +786,15 @@ export default function SubmitLetterOfAuthorization() {
           </div>
         </div>
       )}
+
+      {/* PDF Editor Modal */}
+      <PdfEditorModal
+        isOpen={showPdfEditor}
+        onClose={() => setShowPdfEditor(false)}
+        pdfUrl={`${BACKEND_BASE_URL}/templates/documents/Request Letter of Approval.pdf`}
+        onSave={handlePdfEditorSave}
+        templateName="Request_Letter_of_Approval.pdf"
+      />
     </>
   );
 }

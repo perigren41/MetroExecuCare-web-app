@@ -17,5 +17,16 @@ export default defineConfig({
     open: true,
     strictPort: true, // Fail if port is already in use instead of trying next available
   },
+  preview: {
+    host: '0.0.0.0',
+    port: 3000,
+    strictPort: false,
+    allowedHosts: [
+      'metroexecucare.up.railway.app',
+      '.railway.app', // Allow all Railway subdomains
+      'localhost',
+      '127.0.0.1'
+    ]
+  }
 })
 
