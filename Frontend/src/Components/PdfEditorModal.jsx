@@ -15,6 +15,7 @@ export default function PdfEditorModal({
   templateName = "template.pdf"
 }) {
   const canvasRef = useRef(null);
+  const containerRef = useRef(null);
   const signaturePadRef = useRef(null);
   const [pdfDoc, setPdfDoc] = useState(null);
   const [pdfLibDoc, setPdfLibDoc] = useState(null);
@@ -30,6 +31,8 @@ export default function PdfEditorModal({
   const [textInput, setTextInput] = useState('');
   const [annotations, setAnnotations] = useState([]);
   const [selectedTool, setSelectedTool] = useState(null); // 'text' or 'signature'
+  const [draggedAnnotation, setDraggedAnnotation] = useState(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
   // Load PDF when modal opens
   useEffect(() => {
@@ -93,6 +96,9 @@ export default function PdfEditorModal({
       canvas.height = viewport.height;
       canvas.width = viewport.width;
 
+      // Store canvas dimensions for positioning annotations
+      setCanvasSize({ width: viewport.width, height: viewport.height });
+
       const renderContext = {
         canvasContext: context,
         viewport: viewport
@@ -102,7 +108,7 @@ export default function PdfEditorModal({
     };
 
     renderPage();
-  }, [pdfDoc, currentPage, scale, annotations]);
+  }, [pdfDoc, currentPage, scale]);
 
   // Add text annotation
   const handleAddText = () => {
@@ -151,6 +157,37 @@ export default function PdfEditorModal({
   // Remove annotation
   const handleRemoveAnnotation = (id) => {
     setAnnotations(annotations.filter(ann => ann.id !== id));
+  };
+
+  // Handle drag start
+  const handleDragStart = (e, annotation) => {
+    setDraggedAnnotation(annotation);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  // Handle drag over canvas
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  // Handle drop on canvas
+  const handleDrop = (e) => {
+    e.preventDefault();
+    if (!draggedAnnotation || !containerRef.current) return;
+
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Update annotation position
+    setAnnotations(annotations.map(ann =>
+      ann.id === draggedAnnotation.id
+        ? { ...ann, x, y }
+        : ann
+    ));
+
+    setDraggedAnnotation(null);
   };
 
   // Save and download PDF with annotations
@@ -399,7 +436,64 @@ export default function PdfEditorModal({
 
               {!isLoading && !error && (
                 <div className="bg-white shadow-lg mx-auto" style={{ width: 'fit-content' }}>
-                  <canvas ref={canvasRef} className="max-w-full" />
+                  {/* PDF Canvas with annotation overlay */}
+                  <div
+                    ref={containerRef}
+                    className="relative"
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    style={{ width: canvasSize.width, height: canvasSize.height }}
+                  >
+                    <canvas ref={canvasRef} className="max-w-full" />
+
+                    {/* Render annotations as draggable overlays */}
+                    {annotations
+                      .filter(ann => ann.page === currentPage)
+                      .map(annotation => (
+                        <div
+                          key={annotation.id}
+                          draggable
+                          onDragStart={(e) => handleDragStart(e, annotation)}
+                          style={{
+                            position: 'absolute',
+                            left: annotation.x,
+                            top: annotation.y,
+                            cursor: 'move',
+                            zIndex: 10
+                          }}
+                          className="group"
+                        >
+                          {annotation.type === 'text' ? (
+                            <div className="bg-yellow-100 border-2 border-yellow-400 px-2 py-1 rounded shadow-lg hover:shadow-xl transition-shadow">
+                              <span style={{ fontSize: annotation.fontSize }}>{annotation.text}</span>
+                              <button
+                                onClick={() => handleRemoveAnnotation(annotation.id)}
+                                className="ml-2 text-red-600 hover:text-red-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="bg-white border-2 border-blue-400 rounded shadow-lg hover:shadow-xl transition-shadow">
+                              <img
+                                src={annotation.dataUrl}
+                                alt="Signature"
+                                style={{
+                                  width: annotation.width,
+                                  height: annotation.height
+                                }}
+                              />
+                              <button
+                                onClick={() => handleRemoveAnnotation(annotation.id)}
+                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full hover:bg-red-700 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                  </div>
 
                   {/* Page Navigation */}
                   {totalPages > 1 && (
