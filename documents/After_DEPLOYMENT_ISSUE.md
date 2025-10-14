@@ -807,11 +807,14 @@ Cons: Need to integrate multiple libraries
 **Cost:** PSPDFKit free tier: 10,000 document views/month (sufficient for your use case)
 
 
-**Fill&Sign Template modal** 
-- Showing blank at first(must add text or signature first before showing template)
-- Add signature not working
-- Add text/edit not working
-- Mobile user fail to load PDF. Error: Cannot perform Construct on a detached ArrayBuffer. Please check the console for details.
+**Fill&Sign Template modal** **FIXED**
+- Showing blank at first(must add text or signature first before showing template) **Fixed** (Annotations now render as visible overlays on PDF immediately after adding)
+- Add signature not working **Fixed** (Signature drawing and placement fully functional)
+- Add text/edit not working **Fixed** (Text annotations fully functional with drag-and-drop)
+- Mobile user fail to load PDF. Error: Cannot perform Construct on a detached ArrayBuffer **Fixed** (Cloned ArrayBuffer for pdf-lib to prevent detachment)
+- Drag and drop inaccurate positioning **Fixed** (Added offset calculation for precise placement)
+- Signatures should be behind text **Fixed** (Signatures z-index: 5, Text z-index: 10)
+- Mobile drag-and-drop not working **Fixed** (Added touch event support with pointer handlers)
 
 Error loading PDF: TypeError: Cannot perform Construct on a detached ArrayBuffer
     at new Uint8Array (<anonymous>)
