@@ -815,6 +815,8 @@ Cons: Need to integrate multiple libraries
 - Drag and drop inaccurate positioning **Fixed** (Added offset calculation for precise placement)
 - Signatures should be behind text **Fixed** (Signatures z-index: 5, Text z-index: 10)
 - Mobile drag-and-drop not working **Fixed** (Added touch event support with pointer handlers)
+- Downloaded PDF positioning inaccurate/annotations missing **Fixed** (Added scale factor conversion between canvas and PDF coordinates)
+- Signature/text backgrounds not transparent in downloaded PDF **Fixed** (Semi-transparent overlays in preview, clean appearance in final PDF)
 
 Error loading PDF: TypeError: Cannot perform Construct on a detached ArrayBuffer
     at new Uint8Array (<anonymous>)
