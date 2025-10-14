@@ -245,13 +245,22 @@ export default function PdfEditorModal({
       // Add annotations to the PDF
       for (const annotation of annotations) {
         const page = pages[annotation.page - 1];
-        const { height } = page.getSize();
+        const { width: pageWidth, height: pageHeight } = page.getSize();
+
+        // Calculate the scale factor between canvas and PDF
+        // Canvas dimensions are scaled, PDF dimensions are actual
+        const scaleX = pageWidth / canvasSize.width;
+        const scaleY = pageHeight / canvasSize.height;
 
         if (annotation.type === 'text') {
+          // Convert canvas coordinates to PDF coordinates
+          const pdfX = annotation.x * scaleX;
+          const pdfY = pageHeight - (annotation.y * scaleY) - (annotation.fontSize * scaleY);
+
           page.drawText(annotation.text, {
-            x: annotation.x,
-            y: height - annotation.y - annotation.fontSize,
-            size: annotation.fontSize,
+            x: pdfX,
+            y: pdfY,
+            size: annotation.fontSize * scaleY,
             color: rgb(0, 0, 0),
           });
         } else if (annotation.type === 'signature') {
@@ -259,11 +268,17 @@ export default function PdfEditorModal({
           const signatureImageBytes = await fetch(annotation.dataUrl).then(res => res.arrayBuffer());
           const signatureImage = await pdfDocCopy.embedPng(signatureImageBytes);
 
+          // Convert canvas coordinates to PDF coordinates
+          const pdfX = annotation.x * scaleX;
+          const pdfY = pageHeight - (annotation.y * scaleY) - (annotation.height * scaleY);
+          const pdfWidth = annotation.width * scaleX;
+          const pdfHeight = annotation.height * scaleY;
+
           page.drawImage(signatureImage, {
-            x: annotation.x,
-            y: height - annotation.y - annotation.height,
-            width: annotation.width,
-            height: annotation.height,
+            x: pdfX,
+            y: pdfY,
+            width: pdfWidth,
+            height: pdfHeight,
           });
         }
       }
@@ -322,24 +337,40 @@ export default function PdfEditorModal({
       // Add annotations to the PDF
       for (const annotation of annotations) {
         const page = pages[annotation.page - 1];
-        const { height } = page.getSize();
+        const { width: pageWidth, height: pageHeight } = page.getSize();
+
+        // Calculate the scale factor between canvas and PDF
+        // Canvas dimensions are scaled, PDF dimensions are actual
+        const scaleX = pageWidth / canvasSize.width;
+        const scaleY = pageHeight / canvasSize.height;
 
         if (annotation.type === 'text') {
+          // Convert canvas coordinates to PDF coordinates
+          const pdfX = annotation.x * scaleX;
+          const pdfY = pageHeight - (annotation.y * scaleY) - (annotation.fontSize * scaleY);
+
           page.drawText(annotation.text, {
-            x: annotation.x,
-            y: height - annotation.y - annotation.fontSize,
-            size: annotation.fontSize,
+            x: pdfX,
+            y: pdfY,
+            size: annotation.fontSize * scaleY,
             color: rgb(0, 0, 0),
           });
         } else if (annotation.type === 'signature') {
+          // Convert base64 signature to image
           const signatureImageBytes = await fetch(annotation.dataUrl).then(res => res.arrayBuffer());
           const signatureImage = await pdfDocCopy.embedPng(signatureImageBytes);
 
+          // Convert canvas coordinates to PDF coordinates
+          const pdfX = annotation.x * scaleX;
+          const pdfY = pageHeight - (annotation.y * scaleY) - (annotation.height * scaleY);
+          const pdfWidth = annotation.width * scaleX;
+          const pdfHeight = annotation.height * scaleY;
+
           page.drawImage(signatureImage, {
-            x: annotation.x,
-            y: height - annotation.y - annotation.height,
-            width: annotation.width,
-            height: annotation.height,
+            x: pdfX,
+            y: pdfY,
+            width: pdfWidth,
+            height: pdfHeight,
           });
         }
       }
@@ -505,8 +536,8 @@ export default function PdfEditorModal({
                           className="group"
                         >
                           {annotation.type === 'text' ? (
-                            <div className="bg-yellow-100 border-2 border-yellow-400 px-2 py-1 rounded shadow-lg hover:shadow-xl transition-shadow">
-                              <span style={{ fontSize: annotation.fontSize }}>{annotation.text}</span>
+                            <div className="border-2 border-yellow-400 px-2 py-1 rounded shadow-lg hover:shadow-xl transition-shadow" style={{ background: 'rgba(254, 249, 195, 0.5)' }}>
+                              <span style={{ fontSize: annotation.fontSize, color: '#000' }}>{annotation.text}</span>
                               <button
                                 onClick={() => handleRemoveAnnotation(annotation.id)}
                                 className="ml-2 text-red-600 hover:text-red-800 opacity-0 group-hover:opacity-100 transition-opacity"
@@ -515,13 +546,14 @@ export default function PdfEditorModal({
                               </button>
                             </div>
                           ) : (
-                            <div className="bg-white border-2 border-blue-400 rounded shadow-lg hover:shadow-xl transition-shadow">
+                            <div className="relative border-2 border-blue-400 rounded shadow-lg hover:shadow-xl transition-shadow" style={{ background: 'rgba(255, 255, 255, 0.3)' }}>
                               <img
                                 src={annotation.dataUrl}
                                 alt="Signature"
                                 style={{
                                   width: annotation.width,
-                                  height: annotation.height
+                                  height: annotation.height,
+                                  display: 'block'
                                 }}
                               />
                               <button
