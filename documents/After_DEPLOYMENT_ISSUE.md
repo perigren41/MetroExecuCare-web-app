@@ -805,3 +805,38 @@ Cons: Need to integrate multiple libraries
 
 **Estimated Time:** 1-2 days with PSPDFKit, 2-3 days with custom solution
 **Cost:** PSPDFKit free tier: 10,000 document views/month (sufficient for your use case)
+
+
+**Fill&Sign Template modal** 
+- Showing blank at first(must add text or signature first before showing template)
+- Add signature not working
+- Add text/edit not working
+- Mobile user fail to load PDF. Error: Cannot perform Construct on a detached ArrayBuffer. Please check the console for details.
+
+Error loading PDF: TypeError: Cannot perform Construct on a detached ArrayBuffer
+    at new Uint8Array (<anonymous>)
+    at Jp (index-DYHhRlT3.js:352:6874)
+    at r.<anonymous> (index-DYHhRlT3.js:389:32666)
+    at c (index-DYHhRlT3.js:352:2206)
+    at Object.next (index-DYHhRlT3.js:352:1510)
+    at index-DYHhRlT3.js:352:1236
+    at new Promise (<anonymous>)
+    at Ie (index-DYHhRlT3.js:352:1036)
+    at r.load (index-DYHhRlT3.js:389:32206)
+    at index-DYHhRlT3.js:389:64023
+(anonymous) @ index-DYHhRlT3.js:389
+index-DYHhRlT3.js:389  PDF URL: https://metroexecucare-backend.up.railway.app/templates/documents/Request Letter of Approval.pdf
+(anonymous) @ index-DYHhRlT3.js:389
+index-DYHhRlT3.js:389  Error details: Cannot perform Construct on a detached ArrayBuffer TypeError: Cannot perform Construct on a detached ArrayBuffer
+    at new Uint8Array (<anonymous>)
+    at Jp (https://metroexecucare.up.railway.app/assets/index-DYHhRlT3.js:352:6874)
+    at r.<anonymous> (https://metroexecucare.up.railway.app/assets/index-DYHhRlT3.js:389:32666)
+    at c (https://metroexecucare.up.railway.app/assets/index-DYHhRlT3.js:352:2206)
+    at Object.next (https://metroexecucare.up.railway.app/assets/index-DYHhRlT3.js:352:1510)
+    at https://metroexecucare.up.railway.app/assets/index-DYHhRlT3.js:352:1236
+    at new Promise (<anonymous>)
+    at Ie (https://metroexecucare.up.railway.app/assets/index-DYHhRlT3.js:352:1036)
+    at r.load (https://metroexecucare.up.railway.app/assets/index-DYHhRlT3.js:389:32206)
+    at https://metroexecucare.up.railway.app/assets/index-DYHhRlT3.js:389:64023
+
+    - 

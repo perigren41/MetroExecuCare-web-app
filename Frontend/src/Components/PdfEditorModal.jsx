@@ -50,15 +50,20 @@ export default function PdfEditorModal({
         const pdfBytes = await response.arrayBuffer();
         console.log('PDF fetched successfully, size:', pdfBytes.byteLength, 'bytes');
 
-        // Load PDF for viewing (PDF.js) - use the bytes directly
+        // Clone the ArrayBuffer for pdf-lib to prevent "detached ArrayBuffer" error
+        // This happens because PDF.js may transfer ownership of the buffer
+        const pdfBytesForPdfLib = pdfBytes.slice(0);
+        console.log('Cloned ArrayBuffer for pdf-lib');
+
+        // Load PDF for viewing (PDF.js) - use the original bytes
         const loadingTask = pdfjsLib.getDocument({ data: pdfBytes });
         const pdf = await loadingTask.promise;
         setPdfDoc(pdf);
         setTotalPages(pdf.numPages);
         console.log('PDF.js loaded successfully, pages:', pdf.numPages);
 
-        // Load PDF for editing (pdf-lib) - reuse the same bytes
-        const pdfLibDocument = await PDFDocument.load(pdfBytes);
+        // Load PDF for editing (pdf-lib) - use the cloned bytes
+        const pdfLibDocument = await PDFDocument.load(pdfBytesForPdfLib);
         setPdfLibDoc(pdfLibDocument);
         console.log('pdf-lib loaded successfully');
 
