@@ -32,6 +32,7 @@ export default function PdfEditorModal({
   const [annotations, setAnnotations] = useState([]);
   const [selectedTool, setSelectedTool] = useState(null); // 'text' or 'signature'
   const [draggedAnnotation, setDraggedAnnotation] = useState(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
 
   // Load PDF when modal opens
@@ -159,26 +160,42 @@ export default function PdfEditorModal({
     setAnnotations(annotations.filter(ann => ann.id !== id));
   };
 
-  // Handle drag start
-  const handleDragStart = (e, annotation) => {
+  // Mouse/Touch drag handlers
+  const handlePointerDown = (e, annotation) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const rect = container.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    // Calculate offset between pointer and annotation top-left corner
+    const offsetX = clientX - rect.left - annotation.x;
+    const offsetY = clientY - rect.top - annotation.y;
+
     setDraggedAnnotation(annotation);
-    e.dataTransfer.effectAllowed = 'move';
+    setDragOffset({ x: offsetX, y: offsetY });
   };
 
-  // Handle drag over canvas
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  // Handle drop on canvas
-  const handleDrop = (e) => {
-    e.preventDefault();
+  const handlePointerMove = (e) => {
     if (!draggedAnnotation || !containerRef.current) return;
 
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    e.preventDefault();
+    const container = containerRef.current;
+    const rect = container.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    // Calculate new position with offset
+    let x = clientX - rect.left - dragOffset.x;
+    let y = clientY - rect.top - dragOffset.y;
+
+    // Constrain within canvas bounds
+    x = Math.max(0, Math.min(x, canvasSize.width - 100));
+    y = Math.max(0, Math.min(y, canvasSize.height - 50));
 
     // Update annotation position
     setAnnotations(annotations.map(ann =>
@@ -186,9 +203,33 @@ export default function PdfEditorModal({
         ? { ...ann, x, y }
         : ann
     ));
-
-    setDraggedAnnotation(null);
   };
+
+  const handlePointerUp = () => {
+    setDraggedAnnotation(null);
+    setDragOffset({ x: 0, y: 0 });
+  };
+
+  // Add global listeners for mouse/touch move and up
+  useEffect(() => {
+    if (!draggedAnnotation) return;
+
+    const handleMove = (e) => handlePointerMove(e);
+    const handleUp = () => handlePointerUp();
+
+    // Add both mouse and touch listeners
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleUp);
+    document.addEventListener('touchmove', handleMove, { passive: false });
+    document.addEventListener('touchend', handleUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleUp);
+      document.removeEventListener('touchmove', handleMove);
+      document.removeEventListener('touchend', handleUp);
+    };
+  }, [draggedAnnotation, dragOffset, annotations, canvasSize]);
 
   // Save and download PDF with annotations
   const handleSaveAndDownload = async () => {
@@ -439,9 +480,7 @@ export default function PdfEditorModal({
                   {/* PDF Canvas with annotation overlay */}
                   <div
                     ref={containerRef}
-                    className="relative"
-                    onDragOver={handleDragOver}
-                    onDrop={handleDrop}
+                    className="relative select-none"
                     style={{ width: canvasSize.width, height: canvasSize.height }}
                   >
                     <canvas ref={canvasRef} className="max-w-full" />
@@ -452,14 +491,16 @@ export default function PdfEditorModal({
                       .map(annotation => (
                         <div
                           key={annotation.id}
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, annotation)}
+                          onMouseDown={(e) => handlePointerDown(e, annotation)}
+                          onTouchStart={(e) => handlePointerDown(e, annotation)}
                           style={{
                             position: 'absolute',
                             left: annotation.x,
                             top: annotation.y,
-                            cursor: 'move',
-                            zIndex: 10
+                            cursor: draggedAnnotation?.id === annotation.id ? 'grabbing' : 'grab',
+                            zIndex: annotation.type === 'signature' ? 5 : 10,
+                            touchAction: 'none',
+                            userSelect: 'none'
                           }}
                           className="group"
                         >
