@@ -1,5 +1,5 @@
 // LOA_Submit.jsx - Fully Responsive Version
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import NavBarMain from "@/Components/NavBarMain";
@@ -923,7 +923,8 @@ export default function LOA_Submit() {
     };
 
     // Helper function to check if Fill & Sign button should be shown
-    const shouldShowFillAndSign = () => {
+    // Wrapped in useCallback to prevent re-creation and initialization issues
+    const shouldShowFillAndSign = useCallback(() => {
         if (!user || !request) return false;
 
         // Hide Fill & Sign during HR final verification
@@ -945,7 +946,7 @@ export default function LOA_Submit() {
         }
 
         return false;
-    };
+    }, [user, request]);
 
     // Helper function to get the most recent staff file and its label
     const getMostRecentStaffFile = () => {

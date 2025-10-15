@@ -865,6 +865,6 @@ index-Tz1nT1SZ.js:379  PDF URL: https://metroexecucare-backend.up.railway.app/up
 index-Tz1nT1SZ.js:379  Error details: Failed to fetch PDF: 404  Error: Failed to fetch PDF: 404
     at https://metroexecucare.up.railway.app/assets/index-Tz1nT1SZ.js:379:63831 **Fixed** (getPdfUrlForFillAndSign now constructs correct path using file_name instead of file_path, eliminating double /uploads/ in URL)
 
-- Current claimed request not working for all approvers - ReferenceError: Cannot access 'Xp' before initialization **Fixed** (Two-part fix: 1) Inlined canApprove logic in shouldShowFillAndSign to avoid function hoisting issues in minified build, 2) Added loading/null state check before rendering PDF Card to prevent calling functions during initial render)
+- Current claimed request not working for all approvers - ReferenceError: Cannot access 'Xp' before initialization **Fixed** (Three-part fix: 1) Inlined canApprove logic in shouldShowFillAndSign to avoid function hoisting issues in minified build, 2) Added loading/null state check before rendering PDF Card to prevent calling functions during initial render, 3) Wrapped shouldShowFillAndSign in useCallback to prevent re-creation and memoize function reference)
 
 -
