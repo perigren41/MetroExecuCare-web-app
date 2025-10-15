@@ -1,5 +1,5 @@
 // LOA_Submit.jsx - Fully Responsive Version
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import NavBarMain from "@/Components/NavBarMain";
@@ -790,8 +790,7 @@ export default function LOA_Submit() {
     };
 
     // Check if user can take actions on this request
-    // Wrapped in useCallback to prevent re-creation and initialization issues
-    const canApprove = useCallback(() => {
+    const canApprove = () => {
         if (!user || !request) return false;
 
         // HR Personnel can approve when status is 'hr_processing' OR 'hr_final_verification' and they are assigned
@@ -822,19 +821,17 @@ export default function LOA_Submit() {
         }
 
         return false;
-    }, [user, request]);
+    };
 
     // Check if user can see the Return button (only BAs can see "for return" requests)
-    // Wrapped in useCallback to prevent re-creation and initialization issues
-    const canShowReturn = useCallback(() => {
+    const canShowReturn = () => {
         if (!user || !request) return false;
         return (user.position === "Benefits Assistant" || user.position === "hr_personnel" || user.username === "BA") &&
             request?.current_status === "for return";
-    }, [user, request]);
+    };
 
     // Helper function to determine dashboard route based on user role
-    // Wrapped in useCallback to prevent re-creation and initialization issues
-    const getDashboardRoute = useCallback(() => {
+    const getDashboardRoute = () => {
         switch (user?.role) {
             case 'executive':
                 return '/executive-employee-dashboard';
@@ -849,17 +846,15 @@ export default function LOA_Submit() {
             default:
                 return '/hr-dashboard'; // Default fallback
         }
-    }, [user]);
+    };
 
     // Helper function to determine if HR Processing section should be shown
-    // Wrapped in useCallback to prevent re-creation and initialization issues
-    const shouldShowHRProcessing = useCallback(() => {
+    const shouldShowHRProcessing = () => {
         return user?.role === 'hr_personnel' || user?.role === 'admin';
-    }, [user]);
+    };
 
     // Helper function to get the correct approval document name based on request type
-    // Wrapped in useCallback to prevent re-creation and initialization issues
-    const getApprovalDocumentName = useCallback(() => {
+    const getApprovalDocumentName = () => {
         if (!request) return 'signed document';
 
         if (request.request_type === 'letter_of_authorization') {
@@ -868,11 +863,10 @@ export default function LOA_Submit() {
             return 'Approval For Annual Medical Check-up';
         }
         return 'signed document';
-    }, [request]);
+    };
 
     // Helper function to get the PDF URL for Fill & Sign (progressive signing workflow)
-    // Wrapped in useCallback to prevent re-creation and initialization issues
-    const getPdfUrlForFillAndSign = useCallback(() => {
+    const getPdfUrlForFillAndSign = () => {
         if (!request) return null;
 
         // Get all staff files (excluding executive files)
@@ -898,11 +892,10 @@ export default function LOA_Submit() {
             ? 'Approval Letter of Authorization For Annual Medical Check-up Laboratory and Procedures.pdf'
             : 'Approval For Annual Medical Check-up.pdf';
         return `${BACKEND_BASE_URL}/templates/documents/${templatePath}`;
-    }, [request]);
+    };
 
     // Helper function to check if Fill & Sign button should be shown
-    // Wrapped in useCallback to prevent re-creation and initialization issues
-    const shouldShowFillAndSign = useCallback(() => {
+    const shouldShowFillAndSign = () => {
         if (!user || !request) return false;
 
         // Hide Fill & Sign during HR final verification
@@ -924,11 +917,10 @@ export default function LOA_Submit() {
         }
 
         return false;
-    }, [user, request]);
+    };
 
     // Helper function to get the most recent staff file and its label
-    // Wrapped in useCallback to prevent re-creation and initialization issues
-    const getMostRecentStaffFile = useCallback(() => {
+    const getMostRecentStaffFile = () => {
         if (!request?.id) return { file: null, label: 'Staff File:', noFileMessage: 'No Staff File' };
 
         // Inline canApprove logic to avoid circular dependency
@@ -1141,7 +1133,7 @@ export default function LOA_Submit() {
             label: fileLabel,
             noFileMessage: `No ${roleIdentifier} File`
         };
-    }, [user, request, pendingFiles]);
+    };
 
 
     return (
