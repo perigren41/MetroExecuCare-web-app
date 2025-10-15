@@ -1460,6 +1460,11 @@ export default function LOA_Submit() {
 
                             {/* Column 3 - Interactive PDF Card */}
                             <div className={`flex flex-col items-center justify-center ${shouldShowHRProcessing() ? 'order-1 md:order-3 xl:order-3' : 'order-1 md:order-2'}`}>
+                                {loading || !user || !request ? (
+                                    <div className="bg-white border-2 border-[#023184] rounded-xl shadow-lg p-3 sm:p-4 md:p-6 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-[400px] flex items-center justify-center min-h-[300px]">
+                                        <p className="text-gray-500 italic text-sm">Loading PDF Card...</p>
+                                    </div>
+                                ) : (
                                 <div className="bg-white border-2 border-[#023184] rounded-xl shadow-lg p-3 sm:p-4 md:p-6 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-[400px]">
                                     {/* Header */}
                                     <div className="text-center mb-3 sm:mb-4">
@@ -1621,6 +1626,7 @@ export default function LOA_Submit() {
                                         </div>
                                     )}
                                 </div>
+                                )}
                             </div>
                         </div>
 
