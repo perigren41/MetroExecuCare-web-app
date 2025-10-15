@@ -281,7 +281,7 @@ Message: Request loa **Fixed** (Already showing: "FirstName LastName (Role)" wit
 
 - Welfare Head in test-accounts page is invisible even the Quick Login button. **Fixed** (Changed from dynamic Tailwind classes to explicit class properties. Tailwind JIT requires complete class names at build time)
 
-- Make the burger menu for mobile devices in the landing page more UI/UX standard. **Fixed** (Modern slide-in panel from right, dark backdrop overlay, smooth animations, hover effects, better touch targets, iOS/Android-like experience)
+
 
 - Is it possible for the tests user accounts to have a guide on each pages so the test user can understand what needs to do in each page? Do this for the Demo Test Accounts only. If normal user(not in the demo accounts), they will not see the guides on each page. Give options and recommendations on how we can implement this for test user accounts **Last Priority**
 
@@ -843,5 +843,8 @@ index-DYHhRlT3.js:389  Error details: Cannot perform Construct on a detached Arr
     at Ie (https://metroexecucare.up.railway.app/assets/index-DYHhRlT3.js:352:1036)
     at r.load (https://metroexecucare.up.railway.app/assets/index-DYHhRlT3.js:389:32206)
     at https://metroexecucare.up.railway.app/assets/index-DYHhRlT3.js:389:64023
+ **Fixed**
 
-    - 
+- Mobile: There are 2 "1 file uploaded", 1 on top of upload, and 1 on top of submit. It should only have 1 "file uploaded" **Fixed** (Removed duplicate file counter after PDF Document Card on mobile, kept only one after Upload button)
+
+- remove the dark theme and toggle button completely from the system **Fixed** (Removed ThemeToggle component from LandingPage, removed commented import from NewLoginPage, deleted ThemeToggle.jsx file completely)
