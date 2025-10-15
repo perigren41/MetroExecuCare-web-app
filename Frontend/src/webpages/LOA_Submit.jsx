@@ -187,15 +187,17 @@ export default function LOA_Submit() {
     }, [user, requestId]);
 
     // Auto-refresh request data every 30 seconds for real-time updates
+    // DISABLED when PDF editor is open to prevent losing user's work
     useEffect(() => {
         if (!user || !requestId) return;
+        if (showPdfEditor) return; // Don't refresh while user is editing PDF
 
         const interval = setInterval(() => {
             fetchRequest();
         }, 30000); // 30 seconds
 
         return () => clearInterval(interval);
-    }, [user, requestId]);
+    }, [user, requestId, showPdfEditor]);
 
     // State for modal/confirmation dialogs
     const [showApproveModal, setShowApproveModal] = useState(false);
@@ -908,7 +910,9 @@ export default function LOA_Submit() {
         // If there's a staff file, use it (this will be the most recently signed version)
         if (sortedStaffFiles.length > 0) {
             const mostRecentFile = sortedStaffFiles[0];
-            return `${BACKEND_BASE_URL}/uploads/${mostRecentFile.file_path}`;
+            // file_path from database already includes 'request-files/' prefix
+            // Just use file_name to construct the correct path
+            return `${BACKEND_BASE_URL}/uploads/request-files/${mostRecentFile.file_name}`;
         }
 
         // Otherwise, use the template (for HR's first signature)

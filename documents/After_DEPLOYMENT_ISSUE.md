@@ -853,8 +853,8 @@ index-DYHhRlT3.js:389  Error details: Cannot perform Construct on a detached Arr
 **HRDASHBOARD ISSUE** **Fixed**
 - It looks like only the HR has this issue. Benefits officer and Division head is displaying the correct texts, only "There are X waiting for your approval" is not being displayed for all approvers. In addition, HRDashboard, text under pending request card is showing "No pending request" even though there are pending request in pending request page. **Fixed** (Changed stats mapping for HR: now uses unassigned_requests for "pending to be claimed" and assigned_to_me for "waiting for approval")
 
-**Fill & Sign Issue**
-- interactive PDF Card keeps refreshing, therefore, filled texts and signatures keeps refreshing and removing all recent added text and signatures. **TO FIX**
+**Fill & Sign Issue** **Fixed**
+- interactive PDF Card keeps refreshing, therefore, filled texts and signatures keeps refreshing and removing all recent added text and signatures. **Fixed** (Auto-refresh useEffect now disabled when showPdfEditor is true, preventing page refresh while user is editing PDF)
 
 - BO and Division head is giving this error: metroexecucare-backend.up.railway.app/uploads//app/uploads/request-files/pending_2_1760508560605_Approval_For_Annual_Medical_Check-up_filled.pdf:1   Failed to load resource: the server responded with a status of 404 ()
 index-Tz1nT1SZ.js:379  Error loading PDF: Error: Failed to fetch PDF: 404
@@ -863,6 +863,6 @@ index-Tz1nT1SZ.js:379  Error loading PDF: Error: Failed to fetch PDF: 404
 index-Tz1nT1SZ.js:379  PDF URL: https://metroexecucare-backend.up.railway.app/uploads//app/uploads/request-files/pending_2_1760508560605_Approval_For_Annual_Medical_Check-up_filled.pdf
 (anonymous) @ index-Tz1nT1SZ.js:379
 index-Tz1nT1SZ.js:379  Error details: Failed to fetch PDF: 404  Error: Failed to fetch PDF: 404
-    at https://metroexecucare.up.railway.app/assets/index-Tz1nT1SZ.js:379:63831 **TO FIX**
+    at https://metroexecucare.up.railway.app/assets/index-Tz1nT1SZ.js:379:63831 **Fixed** (getPdfUrlForFillAndSign now constructs correct path using file_name instead of file_path, eliminating double /uploads/ in URL)
 
 -
