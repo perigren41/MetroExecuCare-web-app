@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import NavBarMain from "@/Components/NavBarMain";
 import ExclamationPoint from "@/assets/ExclamationPoint.svg";
 import UploadIcon from "@/assets/uploadicon.svg";
-import { X, Search, Check, FileText } from "lucide-react";
+import { X, Search, Check, FileText, Edit3, Download } from "lucide-react";
 
 // Assets
 import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
@@ -13,11 +13,13 @@ import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
 // Import API service
 import apiService from "@/services/api";
 import FileRequestModal from "@/Components/FileRequestModal";
+import PdfEditorModal from "@/Components/PdfEditorModal";
 
 export default function LOA_Submit() {
     const navigate = useNavigate();
     const { requestId } = useParams();
     const { user, logout } = useAuth();
+    const BACKEND_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:5000';
 
     // State for request data
     const [request, setRequest] = useState(null);
@@ -215,6 +217,7 @@ export default function LOA_Submit() {
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [fileToRemove, setFileToRemove] = useState(null);
+    const [showPdfEditor, setShowPdfEditor] = useState(false);
 
     // Show loading state
     if (loading) {
@@ -742,6 +745,43 @@ export default function LOA_Submit() {
             }
         } catch (error) {
             console.error('❌ File upload error:', error);
+            setErrorMessage('Failed to upload file: ' + error.message);
+            setShowErrorModal(true);
+        }
+    };
+
+    // Handle PDF editor save
+    const handlePdfEditorSave = async (file) => {
+        try {
+            console.log('📤 Uploading filled PDF from editor...');
+            const uploadResult = await apiService.uploadRequestFile(requestId, file);
+
+            if (uploadResult.success) {
+                console.log('✅ Filled PDF uploaded successfully:', uploadResult);
+
+                // Set the newly uploaded file to show confirmation
+                const uploadedFileInfo = {
+                    id: uploadResult.data?.file_id || uploadResult.data?.id,
+                    original_file_name: file.name,
+                    file_path: uploadResult.data?.file_path || '',
+                    uploaded_by: user?.id,
+                    isPending: false,
+                    created_at: new Date().toISOString()
+                };
+                setNewlyUploadedFile(uploadedFileInfo);
+
+                // Refresh request data to show the new file
+                await fetchRequest();
+
+                setSuccessMessage(`File "${file.name}" uploaded successfully!`);
+                setShowSuccessModal(true);
+                setShowPdfEditor(false);
+            } else {
+                setErrorMessage('Failed to upload file: ' + (uploadResult.message || 'Unknown error'));
+                setShowErrorModal(true);
+            }
+        } catch (error) {
+            console.error('❌ PDF upload error:', error);
             setErrorMessage('Failed to upload file: ' + error.message);
             setShowErrorModal(true);
         }
@@ -1362,123 +1402,112 @@ export default function LOA_Submit() {
                             </div>
                             )}
 
-                            {/* Column 3 - Document Preview */}
+                            {/* Column 3 - Interactive PDF Card */}
                             <div className={`flex flex-col items-center justify-center ${shouldShowHRProcessing() ? 'order-1 md:order-3 xl:order-3' : 'order-1 md:order-2'}`}>
-                                <div className="w-48 h-60 flex-col gap-5 sm:w-56 sm:h-72 md:w-64 md:h-80 border-2 md:border-4 border-[#023184] rounded-lg flex items-center justify-center bg-gray-50 mb-4">
-                                    <div className="text-center">
-                                        <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-[#023184] rounded-lg mx-auto mb-2 flex items-center justify-center">
-                                            <svg className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <div className="bg-white border-2 border-[#023184] rounded-xl shadow-lg p-4 sm:p-6 w-72 sm:w-80 md:w-96">
+                                    {/* Header */}
+                                    <div className="text-center mb-4">
+                                        <p className="text-[#023184] font-bold text-xs sm:text-sm mb-3">
+                                            HR WORKFLOW: REQUEST FOR APPROVAL PROCESS
+                                        </p>
+                                    </div>
+
+                                    {/* PDF Icon and Title */}
+                                    <div className="text-center mb-4">
+                                        <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-red-100 rounded-lg flex items-center justify-center mb-3">
+                                            <svg className="w-8 h-8 sm:w-10 sm:h-10 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
                                             </svg>
                                         </div>
-                                        {/* Executive File Display */}
-                                        <div className="mb-2">
-                                            <p className="text-[#023184] font-semibold text-xs mb-1">
-                                                Executive File{(() => {
-                                                    const executiveFiles = request?.files?.filter(file =>
-                                                        file.uploaded_by === request.employee_id
-                                                    ) || [];
-                                                    return executiveFiles.length > 1 ? 's' : '';
-                                                })()}:
-                                            </p>
-                                            {(() => {
-                                                const executiveFiles = request?.files?.filter(file =>
-                                                    file.uploaded_by === request.employee_id
-                                                ) || [];
-                                                return executiveFiles.length > 0 ? (
-                                                    <div className="space-y-1">
-                                                        {executiveFiles.map((file, index) => (
-                                                            <p
-                                                                key={file.id}
-                                                                className="text-[#023184] font-medium text-xs cursor-pointer hover:underline hover:text-blue-600 break-words px-2 max-w-full leading-tight"
-                                                                onClick={() => handleDownload(file.id, file.original_file_name)}
-                                                                title="Click to download"
-                                                            >
-                                                                {executiveFiles.length > 1 ? `${index + 1}. ` : ''}{file.original_file_name}
-                                                            </p>
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <p className="text-gray-500 text-xs px-2">No Executive File</p>
-                                                );
-                                            })()}
-                                        </div>
-
-                                        {/* Staff File Display (Most Recent Approver's File) */}
-                                        <div>
-                                            {(() => {
-                                                const { file, label, noFileMessage } = getMostRecentStaffFile();
-                                                return (
-                                                    <>
-                                                        <p className="text-[#023184] font-semibold text-xs mb-1">{label}</p>
-                                                        {file ? (
-                                                            <p
-                                                                className={`text-[#023184] font-medium text-xs break-words px-2 max-w-full leading-tight ${
-                                                                    file.isPending
-                                                                        ? 'italic text-orange-600'
-                                                                        : 'cursor-pointer hover:underline hover:text-blue-600'
-                                                                }`}
-                                                                onClick={file.isPending ? undefined : () => handleDownload(file.id, file.original_file_name)}
-                                                                title={file.isPending ? "File will be available for download after approval/rejection" : "Click to download"}
-                                                            >
-                                                                {file.original_file_name} {file.isPending && '(Pending)'}
-                                                            </p>
-                                                        ) : (
-                                                            <p className="text-gray-500 text-xs px-2">{noFileMessage}</p>
-                                                        )}
-                                                    </>
-                                                );
-                                            })()}
-                                        </div>
-
-                                    </div>
-                                </div>
-
-                                {/* File upload status - for all processing roles */}
-                                {newlyUploadedFile ? (
-                                    <div className="mb-3 text-center">
-                                        <p className={`font-medium text-sm mb-2 ${newlyUploadedFile.isPending ? 'text-green-600' : 'text-green-600'}`}>
-                                            {newlyUploadedFile.isPending ? `✓ ${newlyUploadedFile.original_file_name} successfully uploaded!` :
-                                                `✓ ${newlyUploadedFile.original_file_name} successfully uploaded!`
-                                            }
+                                        <h3 className="text-sm sm:text-base font-semibold text-gray-800 mb-1">
+                                            {getApprovalDocumentName()}
+                                        </h3>
+                                        <p className="text-xs sm:text-sm text-gray-500">
+                                            Official template document
                                         </p>
-                                        <button
-                                            onClick={removeNewlyUploadedFile}
-                                            className="text-red-500 hover:text-red-700 p-1.5 rounded-full hover:bg-red-50 transition-colors"
-                                            title="Remove file"
-                                        >
-                                            <X className="w-4 h-4" />
-                                        </button>
                                     </div>
-                                ) : (
-                                    /* Only show upload message if not in hr_final_verification stage */
-                                    request?.current_status !== 'hr_final_verification' && (
-                                        <p className="text-gray-700 font-medium text-sm mb-3 text-center">
-                                            {getUploadMessage()}
-                                        </p>
-                                    )
-                                )}
 
-                                {/* Upload and Delete Buttons - for all processing roles */}
-                                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
-                                    {/* Delete button - only for admin and executive */}
-                                    {request?.files && request.files.length > 0 && (user?.role === 'admin' || user?.role === 'executive') && (
+                                    {/* Action Buttons */}
+                                    <div className="space-y-2 mb-4">
                                         <button
-                                            onClick={() => handleDeleteFile(request.files[0].id, request.files[0].original_file_name)}
-                                            className="px-4 sm:px-6 py-2 bg-red-600 text-white rounded-full font-medium hover:bg-red-700 transition-colors text-sm sm:text-base w-full sm:w-auto"
+                                            onClick={() => setShowPdfEditor(true)}
+                                            className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors text-sm cursor-pointer font-semibold"
                                         >
-                                            Delete
+                                            <Edit3 className="w-4 h-4" />
+                                            <span>Fill & Sign PDF</span>
                                         </button>
-                                    )}
 
-                                    {/* Upload button - only available when user can approve (their turn to review) */}
-                                    {(canApprove() || user?.role === 'admin') && request?.current_status !== 'hr_final_verification' && (
+                                        {/* Guide text */}
+                                        <p className="text-xs text-gray-500 text-center px-2">
+                                            Fill & sign online or download, fill manually, and upload
+                                        </p>
+
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    const templatePath = request?.request_type === 'letter_of_authorization'
+                                                        ? 'Request Letter of Authorization.pdf'
+                                                        : 'Request Letter of Approval.pdf';
+                                                    const encodedPath = encodeURI(`${BACKEND_BASE_URL}/templates/documents/${templatePath}`);
+                                                    const response = await fetch(encodedPath);
+
+                                                    if (!response.ok) {
+                                                        throw new Error(`HTTP error! status: ${response.status}`);
+                                                    }
+
+                                                    const blob = await response.blob();
+                                                    const url = window.URL.createObjectURL(blob);
+                                                    const link = document.createElement('a');
+                                                    link.href = url;
+                                                    link.download = templatePath.replace(/ /g, '_');
+
+                                                    document.body.appendChild(link);
+                                                    link.click();
+
+                                                    setTimeout(() => {
+                                                        document.body.removeChild(link);
+                                                        window.URL.revokeObjectURL(url);
+                                                    }, 100);
+                                                } catch (error) {
+                                                    console.error('Download failed:', error);
+                                                    setErrorMessage('Failed to download PDF. Please try again.');
+                                                    setShowErrorModal(true);
+                                                }
+                                            }}
+                                            className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm cursor-pointer"
+                                        >
+                                            <Download className="w-4 h-4" />
+                                            <span>Download for signing</span>
+                                        </button>
+
                                         <button
                                             onClick={handleUpload}
-                                            className="px-4 sm:px-6 py-2 text-white bg-gray-600 hover:bg-gray-700 rounded-full font-medium transition-colors text-sm sm:text-base w-full sm:w-auto cursor-pointer"
+                                            className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm cursor-pointer"
                                         >
-                                            Upload
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                            </svg>
+                                            <span>Upload Signed</span>
                                         </button>
+                                    </div>
+
+                                    {/* Show uploaded file status */}
+                                    {newlyUploadedFile && (
+                                        <div className="text-center">
+                                            <p className="text-green-600 font-semibold text-xs sm:text-sm mb-1">
+                                                Signed Request for Approval uploaded ✓
+                                            </p>
+                                            <p className="text-gray-700 text-xs break-words px-2">
+                                                {newlyUploadedFile.original_file_name}
+                                            </p>
+                                            <button
+                                                onClick={removeNewlyUploadedFile}
+                                                className="text-red-500 hover:text-red-700 p-1.5 rounded-full hover:bg-red-50 transition-colors mt-2"
+                                                title="Remove file"
+                                            >
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -1968,6 +1997,23 @@ export default function LOA_Submit() {
                     // Optionally refresh request data after file request is sent
                     fetchRequest();
                 }}
+            />
+
+            {/* PDF Editor Modal */}
+            <PdfEditorModal
+                isOpen={showPdfEditor}
+                onClose={() => setShowPdfEditor(false)}
+                pdfUrl={`${BACKEND_BASE_URL}/templates/documents/${
+                    request?.request_type === 'letter_of_authorization'
+                        ? 'Request Letter of Authorization.pdf'
+                        : 'Request Letter of Approval.pdf'
+                }`}
+                onSave={handlePdfEditorSave}
+                templateName={
+                    request?.request_type === 'letter_of_authorization'
+                        ? 'Request_Letter_of_Authorization.pdf'
+                        : 'Request_Letter_of_Approval.pdf'
+                }
             />
         </div>
     );
