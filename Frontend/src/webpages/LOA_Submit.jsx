@@ -924,12 +924,27 @@ export default function LOA_Submit() {
 
     // Helper function to check if Fill & Sign button should be shown
     const shouldShowFillAndSign = () => {
+        if (!user || !request) return false;
+
         // Hide Fill & Sign during HR final verification
-        if (request?.current_status === 'hr_final_verification') {
+        if (request.current_status === 'hr_final_verification') {
             return false;
         }
+
         // Show Fill & Sign for approvers during their review stage
-        return canApprove();
+        // Inline the canApprove logic to avoid hoisting issues
+        if (user.role === "hr_personnel") {
+            return (request.current_status === "hr_processing" || request.current_status === "hr_final_verification")
+                   && request.assigned_hr_id === user.id;
+        }
+        if (user.role === "benefits_officer") {
+            return request.current_status === "benefits_review";
+        }
+        if (user.role === "welfare_head") {
+            return request.current_status === "welfare_review";
+        }
+
+        return false;
     };
 
     // Helper function to get the most recent staff file and its label
