@@ -211,39 +211,95 @@ export default function HRDashboard() {
 
         // HR Personnel who handle initial processing and claiming
         if (role === "hr_personnel") {
-            const totalWork = (stats.assigned_to_me || 0) + (stats.unassigned_requests || 0);
-            const pendingAction = stats.pending_action || 0;
-            const inProgress = stats.in_progress || 0;
+            const pendingToBeClaimed = stats.pending_action || 0;  // Requests not yet claimed
+            const claimedWaitingForApproval = stats.in_progress || 0;  // Requests claimed and waiting
 
-            if (pendingAction > 0) {
+            // Both have requests
+            if (pendingToBeClaimed > 0 && claimedWaitingForApproval > 0) {
                 return {
-                    message: `You have ${pendingAction} request/s pending to be claimed`,
+                    message: `You have ${pendingToBeClaimed} request/s pending to be claimed and ${claimedWaitingForApproval} waiting for your approval`,
                 };
-            } else if (inProgress > 0) {
+            }
+            // Only pending to be claimed
+            else if (pendingToBeClaimed > 0 && claimedWaitingForApproval === 0) {
                 return {
-                    message: `You have ${inProgress} request/s in progress`,
+                    message: `You have ${pendingToBeClaimed} request/s pending to be claimed`,
                 };
-            } else {
+            }
+            // Only claimed waiting for approval
+            else if (claimedWaitingForApproval > 0 && pendingToBeClaimed === 0) {
                 return {
-                    message: "No pending requests pending to be claimed yet.",
+                    message: `There are ${claimedWaitingForApproval} waiting for your approval`,
+                };
+            }
+            // None
+            else {
+                return {
+                    message: "No pending requests.",
                 };
             }
         }
 
         // Benefits Officer handles benefits review
         if (role === "benefits_officer") {
-            const pendingReview = stats.pending_review || 0;
-            return {
-                message: `You have ${pendingReview} request/s to review and approve.`,
-            };
+            const pendingToBeClaimed = stats.pending_action || 0;  // Not yet claimed by BO
+            const claimedWaitingForApproval = stats.pending_review || 0;  // Claimed by BO
+
+            // Both have requests
+            if (pendingToBeClaimed > 0 && claimedWaitingForApproval > 0) {
+                return {
+                    message: `You have ${pendingToBeClaimed} request/s pending to be claimed and ${claimedWaitingForApproval} waiting for your approval`,
+                };
+            }
+            // Only pending to be claimed
+            else if (pendingToBeClaimed > 0 && claimedWaitingForApproval === 0) {
+                return {
+                    message: `You have ${pendingToBeClaimed} request/s pending to be claimed`,
+                };
+            }
+            // Only claimed waiting for approval
+            else if (claimedWaitingForApproval > 0 && pendingToBeClaimed === 0) {
+                return {
+                    message: `There are ${claimedWaitingForApproval} waiting for your approval`,
+                };
+            }
+            // None
+            else {
+                return {
+                    message: "No pending requests.",
+                };
+            }
         }
 
         // Division Head handles final approval
         if (role === "welfare_head") {
-            const pendingFinalApproval = stats.pending_final_approval || 0;
-            return {
-                message: `You have ${pendingFinalApproval} request/s for final approval.`,
-            };
+            const pendingToBeClaimed = stats.pending_action || 0;  // Not yet claimed by DH
+            const claimedWaitingForApproval = stats.pending_final_approval || 0;  // Claimed by DH
+
+            // Both have requests
+            if (pendingToBeClaimed > 0 && claimedWaitingForApproval > 0) {
+                return {
+                    message: `You have ${pendingToBeClaimed} request/s pending to be claimed and ${claimedWaitingForApproval} waiting for your approval`,
+                };
+            }
+            // Only pending to be claimed
+            else if (pendingToBeClaimed > 0 && claimedWaitingForApproval === 0) {
+                return {
+                    message: `You have ${pendingToBeClaimed} request/s pending to be claimed`,
+                };
+            }
+            // Only claimed waiting for approval
+            else if (claimedWaitingForApproval > 0 && pendingToBeClaimed === 0) {
+                return {
+                    message: `There are ${claimedWaitingForApproval} waiting for your approval`,
+                };
+            }
+            // None
+            else {
+                return {
+                    message: "No pending requests.",
+                };
+            }
         }
 
         return { message: "No pending requests." };
