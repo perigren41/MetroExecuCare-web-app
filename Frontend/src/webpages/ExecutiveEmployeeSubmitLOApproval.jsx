@@ -509,30 +509,6 @@ export default function SubmitLetterOfAuthorization() {
                   </button>
                 </div>
               </div>
-
-              {uploadedFiles.length > 0 && (
-                <div className="mt-2 text-center w-full px-4">
-                  <p className="text-xs text-green-600 font-semibold mb-1">
-                    ✓ {uploadedFiles.length} file{uploadedFiles.length > 1 ? 's' : ''} uploaded
-                  </p>
-                  <div className="max-h-20 overflow-y-auto space-y-1">
-                    {uploadedFiles.map((file, index) => (
-                      <div key={index} className="flex items-center justify-between bg-green-50 rounded px-2 py-1 text-left">
-                        <p className="text-xs text-gray-700 truncate flex-1" title={file.name}>
-                          {file.name}
-                        </p>
-                        <button
-                          onClick={() => removeUploadedFile(index)}
-                          className="text-red-500 hover:text-red-700 p-1 ml-1 cursor-pointer"
-                          title="Remove"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* 2. Upload Button in middle */}
