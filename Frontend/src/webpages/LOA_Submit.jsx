@@ -1404,41 +1404,41 @@ export default function LOA_Submit() {
 
                             {/* Column 3 - Interactive PDF Card */}
                             <div className={`flex flex-col items-center justify-center ${shouldShowHRProcessing() ? 'order-1 md:order-3 xl:order-3' : 'order-1 md:order-2'}`}>
-                                <div className="bg-white border-2 border-[#023184] rounded-xl shadow-lg p-4 sm:p-6 w-72 sm:w-80 md:w-96">
+                                <div className="bg-white border-2 border-[#023184] rounded-xl shadow-lg p-3 sm:p-4 md:p-6 w-full max-w-[280px] sm:max-w-[320px] md:max-w-[360px] lg:max-w-[400px]">
                                     {/* Header */}
-                                    <div className="text-center mb-4">
-                                        <p className="text-[#023184] font-bold text-xs sm:text-sm mb-3">
+                                    <div className="text-center mb-3 sm:mb-4">
+                                        <p className="text-[#023184] font-bold text-[10px] sm:text-xs md:text-sm mb-2 sm:mb-3 leading-tight px-1">
                                             HR WORKFLOW: REQUEST FOR APPROVAL PROCESS
                                         </p>
                                     </div>
 
                                     {/* PDF Icon and Title */}
-                                    <div className="text-center mb-4">
-                                        <div className="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-red-100 rounded-lg flex items-center justify-center mb-3">
-                                            <svg className="w-8 h-8 sm:w-10 sm:h-10 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <div className="text-center mb-3 sm:mb-4">
+                                        <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-red-100 rounded-lg flex items-center justify-center mb-2 sm:mb-3">
+                                            <svg className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
                                             </svg>
                                         </div>
-                                        <h3 className="text-sm sm:text-base font-semibold text-gray-800 mb-1">
+                                        <h3 className="text-xs sm:text-sm md:text-base font-semibold text-gray-800 mb-1 px-2 leading-tight">
                                             {getApprovalDocumentName()}
                                         </h3>
-                                        <p className="text-xs sm:text-sm text-gray-500">
+                                        <p className="text-[10px] sm:text-xs md:text-sm text-gray-500">
                                             Official template document
                                         </p>
                                     </div>
 
                                     {/* Action Buttons */}
-                                    <div className="space-y-2 mb-4">
+                                    <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4">
                                         <button
                                             onClick={() => setShowPdfEditor(true)}
-                                            className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors text-sm cursor-pointer font-semibold"
+                                            className="w-full flex items-center justify-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors text-xs sm:text-sm cursor-pointer font-semibold"
                                         >
-                                            <Edit3 className="w-4 h-4" />
-                                            <span>Fill & Sign PDF</span>
+                                            <Edit3 className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                                            <span className="whitespace-nowrap">Fill & Sign PDF</span>
                                         </button>
 
                                         {/* Guide text */}
-                                        <p className="text-xs text-gray-500 text-center px-2">
+                                        <p className="text-[9px] sm:text-xs text-gray-500 text-center px-1 sm:px-2 leading-tight">
                                             Fill & sign online or download, fill manually, and upload
                                         </p>
 
@@ -1446,8 +1446,8 @@ export default function LOA_Submit() {
                                             onClick={async () => {
                                                 try {
                                                     const templatePath = request?.request_type === 'letter_of_authorization'
-                                                        ? 'Request Letter of Authorization.pdf'
-                                                        : 'Request Letter of Approval.pdf';
+                                                        ? 'Approval Letter of Authorization For Annual Medical Check-up Laboratory and Procedures.pdf'
+                                                        : 'Approval For Annual Medical Check-up.pdf';
                                                     const encodedPath = encodeURI(`${BACKEND_BASE_URL}/templates/documents/${templatePath}`);
                                                     const response = await fetch(encodedPath);
 
@@ -1474,38 +1474,38 @@ export default function LOA_Submit() {
                                                     setShowErrorModal(true);
                                                 }
                                             }}
-                                            className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm cursor-pointer"
+                                            className="w-full flex items-center justify-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs sm:text-sm cursor-pointer"
                                         >
-                                            <Download className="w-4 h-4" />
-                                            <span>Download for signing</span>
+                                            <Download className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                                            <span className="whitespace-nowrap text-[10px] sm:text-xs md:text-sm">Download for signing</span>
                                         </button>
 
                                         <button
                                             onClick={handleUpload}
-                                            className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm cursor-pointer"
+                                            className="w-full flex items-center justify-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs sm:text-sm cursor-pointer"
                                         >
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                             </svg>
-                                            <span>Upload Signed</span>
+                                            <span className="whitespace-nowrap">Upload Signed</span>
                                         </button>
                                     </div>
 
                                     {/* Show uploaded file status */}
                                     {newlyUploadedFile && (
                                         <div className="text-center">
-                                            <p className="text-green-600 font-semibold text-xs sm:text-sm mb-1">
+                                            <p className="text-green-600 font-semibold text-[10px] sm:text-xs md:text-sm mb-1">
                                                 Signed Request for Approval uploaded ✓
                                             </p>
-                                            <p className="text-gray-700 text-xs break-words px-2">
+                                            <p className="text-gray-700 text-[9px] sm:text-xs break-words px-1 sm:px-2">
                                                 {newlyUploadedFile.original_file_name}
                                             </p>
                                             <button
                                                 onClick={removeNewlyUploadedFile}
-                                                className="text-red-500 hover:text-red-700 p-1.5 rounded-full hover:bg-red-50 transition-colors mt-2"
+                                                className="text-red-500 hover:text-red-700 p-1 sm:p-1.5 rounded-full hover:bg-red-50 transition-colors mt-1 sm:mt-2"
                                                 title="Remove file"
                                             >
-                                                <X className="w-4 h-4" />
+                                                <X className="w-3 h-3 sm:w-4 sm:h-4" />
                                             </button>
                                         </div>
                                     )}
@@ -2005,14 +2005,14 @@ export default function LOA_Submit() {
                 onClose={() => setShowPdfEditor(false)}
                 pdfUrl={`${BACKEND_BASE_URL}/templates/documents/${
                     request?.request_type === 'letter_of_authorization'
-                        ? 'Request Letter of Authorization.pdf'
-                        : 'Request Letter of Approval.pdf'
+                        ? 'Approval Letter of Authorization For Annual Medical Check-up Laboratory and Procedures.pdf'
+                        : 'Approval For Annual Medical Check-up.pdf'
                 }`}
                 onSave={handlePdfEditorSave}
                 templateName={
                     request?.request_type === 'letter_of_authorization'
-                        ? 'Request_Letter_of_Authorization.pdf'
-                        : 'Request_Letter_of_Approval.pdf'
+                        ? 'Approval_Letter_of_Authorization_For_Annual_Medical_Check-up_Laboratory_and_Procedures.pdf'
+                        : 'Approval_For_Annual_Medical_Check-up.pdf'
                 }
             />
         </div>
