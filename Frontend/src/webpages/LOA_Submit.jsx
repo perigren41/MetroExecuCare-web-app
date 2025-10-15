@@ -961,6 +961,31 @@ export default function LOA_Submit() {
     const getMostRecentStaffFile = useCallback(() => {
         if (!request?.id) return { file: null, label: 'Staff File:', noFileMessage: 'No Staff File' };
 
+        // Inline canApprove logic to avoid circular dependency
+        const userCanApprove = () => {
+            if (!user || !request) return false;
+            if (user.role === "hr_personnel") {
+                return (request?.current_status === "hr_processing" || request?.current_status === "hr_final_verification")
+                       && request?.assigned_hr_id === user.id;
+            }
+            if (user.role === "benefits_officer") {
+                return request?.current_status === "benefits_review";
+            }
+            if (user.role === "welfare_head") {
+                return request?.current_status === "welfare_review";
+            }
+            if (user.position === "Benefits Assistant" || user.username === "BA") {
+                return request?.current_status === "hr_processing";
+            }
+            if (user.position === "Benefits Services Officer" || user.username === "BSO") {
+                return request?.current_status === "benefits_review";
+            }
+            if (user.position === "Division Head" || user.username === "DivisionHead") {
+                return request?.current_status === "welfare_review";
+            }
+            return false;
+        };
+
         // Get all non-executive files (staff files) for THIS specific request from database
         // Document Preview should ONLY show permanent files from previous approvers
         const staffFiles = (request.files || []).filter(file => {
@@ -968,7 +993,7 @@ export default function LOA_Submit() {
             if (file.uploaded_by === request.employee_id) return false;
 
             // Exclude current user's files if they are the current approver (their files go to Temporary Storage)
-            if (canApprove() && file.uploaded_by === user?.id) return false;
+            if (userCanApprove() && file.uploaded_by === user?.id) return false;
 
             // If request is still in initial hr_processing, don't show any staff files yet
             // HR files should only be visible AFTER initial HR processing is complete
@@ -1114,7 +1139,7 @@ export default function LOA_Submit() {
             label: fileLabel,
             noFileMessage: `No ${roleIdentifier} File`
         };
-    }, [user, request, canApprove, getRoleFileLabel, getUploadMessage, pendingFiles]);
+    }, [user, request, getRoleFileLabel, getUploadMessage, pendingFiles]);
 
 
     return (
