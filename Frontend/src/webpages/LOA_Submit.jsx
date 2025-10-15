@@ -857,36 +857,6 @@ export default function LOA_Submit() {
         return user?.role === 'hr_personnel' || user?.role === 'admin';
     }, [user]);
 
-    // Helper function to get role-specific upload message
-    // Wrapped in useCallback to prevent re-creation and initialization issues
-    const getUploadMessage = useCallback(() => {
-        switch (user?.role) {
-            case 'hr_personnel':
-                return 'No Human Resource documents uploaded yet';
-            case 'benefits_officer':
-                return 'No Benefits & Services documents uploaded yet';
-            case 'welfare_head':
-                return 'No Division Head documents uploaded yet';
-            default:
-                return 'No documents uploaded yet';
-        }
-    }, [user]);
-
-    // Helper function to get role-specific file label
-    // Wrapped in useCallback to prevent re-creation and initialization issues
-    const getRoleFileLabel = useCallback(() => {
-        switch (user?.role) {
-            case 'hr_personnel':
-                return 'Human Resource File:';
-            case 'benefits_officer':
-                return 'Benefits & Services File:';
-            case 'welfare_head':
-                return 'Division Head File:';
-            default:
-                return 'Staff File:';
-        }
-    }, [user]);
-
     // Helper function to get the correct approval document name based on request type
     // Wrapped in useCallback to prevent re-creation and initialization issues
     const getApprovalDocumentName = useCallback(() => {
@@ -1014,7 +984,39 @@ export default function LOA_Submit() {
         console.log(`👥 All staff files (database + pending):`, allStaffFiles);
 
         if (allStaffFiles.length === 0) {
-            return { file: null, label: getRoleFileLabel(), noFileMessage: getUploadMessage().replace(' uploaded yet', '') };
+            // Inline getRoleFileLabel logic to avoid circular dependency
+            let label = 'Staff File:';
+            switch (user?.role) {
+                case 'hr_personnel':
+                    label = 'Human Resource File:';
+                    break;
+                case 'benefits_officer':
+                    label = 'Benefits & Services File:';
+                    break;
+                case 'welfare_head':
+                    label = 'Division Head File:';
+                    break;
+                default:
+                    label = 'Staff File:';
+            }
+
+            // Inline getUploadMessage logic to avoid circular dependency
+            let uploadMessage = 'No documents uploaded yet';
+            switch (user?.role) {
+                case 'hr_personnel':
+                    uploadMessage = 'No Human Resource documents';
+                    break;
+                case 'benefits_officer':
+                    uploadMessage = 'No Benefits & Services documents';
+                    break;
+                case 'welfare_head':
+                    uploadMessage = 'No Division Head documents';
+                    break;
+                default:
+                    uploadMessage = 'No documents';
+            }
+
+            return { file: null, label: label, noFileMessage: uploadMessage };
         }
 
         // Sort by creation date to get files in chronological order (most recent first for this request)
@@ -1139,7 +1141,7 @@ export default function LOA_Submit() {
             label: fileLabel,
             noFileMessage: `No ${roleIdentifier} File`
         };
-    }, [user, request, getRoleFileLabel, getUploadMessage, pendingFiles]);
+    }, [user, request, pendingFiles]);
 
 
     return (
