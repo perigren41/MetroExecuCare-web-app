@@ -211,8 +211,8 @@ export default function HRDashboard() {
 
         // HR Personnel who handle initial processing and claiming
         if (role === "hr_personnel") {
-            const pendingToBeClaimed = stats.pending_action || 0;  // Requests not yet claimed
-            const claimedWaitingForApproval = stats.in_progress || 0;  // Requests claimed and waiting
+            const pendingToBeClaimed = stats.unassigned_requests || 0;  // Requests not yet claimed by any HR
+            const claimedWaitingForApproval = stats.assigned_to_me || 0;  // Requests claimed by this HR user
 
             // Both have requests
             if (pendingToBeClaimed > 0 && claimedWaitingForApproval > 0) {
