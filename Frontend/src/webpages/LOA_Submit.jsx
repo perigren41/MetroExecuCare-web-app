@@ -790,7 +790,8 @@ export default function LOA_Submit() {
     };
 
     // Check if user can take actions on this request
-    const canApprove = () => {
+    // Wrapped in useCallback to prevent re-creation and initialization issues
+    const canApprove = useCallback(() => {
         if (!user || !request) return false;
 
         // HR Personnel can approve when status is 'hr_processing' OR 'hr_final_verification' and they are assigned
@@ -821,17 +822,19 @@ export default function LOA_Submit() {
         }
 
         return false;
-    };
+    }, [user, request]);
 
     // Check if user can see the Return button (only BAs can see "for return" requests)
-    const canShowReturn = () => {
+    // Wrapped in useCallback to prevent re-creation and initialization issues
+    const canShowReturn = useCallback(() => {
         if (!user || !request) return false;
         return (user.position === "Benefits Assistant" || user.position === "hr_personnel" || user.username === "BA") &&
             request?.current_status === "for return";
-    };
+    }, [user, request]);
 
     // Helper function to determine dashboard route based on user role
-    const getDashboardRoute = () => {
+    // Wrapped in useCallback to prevent re-creation and initialization issues
+    const getDashboardRoute = useCallback(() => {
         switch (user?.role) {
             case 'executive':
                 return '/executive-employee-dashboard';
@@ -846,15 +849,17 @@ export default function LOA_Submit() {
             default:
                 return '/hr-dashboard'; // Default fallback
         }
-    };
+    }, [user]);
 
     // Helper function to determine if HR Processing section should be shown
-    const shouldShowHRProcessing = () => {
+    // Wrapped in useCallback to prevent re-creation and initialization issues
+    const shouldShowHRProcessing = useCallback(() => {
         return user?.role === 'hr_personnel' || user?.role === 'admin';
-    };
+    }, [user]);
 
     // Helper function to get role-specific upload message
-    const getUploadMessage = () => {
+    // Wrapped in useCallback to prevent re-creation and initialization issues
+    const getUploadMessage = useCallback(() => {
         switch (user?.role) {
             case 'hr_personnel':
                 return 'No Human Resource documents uploaded yet';
@@ -865,10 +870,11 @@ export default function LOA_Submit() {
             default:
                 return 'No documents uploaded yet';
         }
-    };
+    }, [user]);
 
     // Helper function to get role-specific file label
-    const getRoleFileLabel = () => {
+    // Wrapped in useCallback to prevent re-creation and initialization issues
+    const getRoleFileLabel = useCallback(() => {
         switch (user?.role) {
             case 'hr_personnel':
                 return 'Human Resource File:';
@@ -879,10 +885,11 @@ export default function LOA_Submit() {
             default:
                 return 'Staff File:';
         }
-    };
+    }, [user]);
 
     // Helper function to get the correct approval document name based on request type
-    const getApprovalDocumentName = () => {
+    // Wrapped in useCallback to prevent re-creation and initialization issues
+    const getApprovalDocumentName = useCallback(() => {
         if (!request) return 'signed document';
 
         if (request.request_type === 'letter_of_authorization') {
@@ -891,10 +898,11 @@ export default function LOA_Submit() {
             return 'Approval For Annual Medical Check-up';
         }
         return 'signed document';
-    };
+    }, [request]);
 
     // Helper function to get the PDF URL for Fill & Sign (progressive signing workflow)
-    const getPdfUrlForFillAndSign = () => {
+    // Wrapped in useCallback to prevent re-creation and initialization issues
+    const getPdfUrlForFillAndSign = useCallback(() => {
         if (!request) return null;
 
         // Get all staff files (excluding executive files)
@@ -920,7 +928,7 @@ export default function LOA_Submit() {
             ? 'Approval Letter of Authorization For Annual Medical Check-up Laboratory and Procedures.pdf'
             : 'Approval For Annual Medical Check-up.pdf';
         return `${BACKEND_BASE_URL}/templates/documents/${templatePath}`;
-    };
+    }, [request]);
 
     // Helper function to check if Fill & Sign button should be shown
     // Wrapped in useCallback to prevent re-creation and initialization issues
@@ -949,7 +957,8 @@ export default function LOA_Submit() {
     }, [user, request]);
 
     // Helper function to get the most recent staff file and its label
-    const getMostRecentStaffFile = () => {
+    // Wrapped in useCallback to prevent re-creation and initialization issues
+    const getMostRecentStaffFile = useCallback(() => {
         if (!request?.id) return { file: null, label: 'Staff File:', noFileMessage: 'No Staff File' };
 
         // Get all non-executive files (staff files) for THIS specific request from database
@@ -1105,7 +1114,7 @@ export default function LOA_Submit() {
             label: fileLabel,
             noFileMessage: `No ${roleIdentifier} File`
         };
-    };
+    }, [user, request, canApprove, getRoleFileLabel, getUploadMessage, pendingFiles]);
 
 
     return (
