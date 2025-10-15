@@ -891,6 +891,43 @@ export default function LOA_Submit() {
         return 'signed document';
     };
 
+    // Helper function to get the PDF URL for Fill & Sign (progressive signing workflow)
+    const getPdfUrlForFillAndSign = () => {
+        if (!request) return null;
+
+        // Get all staff files (excluding executive files)
+        const staffFiles = (request.files || []).filter(file =>
+            file.uploaded_by !== request.employee_id
+        );
+
+        // Sort by creation date (most recent first) to get the latest signed version
+        const sortedStaffFiles = staffFiles.sort((a, b) =>
+            new Date(b.created_at) - new Date(a.created_at)
+        );
+
+        // If there's a staff file, use it (this will be the most recently signed version)
+        if (sortedStaffFiles.length > 0) {
+            const mostRecentFile = sortedStaffFiles[0];
+            return `${BACKEND_BASE_URL}/uploads/${mostRecentFile.file_path}`;
+        }
+
+        // Otherwise, use the template (for HR's first signature)
+        const templatePath = request.request_type === 'letter_of_authorization'
+            ? 'Approval Letter of Authorization For Annual Medical Check-up Laboratory and Procedures.pdf'
+            : 'Approval For Annual Medical Check-up.pdf';
+        return `${BACKEND_BASE_URL}/templates/documents/${templatePath}`;
+    };
+
+    // Helper function to check if Fill & Sign button should be shown
+    const shouldShowFillAndSign = () => {
+        // Hide Fill & Sign during HR final verification
+        if (request?.current_status === 'hr_final_verification') {
+            return false;
+        }
+        // Show Fill & Sign for approvers during their review stage
+        return canApprove();
+    };
+
     // Helper function to get the most recent staff file and its label
     const getMostRecentStaffFile = () => {
         if (!request?.id) return { file: null, label: 'Staff File:', noFileMessage: 'No Staff File' };
@@ -1429,27 +1466,54 @@ export default function LOA_Submit() {
 
                                     {/* Action Buttons */}
                                     <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4">
-                                        <button
-                                            onClick={() => setShowPdfEditor(true)}
-                                            className="w-full flex items-center justify-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors text-xs sm:text-sm cursor-pointer font-semibold"
-                                        >
-                                            <Edit3 className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                                            <span className="whitespace-nowrap">Fill & Sign PDF</span>
-                                        </button>
+                                        {/* Fill & Sign button - Show only when user can approve and NOT in final verification */}
+                                        {shouldShowFillAndSign() && (
+                                            <>
+                                                <button
+                                                    onClick={() => setShowPdfEditor(true)}
+                                                    className="w-full flex items-center justify-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 transition-colors text-xs sm:text-sm cursor-pointer font-semibold"
+                                                >
+                                                    <Edit3 className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                                                    <span className="whitespace-nowrap">Fill & Sign PDF</span>
+                                                </button>
 
-                                        {/* Guide text */}
-                                        <p className="text-[9px] sm:text-xs text-gray-500 text-center px-1 sm:px-2 leading-tight">
-                                            Fill & sign online or download, fill manually, and upload
-                                        </p>
+                                                {/* Guide text */}
+                                                <p className="text-[9px] sm:text-xs text-gray-500 text-center px-1 sm:px-2 leading-tight">
+                                                    Fill & sign online or download, fill manually, and upload
+                                                </p>
+                                            </>
+                                        )}
 
                                         <button
                                             onClick={async () => {
                                                 try {
-                                                    const templatePath = request?.request_type === 'letter_of_authorization'
-                                                        ? 'Approval Letter of Authorization For Annual Medical Check-up Laboratory and Procedures.pdf'
-                                                        : 'Approval For Annual Medical Check-up.pdf';
-                                                    const encodedPath = encodeURI(`${BACKEND_BASE_URL}/templates/documents/${templatePath}`);
-                                                    const response = await fetch(encodedPath);
+                                                    // Get all staff files (excluding executive files)
+                                                    const staffFiles = (request?.files || []).filter(file =>
+                                                        file.uploaded_by !== request.employee_id
+                                                    );
+
+                                                    // Sort by creation date to get most recent
+                                                    const sortedStaffFiles = staffFiles.sort((a, b) =>
+                                                        new Date(b.created_at) - new Date(a.created_at)
+                                                    );
+
+                                                    let downloadUrl, downloadFilename;
+
+                                                    // If there's a signed staff file, download it
+                                                    if (sortedStaffFiles.length > 0) {
+                                                        const mostRecentFile = sortedStaffFiles[0];
+                                                        downloadUrl = `${BACKEND_BASE_URL}/uploads/${mostRecentFile.file_path}`;
+                                                        downloadFilename = mostRecentFile.original_file_name;
+                                                    } else {
+                                                        // Otherwise download the template
+                                                        const templatePath = request?.request_type === 'letter_of_authorization'
+                                                            ? 'Approval Letter of Authorization For Annual Medical Check-up Laboratory and Procedures.pdf'
+                                                            : 'Approval For Annual Medical Check-up.pdf';
+                                                        downloadUrl = encodeURI(`${BACKEND_BASE_URL}/templates/documents/${templatePath}`);
+                                                        downloadFilename = templatePath.replace(/ /g, '_');
+                                                    }
+
+                                                    const response = await fetch(downloadUrl);
 
                                                     if (!response.ok) {
                                                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -1459,7 +1523,7 @@ export default function LOA_Submit() {
                                                     const url = window.URL.createObjectURL(blob);
                                                     const link = document.createElement('a');
                                                     link.href = url;
-                                                    link.download = templatePath.replace(/ /g, '_');
+                                                    link.download = downloadFilename;
 
                                                     document.body.appendChild(link);
                                                     link.click();
@@ -1477,7 +1541,9 @@ export default function LOA_Submit() {
                                             className="w-full flex items-center justify-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs sm:text-sm cursor-pointer"
                                         >
                                             <Download className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                                            <span className="whitespace-nowrap text-[10px] sm:text-xs md:text-sm">Download for signing</span>
+                                            <span className="whitespace-nowrap text-[10px] sm:text-xs md:text-sm">
+                                                {request?.current_status === 'hr_final_verification' ? 'Download' : 'Download for signing'}
+                                            </span>
                                         </button>
 
                                         <button
@@ -1491,9 +1557,35 @@ export default function LOA_Submit() {
                                         </button>
                                     </div>
 
-                                    {/* Show uploaded file status */}
+                                    {/* Executive's Request for Approval */}
+                                    {(() => {
+                                        const executiveFiles = request?.files?.filter(file =>
+                                            file.uploaded_by === request.employee_id
+                                        ) || [];
+                                        return executiveFiles.length > 0 && (
+                                            <div className="text-center mb-3 sm:mb-4 pt-3 sm:pt-4 border-t border-gray-200">
+                                                <p className="text-[#023184] font-semibold text-[10px] sm:text-xs md:text-sm mb-1">
+                                                    Request for approval:
+                                                </p>
+                                                <div className="space-y-1">
+                                                    {executiveFiles.map((file) => (
+                                                        <p
+                                                            key={file.id}
+                                                            className="text-[#023184] font-medium text-[9px] sm:text-xs cursor-pointer hover:underline hover:text-blue-600 break-words px-1 sm:px-2 leading-tight"
+                                                            onClick={() => handleDownload(file.id, file.original_file_name)}
+                                                            title="Click to download"
+                                                        >
+                                                            {file.original_file_name}
+                                                        </p>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+
+                                    {/* Show uploaded file status (Approver's signed document) */}
                                     {newlyUploadedFile && (
-                                        <div className="text-center">
+                                        <div className="text-center pt-3 sm:pt-4 border-t border-gray-200">
                                             <p className="text-green-600 font-semibold text-[10px] sm:text-xs md:text-sm mb-1">
                                                 Signed Request for Approval uploaded ✓
                                             </p>
@@ -1999,15 +2091,11 @@ export default function LOA_Submit() {
                 }}
             />
 
-            {/* PDF Editor Modal */}
+            {/* PDF Editor Modal - Progressive Signing: Each approver signs the most recent version */}
             <PdfEditorModal
                 isOpen={showPdfEditor}
                 onClose={() => setShowPdfEditor(false)}
-                pdfUrl={`${BACKEND_BASE_URL}/templates/documents/${
-                    request?.request_type === 'letter_of_authorization'
-                        ? 'Approval Letter of Authorization For Annual Medical Check-up Laboratory and Procedures.pdf'
-                        : 'Approval For Annual Medical Check-up.pdf'
-                }`}
+                pdfUrl={getPdfUrlForFillAndSign()}
                 onSave={handlePdfEditorSave}
                 templateName={
                     request?.request_type === 'letter_of_authorization'
