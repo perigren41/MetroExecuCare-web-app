@@ -237,17 +237,25 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-24 sm:w-28 md:w-30 lg:w-32 bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 
+            className="w-32 sm:w-36 md:w-40 lg:w-44 bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300
                       font-semibold py-2 sm:py-2.5 md:py-3 rounded-full text-sm sm:text-base
-                      hover:bg-green-300 dark:hover:bg-green-600 
-                      transition-colors duration-300 mt-4 sm:mt-6
-                      mx-auto block"
+                      hover:bg-green-300 dark:hover:bg-green-600
+                      transition-all duration-300 mt-4 sm:mt-6
+                      mx-auto block
+                      disabled:opacity-70 disabled:cursor-not-allowed
+                      shadow-lg hover:shadow-xl
+                      relative overflow-hidden"
           >
             {isLoading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-blue-700 border-t-transparent rounded-full animate-spin mr-2"></div>
-                Signing in...
-              </>
+              <div className="flex items-center justify-center gap-2">
+                <div className="relative">
+                  {/* Outer ring */}
+                  <div className="w-5 h-5 border-3 border-blue-700/30 dark:border-blue-300/30 rounded-full"></div>
+                  {/* Spinning arc */}
+                  <div className="absolute inset-0 w-5 h-5 border-3 border-transparent border-t-blue-700 dark:border-t-blue-300 rounded-full animate-spin"></div>
+                </div>
+                <span className="font-medium">Signing in...</span>
+              </div>
             ) : (
               'LOGIN'
             )}
