@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {  X, Check, Download, ExternalLink, Eye, Edit3} from "lucide-react";
-import PdfEditorModal from "@/Components/PdfEditorModal";
 import NavBarMain from "@/Components/NavBarMain";
 import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
 import MetroBankLogo from "@/assets/mainLogo-foreground.svg";
@@ -12,6 +11,7 @@ import ErrorIcon from "@/assets/error.svg";
 import apiService from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import PdfEditorModal from "@/Components/PdfEditorModal";
 
 export default function SubmitLetterOfAuthorization() {
   const { user, logout } = useAuth();

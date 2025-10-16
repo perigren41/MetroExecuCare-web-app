@@ -86,18 +86,34 @@ export default function PdfEditorModal({
 
   // Render current page
   useEffect(() => {
-    if (!pdfDoc || !canvasRef.current) return;
+    if (!pdfDoc || !canvasRef.current) {
+      console.log('⏭️ Skipping render - pdfDoc:', !!pdfDoc, 'canvasRef:', !!canvasRef.current);
+      return;
+    }
 
     const renderPage = async () => {
+      console.log('🎨 [PdfEditorModal] Starting renderPage - Page:', currentPage, 'Scale:', scale);
+
       const page = await pdfDoc.getPage(currentPage);
       const viewport = page.getViewport({ scale });
+      console.log('📐 [PdfEditorModal] Viewport calculated:', {
+        width: viewport.width,
+        height: viewport.height,
+        scale: viewport.scale
+      });
+
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
 
       // Update state BEFORE setting canvas size to ensure container is ready
+      console.log('📦 [PdfEditorModal] Setting canvasSize state:', {
+        width: viewport.width,
+        height: viewport.height
+      });
       setCanvasSize({ width: viewport.width, height: viewport.height });
 
       // Set canvas size after state update
+      console.log('🖼️ [PdfEditorModal] Setting canvas dimensions');
       canvas.height = viewport.height;
       canvas.width = viewport.width;
 
@@ -106,10 +122,14 @@ export default function PdfEditorModal({
         viewport: viewport
       };
 
+      console.log('🎯 [PdfEditorModal] Starting canvas render...');
       await page.render(renderContext).promise;
+      console.log('✅ [PdfEditorModal] Canvas render complete!');
     };
 
-    renderPage();
+    renderPage().catch(err => {
+      console.error('❌ [PdfEditorModal] Render error:', err);
+    });
   }, [pdfDoc, currentPage, scale]);
 
   // Add text annotation
