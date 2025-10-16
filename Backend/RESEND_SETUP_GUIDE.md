@@ -133,7 +133,7 @@ Go to your domain provider (Namecheap, GoDaddy, etc.) and add these records:
 ```bash
 RESEND_API_KEY=re_your_api_key_here
 # ✅ BEST PRACTICE: Use notifications@ or system@ instead of noreply@
-FROM_EMAIL=MetroExecuCare Notifications <notifications@metroexecucare.com>
+FROM_EMAIL=MetroExecuCare <notifications@metroexecucare.com>
 ```
 
 **Pros:**
