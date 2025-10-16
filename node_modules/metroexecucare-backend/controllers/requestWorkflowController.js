@@ -1248,19 +1248,20 @@ const getDashboardStats = async (req, res) => {
       // Benefits officer dashboard stats - separate unclaimed and claimed counts
       const [benefitsStats] = await pool.execute(`
         SELECT
-          SUM(CASE WHEN cr.current_status = 'benefits_review' AND ra.approver_id IS NULL THEN 1 ELSE 0 END) as unclaimed_requests,
-          SUM(CASE WHEN cr.current_status = 'benefits_review' AND ra.approver_id = ? THEN 1 ELSE 0 END) as claimed_by_me,
+          SUM(CASE WHEN ra.approver_id IS NULL THEN 1 ELSE 0 END) as unclaimed_requests,
+          SUM(CASE WHEN ra.approver_id = ? THEN 1 ELSE 0 END) as claimed_by_me,
           SUM(CASE WHEN cr.current_status IN ('welfare_review', 'approved', 'completed', 'hr_final_verification') THEN 1 ELSE 0 END) as processed,
           SUM(CASE WHEN cr.current_status = 'rejected' THEN 1 ELSE 0 END) as rejected,
           SUM(CASE WHEN cr.priority_level = 'urgent' THEN 1 ELSE 0 END) as urgent_pending,
           SUM(CASE WHEN DATEDIFF(cr.due_date, CURDATE()) < 3 THEN 1 ELSE 0 END) as due_soon,
           SUM(CASE WHEN DATEDIFF(cr.due_date, CURDATE()) < 0 AND cr.current_status NOT IN ('completed', 'rejected', 'cancelled', 'deleted') THEN 1 ELSE 0 END) as overdue
-        FROM checkup_requests cr
-        LEFT JOIN request_approvals ra ON cr.id = ra.request_id AND ra.approval_stage = 'benefits_stage'
-        WHERE (
-          cr.current_status = 'benefits_review'
-        )
-        AND cr.current_status NOT IN ('cancelled', 'deleted')
+        FROM request_approvals ra
+        JOIN checkup_requests cr ON ra.request_id = cr.id
+        WHERE ra.approval_stage = 'benefits_stage'
+          AND ra.action = 'pending'
+          AND ra.is_current_stage = 1
+          AND cr.current_status = 'benefits_review'
+          AND cr.current_status NOT IN ('cancelled', 'deleted')
       `, [userId]);
 
       stats = {
@@ -1273,19 +1274,20 @@ const getDashboardStats = async (req, res) => {
       // Welfare head dashboard stats - separate unclaimed and claimed counts
       const [welfareStats] = await pool.execute(`
         SELECT
-          SUM(CASE WHEN cr.current_status = 'welfare_review' AND ra.approver_id IS NULL THEN 1 ELSE 0 END) as unclaimed_requests,
-          SUM(CASE WHEN cr.current_status = 'welfare_review' AND ra.approver_id = ? THEN 1 ELSE 0 END) as claimed_by_me,
+          SUM(CASE WHEN ra.approver_id IS NULL THEN 1 ELSE 0 END) as unclaimed_requests,
+          SUM(CASE WHEN ra.approver_id = ? THEN 1 ELSE 0 END) as claimed_by_me,
           SUM(CASE WHEN cr.current_status IN ('approved', 'hr_final_verification') THEN 1 ELSE 0 END) as approved,
           SUM(CASE WHEN cr.current_status = 'completed' THEN 1 ELSE 0 END) as completed,
           SUM(CASE WHEN cr.current_status = 'rejected' THEN 1 ELSE 0 END) as rejected,
           SUM(CASE WHEN cr.priority_level = 'urgent' THEN 1 ELSE 0 END) as urgent_requests,
           SUM(CASE WHEN DATEDIFF(cr.due_date, CURDATE()) < 0 AND cr.current_status NOT IN ('completed', 'rejected', 'cancelled', 'deleted') THEN 1 ELSE 0 END) as overdue
-        FROM checkup_requests cr
-        LEFT JOIN request_approvals ra ON cr.id = ra.request_id AND ra.approval_stage = 'welfare_stage'
-        WHERE (
-          cr.current_status = 'welfare_review'
-        )
-        AND cr.current_status NOT IN ('cancelled', 'deleted')
+        FROM request_approvals ra
+        JOIN checkup_requests cr ON ra.request_id = cr.id
+        WHERE ra.approval_stage = 'welfare_stage'
+          AND ra.action = 'pending'
+          AND ra.is_current_stage = 1
+          AND cr.current_status = 'welfare_review'
+          AND cr.current_status NOT IN ('cancelled', 'deleted')
       `, [userId]);
 
       // Also get overall system stats for welfare head overview
