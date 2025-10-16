@@ -94,12 +94,12 @@ export default function PdfEditorModal({
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
 
-      // Set canvas size first
+      // Update state BEFORE setting canvas size to ensure container is ready
+      setCanvasSize({ width: viewport.width, height: viewport.height });
+
+      // Set canvas size after state update
       canvas.height = viewport.height;
       canvas.width = viewport.width;
-
-      // Update state to trigger container resize
-      setCanvasSize({ width: viewport.width, height: viewport.height });
 
       const renderContext = {
         canvasContext: context,
@@ -508,14 +508,15 @@ export default function PdfEditorModal({
               )}
 
               {!isLoading && !error && (
-                <div className="bg-white shadow-lg mx-auto" style={{ width: 'fit-content' }}>
+                <div className="bg-white shadow-lg mx-auto" style={{ width: 'fit-content', minHeight: '400px' }}>
                   {/* PDF Canvas with annotation overlay */}
                   <div
                     ref={containerRef}
                     className="relative select-none"
                     style={{
-                      width: canvasSize.width > 0 ? canvasSize.width : 'auto',
-                      height: canvasSize.height > 0 ? canvasSize.height : 'auto'
+                      width: canvasSize.width > 0 ? `${canvasSize.width}px` : 'auto',
+                      height: canvasSize.height > 0 ? `${canvasSize.height}px` : 'auto',
+                      minHeight: '400px'
                     }}
                   >
                     <canvas
