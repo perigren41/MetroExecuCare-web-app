@@ -20,7 +20,7 @@ import ClockSquare from "@/assets/clocksquare.svg";
 import BlankSquare from "@/assets/blanksquare.svg";
 import XSquare from "@/assets/xsquare.svg";
 import AddSquare from "@/assets/addsquare.svg";
-import { Clock, HelpCircle } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 const COLORS = {
   ombre: ["#3F6EC0", "#00539F", "#5D3EA4", "#7940A8"],
   blue: "#00539F",
@@ -72,8 +72,6 @@ function GreetingStatusCard({
   onChevronClick
 }) {
   const fullName = `${firstName} ${lastName}`;
-  const [showTooltip, setShowTooltip] = React.useState(false);
-  const navigate = useNavigate();
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 w-full items-center mt-4 sm:mt-8 mb-2 gap-6 lg:gap-12 px-4 sm:px-8">
@@ -93,50 +91,6 @@ function GreetingStatusCard({
           <p className="text-sm sm:text-base lg:text-lg text-white/90">
             Welcome to the MetroExecuCare Annual Executive Check-up Portal
           </p>
-
-          {/* Help Section */}
-          <div className="flex items-center justify-center lg:justify-start gap-2 mt-2">
-            <div className="relative">
-              <button
-                onMouseEnter={() => setShowTooltip(true)}
-                onMouseLeave={() => setShowTooltip(false)}
-                className="text-white/80 hover:text-white transition-colors"
-              >
-                <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6" />
-              </button>
-
-              {/* Tooltip */}
-              {showTooltip && (
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-72 sm:w-80 bg-white text-gray-800 rounded-xl shadow-2xl p-4 z-50 border-2 border-blue-200">
-                  <div className="space-y-3">
-                    <div>
-                      <h4 className="font-bold text-sm text-blue-900 mb-1">Letter of Approval</h4>
-                      <p className="text-xs text-gray-700 leading-relaxed">
-                        Request for approval to undergo your annual medical check-up at an accredited hospital selected by HR.
-                      </p>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-sm text-blue-900 mb-1">Letter of Authorization</h4>
-                      <p className="text-xs text-gray-700 leading-relaxed">
-                        Request authorization to undergo your annual medical check-up at your preferred hospital of choice.
-                      </p>
-                    </div>
-                  </div>
-                  {/* Arrow pointer */}
-                  <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                    <div className="w-3 h-3 bg-white border-b-2 border-r-2 border-blue-200 transform rotate-45"></div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <a
-              href="/faq"
-              className="text-sm sm:text-base text-white/80 hover:text-white underline transition-colors cursor-pointer"
-            >
-              Need Help?
-            </a>
-          </div>
         </div>
       </div>
 
@@ -189,6 +143,7 @@ export default function ExecutiveEmployeeDashboard() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showDropdownMenu, setShowDropdownMenu] = useState(false);
+  const [showHelpTooltip, setShowHelpTooltip] = useState(false);
 
   // Refs
   const dropdownRef = useRef(null);
@@ -632,6 +587,58 @@ export default function ExecutiveEmployeeDashboard() {
               hoverText="Click To Submit Letter of Authorization"
             />
           </div>
+        </div>
+
+        {/* Help Section - Below Action Buttons */}
+        <div className="flex items-center justify-center gap-2 mt-6 sm:mt-8">
+          <div className="relative">
+            <button
+              onMouseEnter={() => setShowHelpTooltip(true)}
+              onMouseLeave={() => setShowHelpTooltip(false)}
+              className="text-gray-600 hover:text-[#023184] transition-colors"
+              aria-label="Help information"
+            >
+              <HelpCircle className="w-6 h-6 sm:w-7 sm:h-7" />
+            </button>
+
+            {/* Responsive Tooltip */}
+            {showHelpTooltip && (
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-3
+                w-[280px] sm:w-[320px] md:w-[380px] lg:w-[420px]
+                bg-white text-gray-800 rounded-xl shadow-2xl
+                p-3 sm:p-4 md:p-5 z-50 border-2 border-blue-200">
+                <div className="space-y-2 sm:space-y-3">
+                  <div>
+                    <h4 className="font-bold text-xs sm:text-sm md:text-base text-blue-900 mb-1">
+                      Letter of Approval
+                    </h4>
+                    <p className="text-[10px] sm:text-xs md:text-sm text-gray-700 leading-relaxed">
+                      Request for approval to undergo your annual medical check-up at an accredited hospital selected by HR.
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-xs sm:text-sm md:text-base text-blue-900 mb-1">
+                      Letter of Authorization
+                    </h4>
+                    <p className="text-[10px] sm:text-xs md:text-sm text-gray-700 leading-relaxed">
+                      Request authorization to undergo your annual medical check-up at your preferred hospital of choice.
+                    </p>
+                  </div>
+                </div>
+                {/* Arrow pointer */}
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                  <div className="w-3 h-3 bg-white border-b-2 border-r-2 border-blue-200 transform rotate-45"></div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <a
+            href="/faq"
+            className="text-sm sm:text-base md:text-lg text-gray-600 hover:text-[#023184] underline transition-colors cursor-pointer font-medium"
+          >
+            Need Help?
+          </a>
         </div>
       </div>
     </div>
