@@ -209,10 +209,21 @@ export default function HRDashboard() {
             return { message: "Loading dashboard data..." };
         }
 
+        console.log('🔍 Frontend getCountsByRole called with:', { role, stats });
+
         // HR Personnel who handle initial processing and claiming
         if (role === "hr_personnel") {
             const pendingToBeClaimed = stats.unassigned_requests || 0;  // Requests not yet claimed by any HR
             const claimedWaitingForApproval = stats.assigned_to_me || 0;  // Requests claimed by this HR user
+
+            console.log('🔍 HR Personnel counts:', {
+                pendingToBeClaimed,
+                claimedWaitingForApproval,
+                rawStats: {
+                    unassigned_requests: stats.unassigned_requests,
+                    assigned_to_me: stats.assigned_to_me
+                }
+            });
 
             // Both have requests
             if (pendingToBeClaimed > 0 && claimedWaitingForApproval > 0) {
@@ -245,6 +256,15 @@ export default function HRDashboard() {
             const pendingToBeClaimed = stats.pending_action || 0;  // Not yet claimed by BO
             const claimedWaitingForApproval = stats.pending_review || 0;  // Claimed by BO
 
+            console.log('🔍 Benefits Officer counts:', {
+                pendingToBeClaimed,
+                claimedWaitingForApproval,
+                rawStats: {
+                    pending_action: stats.pending_action,
+                    pending_review: stats.pending_review
+                }
+            });
+
             // Both have requests
             if (pendingToBeClaimed > 0 && claimedWaitingForApproval > 0) {
                 return {
@@ -275,6 +295,15 @@ export default function HRDashboard() {
         if (role === "welfare_head") {
             const pendingToBeClaimed = stats.pending_action || 0;  // Not yet claimed by DH
             const claimedWaitingForApproval = stats.pending_final_approval || 0;  // Claimed by DH
+
+            console.log('🔍 Division Head counts:', {
+                pendingToBeClaimed,
+                claimedWaitingForApproval,
+                rawStats: {
+                    pending_action: stats.pending_action,
+                    pending_final_approval: stats.pending_final_approval
+                }
+            });
 
             // Both have requests
             if (pendingToBeClaimed > 0 && claimedWaitingForApproval > 0) {
