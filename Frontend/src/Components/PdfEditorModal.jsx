@@ -130,7 +130,7 @@ export default function PdfEditorModal({
     renderPage().catch(err => {
       console.error('❌ [PdfEditorModal] Render error:', err);
     });
-  }, [pdfDoc, currentPage, scale]);
+  }, [pdfDoc, currentPage, scale, isLoading]);
 
   // Add text annotation
   const handleAddText = () => {
