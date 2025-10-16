@@ -1223,28 +1223,25 @@ const getDashboardStats = async (req, res) => {
       stats = myStats[0];
 
     } else if (userRole === 'hr_personnel') {
-      // HR personnel dashboard stats - count requests in hr_stage from request_approvals
-      const [hrStageStats] = await pool.execute(`
+      // HR personnel dashboard stats - separate unclaimed and claimed counts
+      const [hrStats] = await pool.execute(`
         SELECT
-          COUNT(*) as total_in_hr_stage,
           SUM(CASE WHEN cr.current_status = 'pending' AND cr.assigned_hr_id IS NULL THEN 1 ELSE 0 END) as unassigned_requests,
-          SUM(CASE WHEN cr.current_status = 'assigned_to_hr' THEN 1 ELSE 0 END) as assigned_not_started,
-          SUM(CASE WHEN cr.current_status = 'hr_processing' THEN 1 ELSE 0 END) as in_progress,
-          SUM(CASE WHEN cr.assigned_hr_id = ? THEN 1 ELSE 0 END) as assigned_to_me,
+          SUM(CASE WHEN (cr.current_status = 'hr_processing' OR cr.current_status = 'hr_final_verification') AND cr.assigned_hr_id = ? THEN 1 ELSE 0 END) as assigned_to_me,
           SUM(CASE WHEN cr.priority_level = 'urgent' THEN 1 ELSE 0 END) as urgent_requests,
           SUM(CASE WHEN DATEDIFF(cr.due_date, CURDATE()) < 0 AND cr.current_status NOT IN ('completed', 'rejected', 'cancelled', 'deleted') THEN 1 ELSE 0 END) as overdue
-        FROM request_approvals ra
-        JOIN checkup_requests cr ON ra.request_id = cr.id
-        WHERE ra.approval_stage = 'hr_stage'
-          AND ra.action = 'pending'
-          AND ra.is_current_stage = 1
-          AND cr.current_status NOT IN ('cancelled', 'deleted')
-      `, [userId]);
+        FROM checkup_requests cr
+        WHERE (
+          (cr.current_status = 'pending' AND cr.assigned_hr_id IS NULL) OR
+          (cr.current_status IN ('hr_processing', 'hr_final_verification') AND cr.assigned_hr_id = ?)
+        )
+        AND cr.current_status NOT IN ('cancelled', 'deleted')
+      `, [userId, userId]);
 
       stats = {
-        ...hrStageStats[0],
-        // For frontend compatibility - show total requests available for HR action
-        pending_action: hrStageStats[0].total_in_hr_stage || 0
+        ...hrStats[0],
+        unassigned_requests: hrStats[0].unassigned_requests || 0,  // Unclaimed requests
+        assigned_to_me: hrStats[0].assigned_to_me || 0             // Claimed by this HR (hr_processing + hr_final_verification)
       };
 
     } else if (userRole === 'benefits_officer') {
