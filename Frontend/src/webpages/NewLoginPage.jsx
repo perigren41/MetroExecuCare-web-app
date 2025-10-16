@@ -32,9 +32,10 @@ export function LoginPage() {
     if (isAuthenticated && user) {
       const from = location.state?.from?.pathname ||
         (user.role?.toLowerCase() === 'admin' ? '/admin-users-page' : '/executive-employee-dashboard');
-      navigate(from, { replace: true });
+      // Force hard redirect to clear all previous user's component state
+      window.location.href = from;
     }
-  }, [isAuthenticated, user, location, navigate]);
+  }, [isAuthenticated, user, location]);
 
   const validateForm = () => {
     let isValid = true;
@@ -75,8 +76,9 @@ export function LoginPage() {
         const targetPath = location.state?.from?.pathname ||
           (result.user.role?.toLowerCase() === 'admin' ? '/admin-users-page' : '/executive-employee-dashboard');
 
-        // Use navigate instead of window.location.href to preserve React state
-        navigate(targetPath, { replace: true });
+        // Force a hard redirect to clear all component state from previous user
+        // This prevents UI showing old user data while loading new user data
+        window.location.href = targetPath;
       } else {
         setError(result.message || "Login failed. Please try again.");
       }

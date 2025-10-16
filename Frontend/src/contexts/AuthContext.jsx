@@ -72,6 +72,15 @@ export const AuthProvider = ({ children }) => {
       const response = await apiService.login(credentials);
 
       if (response.success) {
+        // Important: Clear any stale state before setting new user
+        // This ensures components don't mix data from previous user
+        setUser(null);
+        setIsAuthenticated(false);
+
+        // Small delay to ensure state clears
+        await new Promise(resolve => setTimeout(resolve, 50));
+
+        // Now set the new user
         setUser(response.data.user);
         setIsAuthenticated(true);
         return { success: true, user: response.data.user };
