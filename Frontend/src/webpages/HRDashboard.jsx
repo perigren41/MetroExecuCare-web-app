@@ -337,10 +337,22 @@ export default function HRDashboard() {
     // Get the message using the helper function - with null check
     // Use useMemo to recalculate when dashboardStats changes
     const message = React.useMemo(() => {
-        if (!user || !user.role) return "Loading user data...";
+        console.log('🔄 useMemo recalculating message with:', {
+            hasUser: !!user,
+            role: user?.role,
+            hasDashboardStats: !!dashboardStats,
+            dashboardStats
+        });
+
+        if (!user || !user.role) {
+            console.log('⚠️ Returning "Loading user data..." - user or role missing');
+            return "Loading user data...";
+        }
+
         const result = getCountsByRole(user.role, dashboardStats);
+        console.log('✅ Message calculated:', result.message);
         return result.message;
-    }, [user, dashboardStats]);
+    }, [user, user?.role, dashboardStats]);
 
     // Profile dropdown handlers
     const handleUserClick = () => {
