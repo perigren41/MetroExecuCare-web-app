@@ -180,7 +180,7 @@ export default function HR_HistoryPage() {
                 {/* Search Input */}
                 <div className="flex justify-center lg:justify-start">
                     <div className="relative w-full max-w-md lg:max-w-none lg:w-[500px]">
-                        <div className="w-full bg-white rounded-full flex items-center px-4 py-2 shadow-sm">
+                        <div className="w-full bg-white rounded-full flex items-center px-4 py-2 shadow-lg border-2 border-gray-200 hover:border-[#023184] transition-all duration-200">
                             <img src={SearchIcon} alt="Search" className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0" />
                             <input
                                 type="text"
