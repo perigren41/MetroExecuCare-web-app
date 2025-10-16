@@ -316,6 +316,21 @@ class ApiService {
     }
   }
 
+  async releaseRequest(requestId, releaseData) {
+    try {
+      const response = await fetch(`${this.baseURL}/requests/${requestId}/release`, {
+        method: 'POST',
+        headers: this.getHeaders(true),
+        body: JSON.stringify(releaseData),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Release request error:', error);
+      throw error;
+    }
+  }
+
   // User Management APIs (Admin only)
   async getUsers(params = {}) {
     try {
@@ -879,6 +894,7 @@ export const {
   assignRequest,
   approveRequest,
   rejectRequest,
+  releaseRequest,
   getUsers,
   getUserById,
   getUserActivityLogs,

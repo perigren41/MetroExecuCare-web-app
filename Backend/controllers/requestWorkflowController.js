@@ -1569,12 +1569,183 @@ const getUserActionLogs = async (req, res) => {
   }
 };
 
+// POST /api/requests/:id/release - Release/unclaim request (HR personnel only)
+const releaseRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const userId = req.user.id;
+    const userRole = req.user.role;
+
+    // Only HR personnel can release requests
+    if (userRole !== 'hr_personnel') {
+      return res.status(403).json({
+        success: false,
+        error: 'Only Human Resource Personnel can release requests'
+      });
+    }
+
+    // Get current request
+    const [requests] = await pool.execute(
+      'SELECT * FROM checkup_requests WHERE id = ?',
+      [id]
+    );
+
+    if (requests.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'Request not found'
+      });
+    }
+
+    const request = requests[0];
+
+    // Verify this HR is assigned to the request
+    if (request.assigned_hr_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: 'You can only release requests assigned to you'
+      });
+    }
+
+    // Can only release if in hr_processing status
+    if (request.current_status !== 'hr_processing') {
+      return res.status(400).json({
+        success: false,
+        error: 'Request can only be released when in HR processing status'
+      });
+    }
+
+    // Release the request back to pending
+    await pool.execute(
+      `UPDATE checkup_requests SET
+        assigned_hr_id = NULL,
+        assigned_at = NULL,
+        current_status = 'pending',
+        updated_at = NOW()
+       WHERE id = ?`,
+      [id]
+    );
+
+    // Mark assignment as completed/released
+    await pool.execute(
+      `UPDATE request_assignments SET
+        is_active = FALSE,
+        completed_at = NOW(),
+        notes = CONCAT(COALESCE(notes, ''), '\nReleased by HR: ', COALESCE(?, 'No reason provided'))
+       WHERE request_id = ? AND hr_personnel_id = ? AND is_active = TRUE`,
+      [reason, id, userId]
+    );
+
+    // Update request_approvals to remove HR assignment
+    await pool.execute(
+      `UPDATE request_approvals SET
+        approver_id = NULL,
+        updated_at = NOW()
+       WHERE request_id = ? AND approval_stage = 'hr_stage'`,
+      [id]
+    );
+
+    // Log activity
+    await logActivity(id, userId, 'request_released',
+      `Request released back to pending pool by HR Personnel${reason ? ': ' + reason : ''}`,
+      {
+        status: 'hr_processing',
+        assigned_hr_id: userId
+      },
+      {
+        status: 'pending',
+        assigned_hr_id: null,
+        release_reason: reason || null
+      }
+    );
+
+    // Send email notifications
+    try {
+      // Get executive and HR user details
+      const [requestDetails] = await pool.execute(`
+        SELECT
+          u.first_name as exec_first_name, u.last_name as exec_last_name, u.email as exec_email,
+          cr.*,
+          hr.first_name as hr_first_name, hr.last_name as hr_last_name
+        FROM checkup_requests cr
+        JOIN users u ON cr.employee_id = u.id
+        JOIN users hr ON hr.id = ?
+        WHERE cr.id = ?
+      `, [userId, id]);
+
+      if (requestDetails.length > 0) {
+        const requestData = requestDetails[0];
+        const executive = {
+          first_name: requestData.exec_first_name,
+          last_name: requestData.exec_last_name,
+          email: requestData.exec_email
+        };
+        const hrUser = {
+          first_name: requestData.hr_first_name,
+          last_name: requestData.hr_last_name
+        };
+
+        // Notify executive
+        emailService.sendStatusUpdateNotification(
+          requestData,
+          executive,
+          'pending',
+          `Your request has been released back to the pending pool by ${hrUser.first_name} ${hrUser.last_name}. It will be available for other HR personnel to claim.${reason ? ' Reason: ' + reason : ''}`,
+          hrUser
+        )
+          .then(() => console.log(`📧 Release notification sent to executive ${executive.email}`))
+          .catch(error => console.error('Email notification error:', error.message));
+
+        // Notify all other HR personnel
+        const [otherHRPersonnel] = await pool.execute(
+          'SELECT id, first_name, last_name, email FROM users WHERE role = "hr_personnel" AND is_active = 1 AND id != ?',
+          [userId]
+        );
+
+        otherHRPersonnel.forEach(hr => {
+          emailService.sendStatusUpdateNotification(
+            requestData,
+            hr,
+            'pending',
+            `Request ${requestData.request_number} has been released by ${hrUser.first_name} ${hrUser.last_name} and is now available for claiming.${reason ? ' Reason: ' + reason : ''}`,
+            hrUser
+          )
+            .then(() => console.log(`📧 Release notification sent to HR ${hr.email}`))
+            .catch(error => console.error('Email notification error:', error.message));
+        });
+      }
+    } catch (emailError) {
+      console.error('Error sending release notifications:', emailError.message);
+      // Don't fail the release if email fails
+    }
+
+    res.json({
+      success: true,
+      message: 'Request released successfully and is now available for other HR personnel to claim',
+      data: {
+        request_id: id,
+        status: 'pending',
+        released_by: userId
+      }
+    });
+
+  } catch (error) {
+    console.error('Release request error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error'
+    });
+  }
+};
+
 module.exports = {
   assignRequest,
   claimRequest,
   processRequest,
   approveRequest,
   rejectRequest,
+  releaseRequest,
   getDashboardStats,
   getPendingApprovals,
   getUserActionStats,

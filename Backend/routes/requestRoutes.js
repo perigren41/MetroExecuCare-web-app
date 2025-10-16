@@ -14,6 +14,7 @@ const {
   processRequest,
   approveRequest,
   rejectRequest,
+  releaseRequest,
   getDashboardStats,
   getPendingApprovals,
   getUserActionStats,
@@ -105,6 +106,9 @@ router.post('/:id/approve', validateRequestId, validateRequestStatusUpdate, appr
 
 // POST /api/requests/:id/reject - Reject request
 router.post('/:id/reject', validateRequestId, validateRequestStatusUpdate, rejectRequest);
+
+// POST /api/requests/:id/release - Release/unclaim request (HR personnel only)
+router.post('/:id/release', validateRequestId, releaseRequest);
 
 // PUT /api/requests/:id/edit - Edit request (Executive only, unclaimed)
 router.put('/:id/edit', validateRequestId, editRequest);
