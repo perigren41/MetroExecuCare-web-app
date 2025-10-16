@@ -27,14 +27,14 @@ export function LoginPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Redirect if already authenticated (with full page reload for fresh state)
+  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated && user) {
       const from = location.state?.from?.pathname ||
         (user.role?.toLowerCase() === 'admin' ? '/admin-users-page' : '/executive-employee-dashboard');
-      window.location.href = from;
+      navigate(from, { replace: true });
     }
-  }, [isAuthenticated, user, location]);
+  }, [isAuthenticated, user, location, navigate]);
 
   const validateForm = () => {
     let isValid = true;
@@ -75,8 +75,8 @@ export function LoginPage() {
         const targetPath = location.state?.from?.pathname ||
           (result.user.role?.toLowerCase() === 'admin' ? '/admin-users-page' : '/executive-employee-dashboard');
 
-        // Force full page reload to ensure fresh state and avoid stale data issues
-        window.location.href = targetPath;
+        // Use navigate instead of window.location.href to preserve React state
+        navigate(targetPath, { replace: true });
       } else {
         setError(result.message || "Login failed. Please try again.");
       }

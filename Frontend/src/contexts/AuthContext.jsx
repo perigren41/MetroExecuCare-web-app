@@ -92,8 +92,8 @@ export const AuthProvider = ({ children }) => {
     apiService.clearAuthToken();
     localStorage.removeItem('authToken');
     sessionStorage.clear();
-    // Force full page reload to clear all stale state
-    window.location.href = '/loginpage';
+    // Don't force navigation here - let the component handle it
+    // This prevents losing URL parameters when navigating back to login
   };
 
   // Force logout for testing/debugging
@@ -103,8 +103,8 @@ export const AuthProvider = ({ children }) => {
     apiService.clearAuthToken();
     localStorage.clear(); // Clear all localStorage
     sessionStorage.clear();
-    // Force full page reload to clear all stale state
-    window.location.href = '/loginpage';
+    // Don't force navigation here - let the component handle it
+    // This prevents losing URL parameters when navigating back to login
   };
 
   const updateUser = (updatedUser) => {
