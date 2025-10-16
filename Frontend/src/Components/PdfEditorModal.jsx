@@ -515,7 +515,7 @@ export default function PdfEditorModal({
                     className="relative select-none"
                     style={{
                       width: canvasSize.width > 0 ? canvasSize.width : 'auto',
-                      height: canvasSize.width > 0 ? canvasSize.height : 'auto'
+                      height: canvasSize.height > 0 ? canvasSize.height : 'auto'
                     }}
                   >
                     <canvas
