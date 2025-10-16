@@ -1260,7 +1260,6 @@ const getDashboardStats = async (req, res) => {
         WHERE ra.approval_stage = 'benefits_stage'
           AND ra.action = 'pending'
           AND ra.is_current_stage = 1
-          AND cr.current_status = 'benefits_review'
           AND cr.current_status NOT IN ('cancelled', 'deleted')
       `, [userId]);
 
@@ -1286,7 +1285,6 @@ const getDashboardStats = async (req, res) => {
         WHERE ra.approval_stage = 'welfare_stage'
           AND ra.action = 'pending'
           AND ra.is_current_stage = 1
-          AND cr.current_status = 'welfare_review'
           AND cr.current_status NOT IN ('cancelled', 'deleted')
       `, [userId]);
 
