@@ -213,8 +213,9 @@ export default function HRDashboard() {
 
         // HR Personnel who handle initial processing and claiming
         if (role === "hr_personnel") {
-            const pendingToBeClaimed = stats.unassigned_requests || 0;  // Requests not yet claimed by any HR
-            const claimedWaitingForApproval = stats.assigned_to_me || 0;  // Requests claimed by this HR user
+            // Convert to numbers to handle string values from backend
+            const pendingToBeClaimed = Number(stats.unassigned_requests) || 0;  // Requests not yet claimed by any HR
+            const claimedWaitingForApproval = Number(stats.assigned_to_me) || 0;  // Requests claimed by this HR user
 
             console.log('🔍 HR Personnel counts:', {
                 pendingToBeClaimed,
@@ -253,8 +254,9 @@ export default function HRDashboard() {
 
         // Benefits Officer handles benefits review
         if (role === "benefits_officer") {
-            const pendingToBeClaimed = stats.pending_action || 0;  // Not yet claimed by BO
-            const claimedWaitingForApproval = stats.pending_review || 0;  // Claimed by BO
+            // Convert to numbers to handle string values from backend
+            const pendingToBeClaimed = Number(stats.pending_action) || 0;  // Not yet claimed by BO
+            const claimedWaitingForApproval = Number(stats.pending_review) || 0;  // Claimed by BO
 
             console.log('🔍 Benefits Officer counts:', {
                 pendingToBeClaimed,
@@ -293,8 +295,9 @@ export default function HRDashboard() {
 
         // Division Head handles final approval
         if (role === "welfare_head") {
-            const pendingToBeClaimed = stats.pending_action || 0;  // Not yet claimed by DH
-            const claimedWaitingForApproval = stats.pending_final_approval || 0;  // Claimed by DH
+            // Convert to numbers to handle string values from backend
+            const pendingToBeClaimed = Number(stats.pending_action) || 0;  // Not yet claimed by DH
+            const claimedWaitingForApproval = Number(stats.pending_final_approval) || 0;  // Claimed by DH
 
             console.log('🔍 Division Head counts:', {
                 pendingToBeClaimed,
