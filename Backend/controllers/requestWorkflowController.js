@@ -1238,6 +1238,12 @@ const getDashboardStats = async (req, res) => {
         AND cr.current_status NOT IN ('cancelled', 'deleted')
       `, [userId, userId]);
 
+      console.log(`📊 HR Dashboard Stats for User ${userId}:`, {
+        unassigned_requests: hrStats[0].unassigned_requests,
+        assigned_to_me: hrStats[0].assigned_to_me,
+        includes_hr_final_verification: true
+      });
+
       stats = {
         ...hrStats[0],
         unassigned_requests: hrStats[0].unassigned_requests || 0,  // Unclaimed requests
@@ -1262,6 +1268,12 @@ const getDashboardStats = async (req, res) => {
           AND ra.is_current_stage = 1
           AND cr.current_status NOT IN ('cancelled', 'deleted')
       `, [userId]);
+
+      console.log(`📊 Benefits Officer Dashboard Stats for User ${userId}:`, {
+        unclaimed_requests: benefitsStats[0].unclaimed_requests,
+        claimed_by_me: benefitsStats[0].claimed_by_me,
+        query_filters: 'approval_stage=benefits_stage, action=pending, is_current_stage=1'
+      });
 
       stats = {
         ...benefitsStats[0],
@@ -1297,6 +1309,12 @@ const getDashboardStats = async (req, res) => {
           SUM(CASE WHEN current_status = 'rejected' THEN 1 ELSE 0 END) as system_rejected
         FROM checkup_requests
       `);
+
+      console.log(`📊 Division Head Dashboard Stats for User ${userId}:`, {
+        unclaimed_requests: welfareStats[0].unclaimed_requests,
+        claimed_by_me: welfareStats[0].claimed_by_me,
+        query_filters: 'approval_stage=welfare_stage, action=pending, is_current_stage=1'
+      });
 
       stats = {
         ...welfareStats[0],
