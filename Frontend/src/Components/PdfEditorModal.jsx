@@ -94,10 +94,11 @@ export default function PdfEditorModal({
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
 
+      // Set canvas size first
       canvas.height = viewport.height;
       canvas.width = viewport.width;
 
-      // Store canvas dimensions BEFORE rendering for immediate layout
+      // Update state to trigger container resize
       setCanvasSize({ width: viewport.width, height: viewport.height });
 
       const renderContext = {
@@ -513,13 +514,15 @@ export default function PdfEditorModal({
                     ref={containerRef}
                     className="relative select-none"
                     style={{
-                      width: canvasSize.width || 'auto',
-                      height: canvasSize.height || 'auto',
-                      minWidth: canvasSize.width || '100%',
-                      minHeight: canvasSize.height || '100%'
+                      width: canvasSize.width > 0 ? canvasSize.width : 'auto',
+                      height: canvasSize.width > 0 ? canvasSize.height : 'auto'
                     }}
                   >
-                    <canvas ref={canvasRef} className="max-w-full" />
+                    <canvas
+                      ref={canvasRef}
+                      className="max-w-full block"
+                      style={{ display: 'block' }}
+                    />
 
                     {/* Render annotations as draggable overlays */}
                     {annotations
