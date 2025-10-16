@@ -14,6 +14,7 @@ import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
 import apiService from "@/services/api";
 import FileRequestModal from "@/Components/FileRequestModal";
 import PdfEditorModal from "@/Components/PdfEditorModal";
+import PdfPreviewModal from "@/Components/PdfPreviewModal";
 
 // Helper function to get the most recent staff file - moved outside component to avoid hoisting issues
 const getMostRecentStaffFile = (user, request, pendingFiles) => {
@@ -372,6 +373,8 @@ export default function LOA_Submit() {
     const [showReleaseModal, setShowReleaseModal] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showFileRequestModal, setShowFileRequestModal] = useState(false);
+    const [showPdfPreview, setShowPdfPreview] = useState(false);
+    const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
     const [rejectionReason, setRejectionReason] = useState("");
     const [approvalComment, setApprovalComment] = useState("");
     const [releaseReason, setReleaseReason] = useState("");
@@ -1502,6 +1505,49 @@ export default function LOA_Submit() {
 
                                     {/* Action Buttons */}
                                     <div className="space-y-1.5 sm:space-y-2 mb-3 sm:mb-4">
+                                        {/* Preview button - Show only during Executive Clearance Review (hr_final_verification) */}
+                                        {request?.current_status === 'hr_final_verification' && user?.role === 'hr_personnel' && (
+                                            <>
+                                                <button
+                                                    onClick={async () => {
+                                                        try {
+                                                            // Get the most recent staff file (signed document)
+                                                            const staffFiles = (request?.files || []).filter(file =>
+                                                                file.uploaded_by !== request.employee_id
+                                                            );
+
+                                                            const sortedStaffFiles = staffFiles.sort((a, b) =>
+                                                                new Date(b.created_at) - new Date(a.created_at)
+                                                            );
+
+                                                            if (sortedStaffFiles.length > 0) {
+                                                                const mostRecentFile = sortedStaffFiles[0];
+                                                                const previewUrl = `${BACKEND_BASE_URL}/uploads/${mostRecentFile.file_path}`;
+                                                                setPdfPreviewUrl(previewUrl);
+                                                                setShowPdfPreview(true);
+                                                            } else {
+                                                                setErrorMessage('No signed document available to preview.');
+                                                                setShowErrorModal(true);
+                                                            }
+                                                        } catch (error) {
+                                                            console.error('Preview failed:', error);
+                                                            setErrorMessage('Failed to load preview. Please try again.');
+                                                            setShowErrorModal(true);
+                                                        }
+                                                    }}
+                                                    className="w-full flex items-center justify-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-colors text-xs sm:text-sm cursor-pointer font-semibold"
+                                                >
+                                                    <FileText className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                                                    <span className="whitespace-nowrap">Preview PDF</span>
+                                                </button>
+
+                                                {/* Guide text */}
+                                                <p className="text-[9px] sm:text-xs text-gray-500 text-center px-1 sm:px-2 leading-tight">
+                                                    Review signed documents and approvals
+                                                </p>
+                                            </>
+                                        )}
+
                                         {/* Fill & Sign button - Show only when user can approve and NOT in final verification */}
                                         {shouldShowFillAndSign() && (
                                             <>
@@ -1582,15 +1628,18 @@ export default function LOA_Submit() {
                                             </span>
                                         </button>
 
-                                        <button
-                                            onClick={handleUpload}
-                                            className="w-full flex items-center justify-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs sm:text-sm cursor-pointer"
-                                        >
-                                            <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                            </svg>
-                                            <span className="whitespace-nowrap">Upload Signed</span>
-                                        </button>
+                                        {/* Upload Signed button - Hide during Executive Clearance Review */}
+                                        {request?.current_status !== 'hr_final_verification' && (
+                                            <button
+                                                onClick={handleUpload}
+                                                className="w-full flex items-center justify-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-xs sm:text-sm cursor-pointer"
+                                            >
+                                                <svg className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                                </svg>
+                                                <span className="whitespace-nowrap">Upload Signed</span>
+                                            </button>
+                                        )}
                                     </div>
 
                                     {/* Executive's Request for Approval */}
@@ -2230,6 +2279,20 @@ export default function LOA_Submit() {
                     request?.request_type === 'letter_of_authorization'
                         ? 'Approval_Letter_of_Authorization_For_Annual_Medical_Check-up_Laboratory_and_Procedures.pdf'
                         : 'Approval_For_Annual_Medical_Check-up.pdf'
+                }
+            />
+
+            {/* PDF Preview Modal - Read-only preview for Executive Clearance Review */}
+            <PdfPreviewModal
+                isOpen={showPdfPreview}
+                onClose={() => {
+                    setShowPdfPreview(false);
+                    setPdfPreviewUrl(null);
+                }}
+                pdfUrl={pdfPreviewUrl}
+                fileName={
+                    request?.files?.filter(f => f.uploaded_by !== request.employee_id)
+                        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]?.original_file_name || 'document.pdf'
                 }
             />
         </div>
