@@ -1248,11 +1248,11 @@ const getDashboardStats = async (req, res) => {
       };
 
     } else if (userRole === 'benefits_officer') {
-      // Benefits officer dashboard stats - count ONLY unclaimed requests for pending
+      // Benefits officer dashboard stats - separate unclaimed and claimed counts
       const [benefitsStageStats] = await pool.execute(`
         SELECT
-          COUNT(*) as total_in_benefits_stage,
-          SUM(CASE WHEN cr.current_status = 'benefits_review' THEN 1 ELSE 0 END) as pending_review,
+          SUM(CASE WHEN ra.approver_id IS NULL THEN 1 ELSE 0 END) as unclaimed_requests,
+          SUM(CASE WHEN ra.approver_id = ? THEN 1 ELSE 0 END) as claimed_by_me,
           SUM(CASE WHEN cr.current_status IN ('welfare_review', 'approved', 'completed') THEN 1 ELSE 0 END) as processed,
           SUM(CASE WHEN cr.current_status = 'rejected' THEN 1 ELSE 0 END) as rejected,
           SUM(CASE WHEN cr.priority_level = 'urgent' THEN 1 ELSE 0 END) as urgent_pending,
@@ -1263,21 +1263,21 @@ const getDashboardStats = async (req, res) => {
         WHERE ra.approval_stage = 'benefits_stage'
           AND ra.action = 'pending'
           AND ra.is_current_stage = 1
-          AND ra.approver_id IS NULL
           AND cr.current_status NOT IN ('cancelled', 'deleted')
-      `);
+      `, [userId]);
 
       stats = {
         ...benefitsStageStats[0],
-        pending_review: benefitsStageStats[0].total_in_benefits_stage || 0
+        pending_action: benefitsStageStats[0].unclaimed_requests || 0,  // Unclaimed requests
+        pending_review: benefitsStageStats[0].claimed_by_me || 0        // Claimed by this BO
       };
 
     } else if (userRole === 'welfare_head') {
-      // Welfare head dashboard stats - count ONLY unclaimed requests for pending
+      // Welfare head dashboard stats - separate unclaimed and claimed counts
       const [welfareStageStats] = await pool.execute(`
         SELECT
-          COUNT(*) as total_in_welfare_stage,
-          SUM(CASE WHEN cr.current_status = 'welfare_review' THEN 1 ELSE 0 END) as pending_final_approval,
+          SUM(CASE WHEN ra.approver_id IS NULL THEN 1 ELSE 0 END) as unclaimed_requests,
+          SUM(CASE WHEN ra.approver_id = ? THEN 1 ELSE 0 END) as claimed_by_me,
           SUM(CASE WHEN cr.current_status = 'approved' THEN 1 ELSE 0 END) as approved,
           SUM(CASE WHEN cr.current_status = 'completed' THEN 1 ELSE 0 END) as completed,
           SUM(CASE WHEN cr.current_status = 'rejected' THEN 1 ELSE 0 END) as rejected,
@@ -1288,9 +1288,8 @@ const getDashboardStats = async (req, res) => {
         WHERE ra.approval_stage = 'welfare_stage'
           AND ra.action = 'pending'
           AND ra.is_current_stage = 1
-          AND ra.approver_id IS NULL
           AND cr.current_status NOT IN ('cancelled', 'deleted')
-      `);
+      `, [userId]);
 
       // Also get overall system stats for welfare head overview
       const [overallStats] = await pool.execute(`
@@ -1305,7 +1304,8 @@ const getDashboardStats = async (req, res) => {
       stats = {
         ...welfareStageStats[0],
         ...overallStats[0],
-        pending_final_approval: welfareStageStats[0].total_in_welfare_stage || 0
+        pending_action: welfareStageStats[0].unclaimed_requests || 0,        // Unclaimed requests
+        pending_final_approval: welfareStageStats[0].claimed_by_me || 0      // Claimed by this DH
       };
 
     } else if (userRole === 'admin') {

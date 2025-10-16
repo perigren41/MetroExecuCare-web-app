@@ -1,15 +1,11 @@
-import { ThemeToggle } from "@/Components/ThemeToggle.jsx"
 import { NavbarSection } from "@/Components/NavbarSection.jsx"
 import { HeroSection } from "@/Components/HeroSection.jsx"
 import { FeaturesSection} from "@/Components/FeaturesSection.jsx"
-import { HowItWorksSection } from "@/Components/HowItWorksSection.jsx" 
+import { HowItWorksSection } from "@/Components/HowItWorksSection.jsx"
 
 export const LandingPage = () => {
     return(
         <div className="h-screen w-full snap-y snap-mandatory scroll-smooth">
-            {/*Theme Toggle night and light mode*/}
-            <ThemeToggle />
-            
             <NavbarSection />
             {/* Navbar */ }
 

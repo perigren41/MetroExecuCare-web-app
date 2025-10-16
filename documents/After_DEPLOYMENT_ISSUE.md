@@ -867,4 +867,26 @@ index-Tz1nT1SZ.js:379  Error details: Failed to fetch PDF: 404  Error: Failed to
 
 - Current claimed request not working for all approvers - ReferenceError: Cannot access 'Xp' before initialization **Fixed** (Three-part fix: 1) Inlined canApprove logic in shouldShowFillAndSign to avoid function hoisting issues in minified build, 2) Added loading/null state check before rendering PDF Card to prevent calling functions during initial render, 3) Wrapped shouldShowFillAndSign in useCallback to prevent re-creation and memoize function reference)
 
--
+**FAQ** **Fixed**
+- Remove "Still Have Questions" card **Fixed**
+- create a category-base to identify FAQ whether it's a general question, workflow question, etc. **Fixed** (Created 4 categories: Getting Started 🚀, Approval Workflow ⚙️, Request Tracking 📊, After Approval ✅)
+
+
+**ERD ISSUE**
+why is request_assignment table still active if it's not being used by in production? In addition, where is file_requests table connected to, since our database uses Related Database, I must know the Entity-Related Database of each tables. Create an understandable ERD base on our MySQL to understand each RDs.
+
+
+**HR/BO/DIVISION HEAD ISSUE**
+I am currently having issue with HRDashboard, Benefits Dashboard and Welfare/Division Head Dashboard. 
+- For HRDashboard, it's only displaying You have ${pendingToBeClaimed} request/s pending to be claimed and ${claimedWaitingForApproval} waiting for your approval if pendingToBeClaimed > 0 && claimedWaitingForApproval > 0. However, it's not displaying:  // Only pending to be claimed
+            else if (pendingToBeClaimed > 0 && claimedWaitingForApproval === 0) {
+                return {
+                    message: `You have ${pendingToBeClaimed} request/s pending to be claimed`,
+                };
+            }
+            // Only claimed waiting for approval
+            else if (claimedWaitingForApproval > 0 && pendingToBeClaimed === 0) {
+                return {
+                    message: `There are ${claimedWaitingForApproval} waiting for your approval`,
+                };
+            } For all approvers.

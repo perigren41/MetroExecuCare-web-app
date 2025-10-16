@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-// import { ThemeToggle } from "@/Components/ThemeToggle.jsx"
 import { NavbarSection } from "@/Components/NavbarSection.jsx"
 import metrobankicon from "@/assets/metrobank-icon.svg";
 import mainLogo from "@/assets/mainLogo-foreground.svg";

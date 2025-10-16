@@ -11,6 +11,18 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    sourcemap: true, // Enable source maps for debugging production errors
+    minify: 'esbuild', // Use esbuild (default, faster and more reliable)
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'ui-vendor': ['lucide-react'],
+        }
+      }
+    }
+  },
   server: {
     port: 3000,
     host: '0.0.0.0', // Listen on all network interfaces for container/cloud compatibility
