@@ -872,8 +872,14 @@ index-Tz1nT1SZ.js:379  Error details: Failed to fetch PDF: 404  Error: Failed to
 - create a category-base to identify FAQ whether it's a general question, workflow question, etc. **Fixed** (Created 4 categories: Getting Started 🚀, Approval Workflow ⚙️, Request Tracking 📊, After Approval ✅)
 
 
-**ERD ISSUE**
-why is request_assignment table still active if it's not being used by in production? In addition, where is file_requests table connected to, since our database uses Related Database, I must know the Entity-Related Database of each tables. Create an understandable ERD base on our MySQL to understand each RDs.
+**ERD ISSUE** **Fixed**
+why is request_assignment table still active if it's not being used by in production? In addition, where is file_requests table connected to, since our database uses Related Database, I must know the Entity-Related Database of each tables. Create an understandable ERD base on our MySQL to understand each RDs. **Fixed** (Created comprehensive ENTITY_RELATIONSHIP_DIAGRAM.md with:
+- Visual ERD diagram showing all 11 tables and their relationships
+- Complete FK relationships documentation (32 foreign keys)
+- Confirmed request_assignments IS actively used for manual & self-claimed assignments
+- Documented file_requests connection: checkup_requests → file_requests → request_files
+- Data flow diagram showing request lifecycle with database interactions
+- Cascade behaviors (ON DELETE CASCADE vs SET NULL) documentation)
 
 
 **HR/BO/DIVISION HEAD ISSUE** **Fixed**
