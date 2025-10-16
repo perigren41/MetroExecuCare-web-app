@@ -37,7 +37,7 @@ class EmailService {
         this.resendClient = new Resend(process.env.RESEND_API_KEY);
         this.provider = 'resend';
         // Use notifications@ instead of noreply@ for better deliverability and spam prevention
-        this.fromEmail = process.env.FROM_EMAIL || 'MetroExecuCare <notifications@metroexecucare.xyz>';
+        this.fromEmail = process.env.FROM_EMAIL || 'MetroExecuCare Notifications <notifications@metroexecucare.xyz>';
         console.log('✅ Email service initialized with Resend');
         console.log(`   FROM: ${this.fromEmail}`);
         return;
