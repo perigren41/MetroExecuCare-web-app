@@ -352,7 +352,7 @@ export default function HR_HistoryPage() {
                         >
                             {/* Scrollable table wrapper */}
                             <div className="max-h-[900px] overflow-y-auto overflow-x-auto">
-                                <table className="w-full min-w-[1200px] table-fixed border-collapse">
+                                <table className="w-full table-auto border-collapse">
                                     <thead className="sticky top-0 z-10">
                                         <tr
                                             style={{
@@ -360,12 +360,12 @@ export default function HR_HistoryPage() {
                                                 background: "linear-gradient(90deg, #3F6EC0 0%, #00539F 33%, #5D3EA4 66%, #7940A8 100%)",
                                             }}
                                         >
-                                            <th className="w-24 text-center"></th>
-                                            <th className="w-64 text-white font-semibold text-center">Name</th>
-                                            <th className="w-48 text-white font-semibold text-center">Request Number</th>
-                                            <th className="w-56 text-white font-semibold text-center">Type of Request</th>
-                                            <th className="w-48 text-white font-semibold text-center">Submitted</th>
-                                            <th className="w-56 text-white font-semibold text-center">Status</th>
+                                            <th className="w-16 lg:w-20 text-center px-2"></th>
+                                            <th className="w-32 lg:w-48 text-white font-semibold text-center px-2">Name</th>
+                                            <th className="w-40 lg:w-48 text-white font-semibold text-center px-2">Request Number</th>
+                                            <th className="w-40 lg:w-56 text-white font-semibold text-center px-2">Type of Request</th>
+                                            <th className="w-28 lg:w-36 text-white font-semibold text-center px-2">Submitted</th>
+                                            <th className="w-28 lg:w-36 text-white font-semibold text-center px-2">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
