@@ -4,9 +4,11 @@ import { ArrowLeft, ChevronDown, HelpCircle } from 'lucide-react';
 import mainLogo from '@/assets/mainLogo.svg';
 import mainLogoDark from '@/assets/mainLogo-foreground.svg';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const FAQPage = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [animate, setAnimate] = useState(false);
     const [openIndex, setOpenIndex] = useState(null);
@@ -106,7 +108,23 @@ export const FAQPage = () => {
             <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-border">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <button
-                        onClick={() => navigate('/')}
+                        onClick={() => {
+                            if (user) {
+                                // User is logged in, route to appropriate dashboard based on role
+                                const roleRoutes = {
+                                    'admin': '/admin-users-page',
+                                    'hr_personnel': '/hr-dashboard',
+                                    'benefits_officer': '/benefits-officer-dashboard',
+                                    'welfare_head': '/welfare-head-dashboard',
+                                    'executive_employee': '/executive-employee-dashboard'
+                                };
+                                const dashboardRoute = roleRoutes[user.role] || '/executive-employee-dashboard';
+                                navigate(dashboardRoute);
+                            } else {
+                                // Not logged in, go to landing page
+                                navigate('/');
+                            }
+                        }}
                         className="flex items-center gap-2 text-primary hover:text-primary/80 transition-colors cursor-pointer"
                     >
                         <ArrowLeft className="h-5 w-5" />
