@@ -876,8 +876,8 @@ index-Tz1nT1SZ.js:379  Error details: Failed to fetch PDF: 404  Error: Failed to
 why is request_assignment table still active if it's not being used by in production? In addition, where is file_requests table connected to, since our database uses Related Database, I must know the Entity-Related Database of each tables. Create an understandable ERD base on our MySQL to understand each RDs.
 
 
-**HR/BO/DIVISION HEAD ISSUE**
-I am currently having issue with HRDashboard, Benefits Dashboard and Welfare/Division Head Dashboard. 
+**HR/BO/DIVISION HEAD ISSUE** **Fixed**
+I am currently having issue with HRDashboard, Benefits Dashboard and Welfare/Division Head Dashboard.
 - For HRDashboard, it's only displaying You have ${pendingToBeClaimed} request/s pending to be claimed and ${claimedWaitingForApproval} waiting for your approval if pendingToBeClaimed > 0 && claimedWaitingForApproval > 0. However, it's not displaying:  // Only pending to be claimed
             else if (pendingToBeClaimed > 0 && claimedWaitingForApproval === 0) {
                 return {
@@ -889,4 +889,4 @@ I am currently having issue with HRDashboard, Benefits Dashboard and Welfare/Div
                 return {
                     message: `There are ${claimedWaitingForApproval} waiting for your approval`,
                 };
-            } For all approvers.
+            } For all approvers. **Fixed** (Backend getDashboardStats now returns separate counts for Benefits Officer and Division Head: pending_action for unclaimed requests + pending_review/pending_final_approval for claimed requests. Frontend getCountsByRole properly displays single-condition messages for all approvers)
