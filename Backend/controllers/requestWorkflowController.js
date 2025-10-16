@@ -1074,6 +1074,9 @@ const rejectRequest = async (req, res) => {
     } else if (request.current_status === 'welfare_review' && userRole === 'welfare_head') {
       canReject = true;
       currentStage = 'welfare_stage';
+    } else if (request.current_status === 'hr_final_verification' && userRole === 'hr_personnel' && request.assigned_hr_id === userId) {
+      canReject = true;
+      currentStage = 'hr_final_stage';
     }
 
     if (!canReject) {
