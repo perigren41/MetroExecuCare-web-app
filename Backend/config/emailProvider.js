@@ -36,7 +36,8 @@ class EmailService {
       if (process.env.RESEND_API_KEY && process.env.RESEND_API_KEY.trim() !== '') {
         this.resendClient = new Resend(process.env.RESEND_API_KEY);
         this.provider = 'resend';
-        this.fromEmail = process.env.FROM_EMAIL || 'MetroExecuCare <noreply@metroexecucare.com>';
+        // Use notifications@ instead of noreply@ for better deliverability and spam prevention
+        this.fromEmail = process.env.FROM_EMAIL || 'MetroExecuCare Notifications <notifications@metroexecucare.xyz>';
         console.log('✅ Email service initialized with Resend');
         console.log(`   FROM: ${this.fromEmail}`);
         return;

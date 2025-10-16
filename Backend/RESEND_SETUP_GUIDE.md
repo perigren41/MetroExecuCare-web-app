@@ -132,7 +132,8 @@ Go to your domain provider (Namecheap, GoDaddy, etc.) and add these records:
 **Step 5: Set in Railway**
 ```bash
 RESEND_API_KEY=re_your_api_key_here
-FROM_EMAIL=MetroExecuCare <noreply@metroexecucare.com>
+# ✅ BEST PRACTICE: Use notifications@ or system@ instead of noreply@
+FROM_EMAIL=MetroExecuCare Notifications <notifications@metroexecucare.com>
 ```
 
 **Pros:**
