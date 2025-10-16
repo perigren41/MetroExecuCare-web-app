@@ -369,10 +369,12 @@ export default function LOA_Submit() {
     // State for modal/confirmation dialogs
     const [showApproveModal, setShowApproveModal] = useState(false);
     const [showRejectModal, setShowRejectModal] = useState(false);
+    const [showReleaseModal, setShowReleaseModal] = useState(false);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [showFileRequestModal, setShowFileRequestModal] = useState(false);
     const [rejectionReason, setRejectionReason] = useState("");
     const [approvalComment, setApprovalComment] = useState("");
+    const [releaseReason, setReleaseReason] = useState("");
     const [isDragOver, setIsDragOver] = useState(false);
     const [tempFile, setTempFile] = useState(null);
     const [newlyUploadedFile, setNewlyUploadedFile] = useState(null);
@@ -499,6 +501,38 @@ export default function LOA_Submit() {
 
     const handleReject = () => {
         setShowRejectModal(true);
+    };
+
+    const handleRelease = () => {
+        setShowReleaseModal(true);
+    };
+
+    const confirmRelease = async () => {
+        if (isSubmitting) return;
+        setIsSubmitting(true);
+
+        try {
+            const releaseData = {
+                reason: releaseReason.trim() || null
+            };
+
+            const response = await apiService.releaseRequest(requestId, releaseData);
+
+            if (response.success) {
+                alert(`Request released successfully! ${response.message || 'The request is now available for other HR personnel to claim.'}`);
+                setShowReleaseModal(false);
+                setReleaseReason("");
+                // Redirect to HR dashboard
+                navigate('/hr-dashboard', { state: { user } });
+            } else {
+                alert(`Failed to release request: ${response.error || 'Unknown error'}`);
+            }
+        } catch (error) {
+            console.error('Error releasing request:', error);
+            alert(`Error releasing request: ${error.message || 'Please try again'}`);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleReturn = () => {
@@ -1642,6 +1676,19 @@ export default function LOA_Submit() {
                                 </>
                             )}
 
+                            {/* Show Release button for HR personnel who have claimed the request */}
+                            {user?.role === 'hr_personnel' &&
+                             request?.current_status === 'hr_processing' &&
+                             request?.assigned_hr_id === user?.id && (
+                                <button
+                                    onClick={handleRelease}
+                                    className="px-6 sm:px-8 py-3 bg-orange-600 text-white rounded-full font-bold hover:bg-orange-700 transition-colors text-sm sm:text-base w-full sm:w-auto"
+                                    title="Release this request back to the pending pool for other HR to claim"
+                                >
+                                    Release Request
+                                </button>
+                            )}
+
                             {/* Show Return button when applicable */}
                             {canShowReturn() && (
                                 <button
@@ -1848,6 +1895,85 @@ export default function LOA_Submit() {
                                         </div>
                                     ) : (
                                         'Submit'
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Release Request Modal - Responsive */}
+            {showReleaseModal && (
+                <div className="fixed inset-0 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl md:rounded-[32px] shadow-lg border border-gray-300 overflow-hidden w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        {/* Gradient header */}
+                        <div
+                            className="flex items-center justify-between px-4 md:px-6 py-2"
+                            style={{
+                                background: "linear-gradient(90deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)",
+                            }}
+                        >
+                            <span className="text-white font-semibold text-sm sm:text-base">Release Request</span>
+                            <button
+                                onClick={() => {
+                                    setShowReleaseModal(false);
+                                    setReleaseReason("");
+                                }}
+                                aria-label="Close release modal"
+                                className="text-white text-2xl md:text-3xl font-bold leading-none hover:opacity-80"
+                                style={{ lineHeight: "1" }}
+                            >
+                                &times;
+                            </button>
+                        </div>
+
+                        {/* Modal content - Responsive */}
+                        <div className="p-4 md:p-6 bg-white">
+                            <div className="mb-4">
+                                <p className="text-gray-700 mb-2 text-sm sm:text-base font-semibold">Are you sure you want to release this request?</p>
+                                <p className="text-gray-600 text-xs sm:text-sm">
+                                    This request will be returned to the pending pool and will be available for other HR personnel to claim.
+                                </p>
+                            </div>
+
+                            <p className="text-gray-700 mb-3 text-sm sm:text-base">Reason for releasing (optional):</p>
+
+                            {/* Text area with box - Responsive */}
+                            <div className="relative mb-6">
+                                <textarea
+                                    value={releaseReason}
+                                    onChange={(e) => setReleaseReason(e.target.value)}
+                                    className="w-full h-24 sm:h-32 p-4 border-2 border-gray-300 rounded-lg resize-none outline-none text-gray-700 focus:border-[#023184] transition-colors text-sm sm:text-base"
+                                    placeholder="e.g., Going on leave, workload balancing, requires specialized expertise..."
+                                />
+                            </div>
+
+                            {/* Action buttons - Responsive */}
+                            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
+                                <button
+                                    onClick={() => {
+                                        setShowReleaseModal(false);
+                                        setReleaseReason("");
+                                    }}
+                                    className="px-6 sm:px-8 py-2 bg-gray-400 text-white rounded-full font-medium hover:bg-gray-500 transition-colors text-sm sm:text-base w-full sm:w-auto order-2 sm:order-1"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmRelease}
+                                    disabled={isSubmitting}
+                                    className={`px-6 sm:px-8 py-2 text-white rounded-full font-medium transition-colors text-sm sm:text-base w-full sm:w-auto order-1 sm:order-2 ${
+                                        isSubmitting ? 'bg-gray-400 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700'
+                                    }`}
+                                >
+                                    {isSubmitting ? (
+                                        <div className="flex items-center justify-center gap-2">
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            <span>Releasing...</span>
+                                        </div>
+                                    ) : (
+                                        'Release Request'
                                     )}
                                 </button>
                             </div>
