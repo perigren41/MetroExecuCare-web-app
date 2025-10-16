@@ -221,6 +221,9 @@ export default function LOA_Submit() {
     // Form validation errors
     const [formErrors, setFormErrors] = useState({});
 
+    // PDF Editor state - MUST be defined before useEffect that uses it
+    const [showPdfEditor, setShowPdfEditor] = useState(false);
+
     // Helper function to get user display name
     const getUserDisplayName = (user) => {
         if (!user) return "Loading...";
@@ -383,7 +386,6 @@ export default function LOA_Submit() {
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [fileToRemove, setFileToRemove] = useState(null);
-    const [showPdfEditor, setShowPdfEditor] = useState(false);
 
     // Show loading state
     if (loading) {
