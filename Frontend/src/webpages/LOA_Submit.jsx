@@ -15,6 +15,170 @@ import apiService from "@/services/api";
 import FileRequestModal from "@/Components/FileRequestModal";
 import PdfEditorModal from "@/Components/PdfEditorModal";
 
+// Helper function to get the most recent staff file - moved outside component to avoid hoisting issues
+const getMostRecentStaffFile = (user, request, pendingFiles) => {
+    if (!request?.id) return { file: null, label: 'Staff File:', noFileMessage: 'No Staff File' };
+
+    // Inline canApprove logic
+    const userCanApprove = () => {
+        if (!user || !request) return false;
+        if (user.role === "hr_personnel") {
+            return (request?.current_status === "hr_processing" || request?.current_status === "hr_final_verification")
+                   && request?.assigned_hr_id === user.id;
+        }
+        if (user.role === "benefits_officer") {
+            return request?.current_status === "benefits_review";
+        }
+        if (user.role === "welfare_head") {
+            return request?.current_status === "welfare_review";
+        }
+        if (user.position === "Benefits Assistant" || user.username === "BA") {
+            return request?.current_status === "hr_processing";
+        }
+        if (user.position === "Benefits Services Officer" || user.username === "BSO") {
+            return request?.current_status === "benefits_review";
+        }
+        if (user.position === "Division Head" || user.username === "DivisionHead") {
+            return request?.current_status === "welfare_review";
+        }
+        return false;
+    };
+
+    // Get all non-executive files (staff files) for THIS specific request from database
+    const staffFiles = (request.files || []).filter(file => {
+        if (file.uploaded_by === request.employee_id) return false;
+        if (userCanApprove() && file.uploaded_by === user?.id) return false;
+        if (request.current_status === 'hr_processing' || request.current_status === 'pending') {
+            return false;
+        }
+        return file.request_id === request.id;
+    });
+
+    const allStaffFiles = [...staffFiles];
+
+    console.log(`🔍 Debug - Request ID: ${request.id}, Employee ID: ${request.employee_id}`);
+    console.log(`📁 Database files for request:`, request.files || []);
+    console.log(`⏳ Pending files:`, pendingFiles);
+    console.log(`👥 All staff files (database + pending):`, allStaffFiles);
+
+    if (allStaffFiles.length === 0) {
+        let label = 'Staff File:';
+        switch (user?.role) {
+            case 'hr_personnel':
+                label = 'Human Resource File:';
+                break;
+            case 'benefits_officer':
+                label = 'Benefits & Services File:';
+                break;
+            case 'welfare_head':
+                label = 'Division Head File:';
+                break;
+            default:
+                label = 'Staff File:';
+        }
+
+        let uploadMessage = 'No documents uploaded yet';
+        switch (user?.role) {
+            case 'hr_personnel':
+                uploadMessage = 'No Human Resource documents';
+                break;
+            case 'benefits_officer':
+                uploadMessage = 'No Benefits & Services documents';
+                break;
+            case 'welfare_head':
+                uploadMessage = 'No Division Head documents';
+                break;
+            default:
+                uploadMessage = 'No documents';
+        }
+
+        return { file: null, label: label, noFileMessage: uploadMessage };
+    }
+
+    const sortedStaffFiles = allStaffFiles.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    console.log(`📄 Sorted staff files (most recent first):`, sortedStaffFiles.map(f => ({ name: f.original_file_name, created: f.created_at, uploaded_by: f.uploaded_by, isPending: f.isPending })));
+
+    let fileLabel = 'Staff File:';
+    let roleIdentifier = '';
+
+    if (request.current_status === 'hr_processing' || request.current_status === 'pending') {
+        fileLabel = 'Human Resource File:';
+        roleIdentifier = 'Human Resource';
+    } else if (request.current_status === 'benefits_review') {
+        if (user?.role === 'benefits_officer') {
+            fileLabel = 'Human Resource File:';
+            roleIdentifier = 'Human Resource';
+        } else {
+            fileLabel = staffFiles.length > 1 ? 'Benefits & Services File:' : 'Human Resource File:';
+            roleIdentifier = staffFiles.length > 1 ? 'Benefits & Services' : 'Human Resource';
+        }
+    } else if (request.current_status === 'welfare_review') {
+        if (user?.role === 'welfare_head') {
+            fileLabel = 'Benefits & Services File:';
+            roleIdentifier = 'Benefits & Services';
+        } else {
+            fileLabel = staffFiles.length > 2 ? 'Welfare & Recreation File:' : 'Benefits & Services File:';
+            roleIdentifier = staffFiles.length > 2 ? 'Welfare & Recreation' : 'Benefits & Services';
+        }
+    } else if (request.current_status === 'hr_final_verification') {
+        if (user?.role === 'hr_personnel') {
+            fileLabel = 'Welfare & Recreation File:';
+            roleIdentifier = 'Welfare & Recreation';
+        } else {
+            fileLabel = staffFiles.length >= 3 ? 'Welfare & Recreation File:' : 'Benefits & Services File:';
+            roleIdentifier = staffFiles.length >= 3 ? 'Welfare & Recreation' : 'Benefits & Services';
+        }
+    } else if (['approved', 'rejected', 'completed'].includes(request.current_status)) {
+        if (staffFiles.length >= 3) {
+            fileLabel = 'Welfare & Recreation File:';
+            roleIdentifier = 'Welfare & Recreation';
+        } else if (staffFiles.length >= 2) {
+            fileLabel = 'Benefits & Services File:';
+            roleIdentifier = 'Benefits & Services';
+        } else {
+            fileLabel = 'Human Resource File:';
+            roleIdentifier = 'Human Resource';
+        }
+    }
+
+    if (user?.role === 'benefits_officer' && request.current_status === 'benefits_review') {
+        fileLabel = 'Human Resource File:';
+        roleIdentifier = 'Human Resource';
+    } else if (user?.role === 'welfare_head' && request.current_status === 'welfare_review') {
+        fileLabel = 'Benefits & Services File:';
+        roleIdentifier = 'Benefits & Services';
+    } else if (user?.role === 'hr_personnel' && request.current_status === 'hr_final_verification') {
+        fileLabel = 'Welfare & Recreation File:';
+        roleIdentifier = 'Welfare & Recreation';
+    }
+
+    let selectedFile = null;
+
+    if (request.current_status === 'hr_processing' || request.current_status === 'pending') {
+        selectedFile = null;
+    } else if (request.current_status === 'benefits_review') {
+        selectedFile = sortedStaffFiles[0] || null;
+    } else if (request.current_status === 'welfare_review') {
+        selectedFile = sortedStaffFiles[0] || null;
+    } else if (request.current_status === 'hr_final_verification') {
+        selectedFile = sortedStaffFiles[0] || null;
+    } else if (['approved', 'rejected', 'completed'].includes(request.current_status)) {
+        selectedFile = sortedStaffFiles[0] || null;
+    } else {
+        selectedFile = sortedStaffFiles[0] || null;
+    }
+
+    console.log(`✅ Selected file for display:`, selectedFile ? { name: selectedFile.original_file_name, created: selectedFile.created_at, uploaded_by: selectedFile.uploaded_by } : 'None');
+    console.log(`🏷️ File label: ${fileLabel}`);
+
+    return {
+        file: selectedFile,
+        label: fileLabel,
+        noFileMessage: `No ${roleIdentifier} File`
+    };
+};
+
 export default function LOA_Submit() {
     const navigate = useNavigate();
     const { requestId } = useParams();
@@ -918,223 +1082,6 @@ export default function LOA_Submit() {
 
         return false;
     };
-
-    // Helper function to get the most recent staff file and its label
-    const getMostRecentStaffFile = () => {
-        if (!request?.id) return { file: null, label: 'Staff File:', noFileMessage: 'No Staff File' };
-
-        // Inline canApprove logic to avoid circular dependency
-        const userCanApprove = () => {
-            if (!user || !request) return false;
-            if (user.role === "hr_personnel") {
-                return (request?.current_status === "hr_processing" || request?.current_status === "hr_final_verification")
-                       && request?.assigned_hr_id === user.id;
-            }
-            if (user.role === "benefits_officer") {
-                return request?.current_status === "benefits_review";
-            }
-            if (user.role === "welfare_head") {
-                return request?.current_status === "welfare_review";
-            }
-            if (user.position === "Benefits Assistant" || user.username === "BA") {
-                return request?.current_status === "hr_processing";
-            }
-            if (user.position === "Benefits Services Officer" || user.username === "BSO") {
-                return request?.current_status === "benefits_review";
-            }
-            if (user.position === "Division Head" || user.username === "DivisionHead") {
-                return request?.current_status === "welfare_review";
-            }
-            return false;
-        };
-
-        // Get all non-executive files (staff files) for THIS specific request from database
-        // Document Preview should ONLY show permanent files from previous approvers
-        const staffFiles = (request.files || []).filter(file => {
-            // Always exclude executive files
-            if (file.uploaded_by === request.employee_id) return false;
-
-            // Exclude current user's files if they are the current approver (their files go to Temporary Storage)
-            if (userCanApprove() && file.uploaded_by === user?.id) return false;
-
-            // If request is still in initial hr_processing, don't show any staff files yet
-            // HR files should only be visible AFTER initial HR processing is complete
-            if (request.current_status === 'hr_processing' || request.current_status === 'pending') {
-                return false; // Hide all staff files during initial HR processing
-            }
-
-            return file.request_id === request.id;
-        });
-
-        // Document Preview = permanent files ONLY (no pending files)
-        // Pending files are shown in Temporary Storage section
-        const allStaffFiles = [...staffFiles];
-
-        console.log(`🔍 Debug - Request ID: ${request.id}, Employee ID: ${request.employee_id}`);
-        console.log(`📁 Database files for request:`, request.files || []);
-        console.log(`⏳ Pending files:`, pendingFiles);
-        console.log(`👥 All staff files (database + pending):`, allStaffFiles);
-
-        if (allStaffFiles.length === 0) {
-            // Inline getRoleFileLabel logic to avoid circular dependency
-            let label = 'Staff File:';
-            switch (user?.role) {
-                case 'hr_personnel':
-                    label = 'Human Resource File:';
-                    break;
-                case 'benefits_officer':
-                    label = 'Benefits & Services File:';
-                    break;
-                case 'welfare_head':
-                    label = 'Division Head File:';
-                    break;
-                default:
-                    label = 'Staff File:';
-            }
-
-            // Inline getUploadMessage logic to avoid circular dependency
-            let uploadMessage = 'No documents uploaded yet';
-            switch (user?.role) {
-                case 'hr_personnel':
-                    uploadMessage = 'No Human Resource documents';
-                    break;
-                case 'benefits_officer':
-                    uploadMessage = 'No Benefits & Services documents';
-                    break;
-                case 'welfare_head':
-                    uploadMessage = 'No Division Head documents';
-                    break;
-                default:
-                    uploadMessage = 'No documents';
-            }
-
-            return { file: null, label: label, noFileMessage: uploadMessage };
-        }
-
-        // Sort by creation date to get files in chronological order (most recent first for this request)
-        const sortedStaffFiles = allStaffFiles.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-        console.log(`📄 Sorted staff files (most recent first):`, sortedStaffFiles.map(f => ({ name: f.original_file_name, created: f.created_at, uploaded_by: f.uploaded_by, isPending: f.isPending })));
-
-        // Determine the label based on who uploaded the most recent file
-        // We'll need to map the uploaded_by to the actual role
-        // For now, we'll determine based on the current request status and workflow
-        let fileLabel = 'Staff File:';
-        let roleIdentifier = '';
-
-        // Determine the label based on the workflow progression and who should see what
-        // The key insight: show the most recent approver's file based on the status progression
-
-        if (request.current_status === 'hr_processing' || request.current_status === 'pending') {
-            // Still in HR stage - no staff files should be visible yet
-            fileLabel = 'Human Resource File:';
-            roleIdentifier = 'Human Resource';
-        } else if (request.current_status === 'benefits_review') {
-            // In Benefits review stage
-            if (user?.role === 'benefits_officer') {
-                // Benefits officer sees HR's file (the previous stage)
-                fileLabel = 'Human Resource File:';
-                roleIdentifier = 'Human Resource';
-            } else {
-                // Others see Benefits file if it exists, otherwise HR file
-                fileLabel = staffFiles.length > 1 ? 'Benefits & Services File:' : 'Human Resource File:';
-                roleIdentifier = staffFiles.length > 1 ? 'Benefits & Services' : 'Human Resource';
-            }
-        } else if (request.current_status === 'welfare_review') {
-            // In Welfare review stage
-            if (user?.role === 'welfare_head') {
-                // Welfare head sees Benefits file (the previous stage)
-                fileLabel = 'Benefits & Services File:';
-                roleIdentifier = 'Benefits & Services';
-            } else {
-                // Others see Welfare file if it exists, otherwise the most recent
-                fileLabel = staffFiles.length > 2 ? 'Welfare & Recreation File:' : 'Benefits & Services File:';
-                roleIdentifier = staffFiles.length > 2 ? 'Welfare & Recreation' : 'Benefits & Services';
-            }
-        } else if (request.current_status === 'hr_final_verification') {
-            // In HR Final Verification stage
-            if (user?.role === 'hr_personnel') {
-                // HR sees all files for final verification
-                fileLabel = 'Welfare & Recreation File:';
-                roleIdentifier = 'Welfare & Recreation';
-            } else {
-                // Others see the most recent available file
-                fileLabel = staffFiles.length >= 3 ? 'Welfare & Recreation File:' : 'Benefits & Services File:';
-                roleIdentifier = staffFiles.length >= 3 ? 'Welfare & Recreation' : 'Benefits & Services';
-            }
-        } else if (['approved', 'rejected', 'completed'].includes(request.current_status)) {
-            // Final stage - show the final approver's file (usually Welfare)
-            if (staffFiles.length >= 3) {
-                fileLabel = 'Welfare & Recreation File:';
-                roleIdentifier = 'Welfare & Recreation';
-            } else if (staffFiles.length >= 2) {
-                fileLabel = 'Benefits & Services File:';
-                roleIdentifier = 'Benefits & Services';
-            } else {
-                fileLabel = 'Human Resource File:';
-                roleIdentifier = 'Human Resource';
-            }
-        }
-
-        // Special handling: if user is viewing their own stage, show the previous stage's file
-        // This allows them to see what they need to review/approve
-        if (user?.role === 'benefits_officer' && request.current_status === 'benefits_review') {
-            fileLabel = 'Human Resource File:';
-            roleIdentifier = 'Human Resource';
-        } else if (user?.role === 'welfare_head' && request.current_status === 'welfare_review') {
-            fileLabel = 'Benefits & Services File:';
-            roleIdentifier = 'Benefits & Services';
-        } else if (user?.role === 'hr_personnel' && request.current_status === 'hr_final_verification') {
-            // HR Final Verification: show all files from all previous stages
-            fileLabel = 'Welfare & Recreation File:';
-            roleIdentifier = 'Welfare & Recreation';
-        }
-
-        // Select the appropriate file based on the determined logic
-        // Since files are now sorted by most recent first, we need to select differently
-        let selectedFile = null;
-
-        if (request.current_status === 'hr_processing' || request.current_status === 'pending') {
-            // During HR processing, no staff files should be visible yet
-            selectedFile = null;
-        } else if (request.current_status === 'benefits_review') {
-            if (user?.role === 'benefits_officer') {
-                // Benefits officer sees the latest staff file for THIS specific request
-                // This should be the most recent file uploaded by HR for this request
-                selectedFile = sortedStaffFiles[0] || null; // Most recent staff file for this request
-            } else {
-                // Others see most recent file for this request
-                selectedFile = sortedStaffFiles[0] || null;
-            }
-        } else if (request.current_status === 'welfare_review') {
-            if (user?.role === 'welfare_head') {
-                // Welfare head sees the latest Benefits file for THIS request
-                selectedFile = sortedStaffFiles[0] || null;
-            } else {
-                // Others see most recent file for this request
-                selectedFile = sortedStaffFiles[0] || null;
-            }
-        } else if (request.current_status === 'hr_final_verification') {
-            // HR Final Verification stage - show all files
-            selectedFile = sortedStaffFiles[0] || null;
-        } else if (['approved', 'rejected', 'completed'].includes(request.current_status)) {
-            // Show the most recent file for this request (latest approver's file)
-            selectedFile = sortedStaffFiles[0] || null;
-        } else {
-            // Default to most recent file for this request
-            selectedFile = sortedStaffFiles[0] || null;
-        }
-
-        console.log(`✅ Selected file for display:`, selectedFile ? { name: selectedFile.original_file_name, created: selectedFile.created_at, uploaded_by: selectedFile.uploaded_by } : 'None');
-        console.log(`🏷️ File label: ${fileLabel}`);
-
-        return {
-            file: selectedFile,
-            label: fileLabel,
-            noFileMessage: `No ${roleIdentifier} File`
-        };
-    };
-
 
     return (
         <div className="min-h-screen bg-white">
