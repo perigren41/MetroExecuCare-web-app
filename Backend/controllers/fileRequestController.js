@@ -85,7 +85,7 @@ const createFileRequest = async (req, res) => {
         executiveName: `${checkupRequest.first_name} ${checkupRequest.last_name}`,
         requesterName: `${requester.first_name} ${requester.last_name}`,
         requesterRole: formattedRole,
-        requestNumber: checkupRequest.request_number,
+        requestId: checkupRequest.request_number,
         requestType: checkupRequest.request_type,
         message: message
       });
@@ -264,7 +264,7 @@ const respondToFileRequest = async (req, res) => {
           to: requester[0].email,
           requesterName: `${requester[0].first_name} ${requester[0].last_name}`,
           executiveName: `${req.user.first_name} ${req.user.last_name}`,
-          requestNumber: fileRequest.request_number
+          requestId: fileRequest.request_number
         });
       } catch (emailError) {
         console.error('Failed to send file uploaded email:', emailError);
