@@ -329,7 +329,23 @@ export default function LOA_Submit() {
     const validateApprovalForm = () => {
         const errors = {};
         if (!approvalForm.hospital_id) errors.hospital_id = 'Hospital selection is required';
-        if (!approvalForm.checkup_date) errors.checkup_date = 'Checkup date is required';
+        if (!approvalForm.checkup_date) {
+            errors.checkup_date = 'Checkup date is required';
+        } else {
+            // Validate checkup date is within 1 year from today
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const selectedDate = new Date(approvalForm.checkup_date);
+            selectedDate.setHours(0, 0, 0, 0);
+            const oneYearFromToday = new Date(today);
+            oneYearFromToday.setFullYear(today.getFullYear() + 1);
+
+            if (selectedDate < today) {
+                errors.checkup_date = 'Checkup date cannot be in the past';
+            } else if (selectedDate > oneYearFromToday) {
+                errors.checkup_date = 'Checkup date cannot be more than 1 year from today';
+            }
+        }
         if (!approvalForm.letter_purpose.trim()) errors.letter_purpose = 'Reason for request is required';
         return errors;
     };
@@ -337,7 +353,23 @@ export default function LOA_Submit() {
     const validateAuthorizationForm = () => {
         const errors = {};
         if (!authorizationForm.preferred_hospital.trim()) errors.preferred_hospital = 'Preferred hospital is required';
-        if (!authorizationForm.checkup_date) errors.checkup_date = 'Preferred date of checkup is required';
+        if (!authorizationForm.checkup_date) {
+            errors.checkup_date = 'Preferred date of checkup is required';
+        } else {
+            // Validate checkup date is within 1 year from today
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const selectedDate = new Date(authorizationForm.checkup_date);
+            selectedDate.setHours(0, 0, 0, 0);
+            const oneYearFromToday = new Date(today);
+            oneYearFromToday.setFullYear(today.getFullYear() + 1);
+
+            if (selectedDate < today) {
+                errors.checkup_date = 'Checkup date cannot be in the past';
+            } else if (selectedDate > oneYearFromToday) {
+                errors.checkup_date = 'Checkup date cannot be more than 1 year from today';
+            }
+        }
         if (!authorizationForm.hospital_address.trim()) errors.hospital_address = 'Address of preferred hospital is required';
         if (!authorizationForm.hospital_city.trim()) errors.hospital_city = 'City of hospital is required';
         if (!authorizationForm.hospital_contact.trim()) errors.hospital_contact = 'Contact of preferred hospital is required';

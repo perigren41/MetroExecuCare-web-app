@@ -646,20 +646,35 @@ const processRequest = async (req, res) => {
         // ❌ REMOVED: Do NOT notify Welfare Heads yet - they should only be notified AFTER Benefits Officer approves
         // Welfare Heads will receive their notification from the approveRequest function when Benefits Officer approves
 
-        // Send status update to Executive
-        const [hrUser] = await pool.execute(
-          'SELECT id, first_name, last_name, email, role, position FROM users WHERE id = ?',
-          [userId]
+        // Send status update to Executive ONLY if request was NOT previously claimed by this HR
+        // (to avoid duplicate notifications: one on claim, one on process)
+        const [recentClaimActivity] = await pool.execute(
+          `SELECT id FROM activity_logs
+           WHERE request_id = ? AND user_id = ? AND action = 'request_claimed'
+           AND created_at >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+           LIMIT 1`,
+          [id, userId]
         );
 
-        if (hrUser.length > 0) {
-          emailService.sendStatusUpdateNotification(
-            requestData, executive, 'pending',
-            `Your request has been processed by Human Resources and is now under Benefits Officer review.`,
-            hrUser[0]
-          )
-            .then(() => console.log(`📧 Status update notification sent to ${executive.email}`))
-            .catch(error => console.error('Email notification error:', error.message));
+        // Skip executive notification if HR recently claimed this request
+        // (executive already got "Request Under Review" notification when HR claimed it)
+        if (recentClaimActivity.length === 0) {
+          const [hrUser] = await pool.execute(
+            'SELECT id, first_name, last_name, email, role, position FROM users WHERE id = ?',
+            [userId]
+          );
+
+          if (hrUser.length > 0) {
+            emailService.sendStatusUpdateNotification(
+              requestData, executive, 'pending',
+              `Your request has been processed by Human Resources and is now under Benefits Officer review.`,
+              hrUser[0]
+            )
+              .then(() => console.log(`📧 Status update notification sent to ${executive.email}`))
+              .catch(error => console.error('Email notification error:', error.message));
+          }
+        } else {
+          console.log(`⏭️ Skipping duplicate executive notification - HR ${userId} recently claimed request ${id}`);
         }
       }
     } catch (emailError) {
