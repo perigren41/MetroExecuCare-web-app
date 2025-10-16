@@ -1522,7 +1522,9 @@ export default function LOA_Submit() {
 
                                                             if (sortedStaffFiles.length > 0) {
                                                                 const mostRecentFile = sortedStaffFiles[0];
-                                                                const previewUrl = `${BACKEND_BASE_URL}/uploads/${mostRecentFile.file_path}`;
+                                                                // Remove /app/uploads/ prefix if it exists, backend /uploads endpoint already maps to it
+                                                                const filePath = mostRecentFile.file_path.replace(/^\/app\/uploads\//, '');
+                                                                const previewUrl = `${BACKEND_BASE_URL}/uploads/${filePath}`;
                                                                 setPdfPreviewUrl(previewUrl);
                                                                 setShowPdfPreview(true);
                                                             } else {
@@ -1584,7 +1586,9 @@ export default function LOA_Submit() {
                                                     // If there's a signed staff file, download it
                                                     if (sortedStaffFiles.length > 0) {
                                                         const mostRecentFile = sortedStaffFiles[0];
-                                                        downloadUrl = `${BACKEND_BASE_URL}/uploads/${mostRecentFile.file_path}`;
+                                                        // Remove /app/uploads/ prefix if it exists, backend /uploads endpoint already maps to it
+                                                        const filePath = mostRecentFile.file_path.replace(/^\/app\/uploads\//, '');
+                                                        downloadUrl = `${BACKEND_BASE_URL}/uploads/${filePath}`;
                                                         downloadFilename = mostRecentFile.original_file_name;
                                                     } else {
                                                         // Otherwise download the template
