@@ -252,8 +252,8 @@ export default function PdfEditorModal({
     };
   }, [draggedAnnotation, dragOffset, annotations, canvasSize]);
 
-  // Save and download PDF with annotations
-  const handleSaveAndDownload = async () => {
+  // Upload PDF with annotations (no download)
+  const handleUploadOnly = async () => {
     if (!pdfLibDoc) return;
 
     try {
@@ -308,18 +308,8 @@ export default function PdfEditorModal({
       const pdfBytes = await pdfDocCopy.save();
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
 
-      // Download the filled PDF
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const fileName = templateName.replace('.pdf', '_filled.pdf');
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-
       // Create a File object from the blob for upload
+      const fileName = templateName.replace('.pdf', '_filled.pdf');
       const file = new File([blob], fileName, {
         type: 'application/pdf'
       });
@@ -338,8 +328,8 @@ export default function PdfEditorModal({
         onClose();
       }, 2000);
     } catch (err) {
-      console.error('Error saving PDF:', err);
-      setError('Failed to save PDF. Please try again.');
+      console.error('Error uploading PDF:', err);
+      setError('Failed to upload PDF. Please try again.');
       setIsSaving(false);
     }
   };
@@ -735,19 +725,19 @@ export default function PdfEditorModal({
               Download Only
             </button>
             <button
-              onClick={handleSaveAndDownload}
+              onClick={handleUploadOnly}
               disabled={isSaving || isLoading || annotations.length === 0}
               className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm sm:text-base font-semibold"
             >
               {isSaving ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  Saving...
+                  Uploading...
                 </>
               ) : (
                 <>
                   <Upload size={18} />
-                  Save & Upload
+                  Upload
                 </>
               )}
             </button>
@@ -764,7 +754,7 @@ export default function PdfEditorModal({
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Success!</h3>
             <p className="text-gray-600">
-              Your PDF has been saved and downloaded successfully.
+              Your PDF has been processed successfully.
             </p>
           </div>
         </div>
