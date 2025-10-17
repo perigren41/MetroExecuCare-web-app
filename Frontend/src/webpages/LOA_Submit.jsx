@@ -630,6 +630,13 @@ export default function LOA_Submit() {
                                 return;
                             }
 
+                            if (hospitalResponse.is_existing) {
+                                console.log('✅ Using existing hospital:', hospitalResponse.data.name, '(ID:', hospitalResponse.data.id + ')');
+                                console.log('📍 Address match:', hospitalResponse.data.address, ',', hospitalResponse.data.city);
+                            } else {
+                                console.log('🆕 New hospital registered:', hospitalResponse.data.name, '(ID:', hospitalResponse.data.id + ')');
+                            }
+
                             approvalData.assigned_hospital_id = hospitalResponse.data.id;
                         }
 
@@ -658,7 +665,13 @@ export default function LOA_Submit() {
                 );
 
                 if (!currentUserFiles || currentUserFiles.length === 0) {
-                    setErrorMessage('File upload is required before approval. Please upload a file first.');
+                    // Role-specific error messages
+                    const roleMessages = {
+                        'benefits_officer': 'Cannot approve - must sign and upload the file first. Please use "Fill & Sign PDF" button to sign the document.',
+                        'welfare_head': 'Cannot approve - must sign and upload the file first. Please use "Fill & Sign PDF" button to sign the document.',
+                        'hr_personnel': 'Cannot approve - must upload a file first. Please upload the signed document.'
+                    };
+                    setErrorMessage(roleMessages[user?.role] || 'File upload is required before approval. Please upload a file first.');
                     setShowErrorModal(true);
                     return;
                 }
@@ -761,8 +774,20 @@ export default function LOA_Submit() {
             return;
         }
 
-        // Note: File upload is NOT required for rejection
-        // Rejection can happen without uploading files
+        // Check if file upload is required for Benefits Officers and Welfare Heads before rejection
+        if (['benefits_officer', 'welfare_head'].includes(user?.role)) {
+            const currentUserFiles = (request?.files || []).filter(file =>
+                file.uploaded_by === user?.id &&
+                file.request_id === request?.id
+            );
+
+            if (!currentUserFiles || currentUserFiles.length === 0) {
+                const action = 'reject';
+                setErrorMessage(`Must sign the file first before ${action}. Please use "Fill & Sign PDF" button to sign the document before rejection.`);
+                setShowErrorModal(true);
+                return;
+            }
+        }
 
         if (isSubmitting) return;
         setIsSubmitting(true);

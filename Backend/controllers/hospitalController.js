@@ -130,17 +130,23 @@ const createHospital = async (req, res) => {
       });
     }
 
-    // Check for potential duplicates (same name and city)
+    // Check for existing hospital with same address and city to prevent duplicates
+    // Hospital names might have slight variations (case, spelling), but address+city should be unique
     const [existingHospitals] = await pool.query(
-      'SELECT id, name, city, address FROM hospitals WHERE LOWER(name) = LOWER(?) AND LOWER(city) = LOWER(?)',
-      [name.trim(), city.trim()]
+      'SELECT * FROM hospitals WHERE LOWER(TRIM(address)) = LOWER(TRIM(?)) AND LOWER(TRIM(city)) = LOWER(TRIM(?))',
+      [address.trim(), city.trim()]
     );
 
     if (existingHospitals.length > 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'A hospital with similar name and city already exists',
-        existing_hospitals: existingHospitals
+      // Hospital already exists - return existing hospital instead of creating duplicate
+      console.log(`Hospital already exists with same address and city: ${existingHospitals[0].name} (ID: ${existingHospitals[0].id})`);
+      console.log(`Requested name: "${name}", Existing name: "${existingHospitals[0].name}"`);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Hospital with this address and city already exists. Using existing hospital.',
+        data: existingHospitals[0],
+        is_existing: true
       });
     }
 
