@@ -237,7 +237,7 @@ const validateHRProcessing = (req, res, next) => {
   }
 
   // Validate hospital contact number - allow Philippine landlines and mobile numbers
-  // Format examples: (02) 1234-5678, 02-12345678, 0917-123-4567, +639171234567, 09171234567
+  // Format examples: (02) 1234-5678, 02-12345678, 0917-123-4567, +639171234567, 09171234567, 9195116
   if (hospital_contact) {
     const contactStr = hospital_contact.trim();
     // Remove common phone number formatting characters for validation
@@ -245,8 +245,9 @@ const validateHRProcessing = (req, res, next) => {
 
     // Check if it's a valid Philippine phone number format
     // Mobile: starts with 09 or +639, 11 digits (09171234567) or 13 digits (+639171234567)
-    // Landline: starts with 02 or other area codes, 7-10 digits
-    const isValidFormat = /^(\+?63|0)[0-9]{9,11}$/.test(cleaned);
+    // Landline: 7-11 digits, may or may not start with 0 or area code
+    // Allow: 9195116, 029195116, 09171234567, +639171234567, etc.
+    const isValidFormat = /^(\+?63)?[0-9]{7,11}$/.test(cleaned);
 
     if (!isValidFormat || cleaned.length < 7) {
       errors.push('Valid hospital contact number is required if provided');
