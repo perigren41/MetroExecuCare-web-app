@@ -422,7 +422,86 @@ export default function LOA_Submit() {
     const [showConfirmRemoveModal, setShowConfirmRemoveModal] = useState(false);
     const [successMessage, setSuccessMessage] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
+    const [errorType, setErrorType] = useState("error"); // "error", "validation", "permission", "network"
+    const [errorSuggestions, setErrorSuggestions] = useState([]);
     const [fileToRemove, setFileToRemove] = useState(null);
+
+    // Enhanced error handler with categorization and suggestions
+    const showError = (error, type = "error", customMessage = null) => {
+        let message = customMessage || "";
+        let suggestions = [];
+        let errorCategory = type;
+
+        // Handle different error types
+        if (typeof error === 'string') {
+            message = error;
+        } else if (error?.details && Array.isArray(error.details)) {
+            // Backend validation errors
+            message = error.error || "Validation failed";
+            errorCategory = "validation";
+            suggestions = error.details.map(detail => {
+                // Parse validation messages and provide helpful suggestions
+                if (detail.includes("hospital contact number")) {
+                    return "Enter a valid Philippine phone number (e.g., 9195116, 02-1234567, 0917-123-4567)";
+                } else if (detail.includes("checkup date")) {
+                    return "Select a date within the next year that is not in the past";
+                } else if (detail.includes("hospital")) {
+                    return "Ensure all hospital information is complete and accurate";
+                } else if (detail.includes("required")) {
+                    return detail.replace("is required", "must be filled out");
+                } else {
+                    return detail;
+                }
+            });
+        } else if (error?.error) {
+            message = error.error;
+            if (error.error.includes("permission") || error.error.includes("not allowed") || error.error.includes("cannot")) {
+                errorCategory = "permission";
+                suggestions.push("You don't have permission to perform this action");
+                suggestions.push("Contact your supervisor or HR if you believe this is an error");
+            } else if (error.error.includes("network") || error.error.includes("connection")) {
+                errorCategory = "network";
+                suggestions.push("Check your internet connection");
+                suggestions.push("Refresh the page and try again");
+            }
+        } else if (error?.message) {
+            message = error.message;
+            if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
+                errorCategory = "network";
+                message = "Unable to connect to the server";
+                suggestions.push("Check your internet connection");
+                suggestions.push("The server might be temporarily unavailable");
+                suggestions.push("Try again in a few moments");
+            }
+        }
+
+        // Role-specific suggestions
+        if (user?.role === 'hr_personnel') {
+            if (message.includes("assigned to")) {
+                suggestions.push("This request is assigned to another HR personnel");
+                suggestions.push("Check the Pending Requests tab for requests assigned to you");
+            }
+        }
+
+        // File-related errors
+        if (message.includes("file") || message.includes("upload") || message.includes("sign")) {
+            if (message.includes("10MB") || message.includes("size")) {
+                suggestions.push("Reduce the file size by compressing the PDF");
+                suggestions.push("Maximum file size allowed is 10MB");
+            } else if (message.includes("PDF")) {
+                suggestions.push("Only PDF files are accepted");
+                suggestions.push("Convert your document to PDF format first");
+            } else if (message.includes("sign")) {
+                suggestions.push('Use the "Fill & Sign PDF" button to digitally sign the document');
+                suggestions.push("After signing, the signed file will be automatically uploaded");
+            }
+        }
+
+        setErrorMessage(message);
+        setErrorType(errorCategory);
+        setErrorSuggestions(suggestions);
+        setShowErrorModal(true);
+    };
 
     // Show loading state
     if (loading) {
@@ -625,8 +704,7 @@ export default function LOA_Submit() {
 
                             const hospitalResponse = await apiService.createHospital(hospitalData);
                             if (!hospitalResponse.success) {
-                                setErrorMessage('Failed to register hospital: ' + (hospitalResponse.message || 'Unknown error'));
-                                setShowErrorModal(true);
+                                showError(hospitalResponse, "validation", "Failed to register hospital");
                                 return;
                             }
 
@@ -651,8 +729,10 @@ export default function LOA_Submit() {
 
             if (Object.keys(formErrors).length > 0) {
                 setFormErrors(formErrors);
-                setErrorMessage('Please fill in all required fields');
-                setShowErrorModal(true);
+                showError({
+                    error: 'Please fill in all required fields',
+                    details: Object.values(formErrors)
+                }, "validation");
                 return;
             }
 
@@ -667,12 +747,11 @@ export default function LOA_Submit() {
                 if (!currentUserFiles || currentUserFiles.length === 0) {
                     // Role-specific error messages
                     const roleMessages = {
-                        'benefits_officer': 'Cannot approve - must sign and upload the file first. Please use "Fill & Sign PDF" button to sign the document.',
-                        'welfare_head': 'Cannot approve - must sign and upload the file first. Please use "Fill & Sign PDF" button to sign the document.',
-                        'hr_personnel': 'Cannot approve - must upload a file first. Please upload the signed document.'
+                        'benefits_officer': 'Cannot approve - must sign and upload the file first',
+                        'welfare_head': 'Cannot approve - must sign and upload the file first',
+                        'hr_personnel': 'Cannot approve - must upload a file first'
                     };
-                    setErrorMessage(roleMessages[user?.role] || 'File upload is required before approval. Please upload a file first.');
-                    setShowErrorModal(true);
+                    showError(roleMessages[user?.role] || 'File upload is required before approval', "validation");
                     return;
                 }
             }
@@ -684,14 +763,12 @@ export default function LOA_Submit() {
             if (user?.role === 'hr_personnel' && request?.current_status !== 'hr_final_verification') {
                 // Validate request can be processed (only for initial HR processing)
                 if (!['assigned_to_hr', 'hr_processing'].includes(request?.current_status)) {
-                    setErrorMessage(`Request cannot be processed. Current status: ${request?.current_status}. Expected: assigned_to_hr or hr_processing.`);
-                    setShowErrorModal(true);
+                    showError(`Request cannot be processed in its current state`, "permission");
                     return;
                 }
 
                 if (request?.assigned_hr_id !== user?.id) {
-                    setErrorMessage('You can only process requests assigned to you.');
-                    setShowErrorModal(true);
+                    showError('You can only process requests assigned to you', "permission");
                     return;
                 }
 
@@ -748,20 +825,11 @@ export default function LOA_Submit() {
                 }, 2000);
             } else {
                 console.error('❌ Request processing failed:', response);
-                // Display specific validation errors if available
-                let errorMsg = 'Failed to approve request: ';
-                if (response.details && Array.isArray(response.details) && response.details.length > 0) {
-                    errorMsg += '\n\n' + response.details.map((err, idx) => `${idx + 1}. ${err}`).join('\n');
-                } else {
-                    errorMsg += (response.error || response.message || 'Unknown error');
-                }
-                setErrorMessage(errorMsg);
-                setShowErrorModal(true);
+                showError(response, "error", "Failed to approve request");
             }
         } catch (error) {
             console.error('❌ Request processing error:', error);
-            setErrorMessage('Failed to approve request: ' + error.message);
-            setShowErrorModal(true);
+            showError(error, "network");
         } finally {
             setIsSubmitting(false);
         }
@@ -769,8 +837,7 @@ export default function LOA_Submit() {
 
     const confirmReject = async () => {
         if (!rejectionReason.trim()) {
-            setErrorMessage("Please provide a reason for rejection");
-            setShowErrorModal(true);
+            showError("Please provide a reason for rejection", "validation");
             return;
         }
 
@@ -782,9 +849,7 @@ export default function LOA_Submit() {
             );
 
             if (!currentUserFiles || currentUserFiles.length === 0) {
-                const action = 'reject';
-                setErrorMessage(`Must sign the file first before ${action}. Please use "Fill & Sign PDF" button to sign the document before rejection.`);
-                setShowErrorModal(true);
+                showError(`Must sign the file first before rejection`, "validation");
                 return;
             }
         }
@@ -812,19 +877,10 @@ export default function LOA_Submit() {
                     navigate(dashboardRoute, { state: { user } });
                 }, 2000);
             } else {
-                // Display specific validation errors if available
-                let errorMsg = 'Failed to reject request: ';
-                if (response.details && Array.isArray(response.details) && response.details.length > 0) {
-                    errorMsg += '\n\n' + response.details.map((err, idx) => `${idx + 1}. ${err}`).join('\n');
-                } else {
-                    errorMsg += (response.error || response.message || 'Unknown error');
-                }
-                setErrorMessage(errorMsg);
-                setShowErrorModal(true);
+                showError(response, "error", "Failed to reject request");
             }
         } catch (error) {
-            setErrorMessage('Failed to reject request: ' + error.message);
-            setShowErrorModal(true);
+            showError(error, "network");
         } finally {
             setIsSubmitting(false);
         }
@@ -849,8 +905,7 @@ export default function LOA_Submit() {
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
         } catch (error) {
-            setErrorMessage('Failed to download file: ' + error.message);
-            setShowErrorModal(true);
+            showError(error, "network", "Failed to download file");
         }
     };
 
@@ -874,12 +929,10 @@ export default function LOA_Submit() {
                 // Refresh request data to update file list
                 fetchRequest();
             } else {
-                setErrorMessage('Failed to delete file: ' + (response.message || 'Unknown error'));
-                setShowErrorModal(true);
+                showError(response, "error", "Failed to delete file");
             }
         } catch (error) {
-            setErrorMessage('Failed to delete file: ' + error.message);
-            setShowErrorModal(true);
+            showError(error, "network");
         } finally {
             setShowConfirmRemoveModal(false);
             setFileToRemove(null);
@@ -954,15 +1007,13 @@ export default function LOA_Submit() {
     const validateAndSetFile = (file) => {
         // Check file size (limit to 10MB)
         if (file.size > 10 * 1024 * 1024) {
-            setErrorMessage('File size must be less than 10MB');
-            setShowErrorModal(true);
+            showError('File size must be less than 10MB', "validation");
             return;
         }
 
         // Check file type - only allow PDF for this upload modal
         if (file.type !== 'application/pdf') {
-            setErrorMessage('Please upload only PDF files');
-            setShowErrorModal(true);
+            showError('Please upload only PDF files', "validation");
             return;
         }
 
@@ -971,8 +1022,7 @@ export default function LOA_Submit() {
 
     const handleFinalUpload = async () => {
         if (!tempFile) {
-            setErrorMessage('Please select a file first');
-            setShowErrorModal(true);
+            showError('Please select a file first', "validation");
             return;
         }
 
@@ -1002,13 +1052,11 @@ export default function LOA_Submit() {
                 setShowSuccessModal(true);
                 closeUploadModal();
             } else {
-                setErrorMessage('Failed to upload file: ' + (uploadResult.message || 'Unknown error'));
-                setShowErrorModal(true);
+                showError(uploadResult, "error", "Failed to upload file");
             }
         } catch (error) {
             console.error('❌ File upload error:', error);
-            setErrorMessage('Failed to upload file: ' + error.message);
-            setShowErrorModal(true);
+            showError(error, "network");
         }
     };
 
@@ -1039,13 +1087,11 @@ export default function LOA_Submit() {
                 setShowSuccessModal(true);
                 setShowPdfEditor(false);
             } else {
-                setErrorMessage('Failed to upload file: ' + (uploadResult.message || 'Unknown error'));
-                setShowErrorModal(true);
+                showError(uploadResult, "error", "Failed to upload file");
             }
         } catch (error) {
             console.error('❌ PDF upload error:', error);
-            setErrorMessage('Failed to upload file: ' + error.message);
-            setShowErrorModal(true);
+            showError(error, "network");
         }
     };
 
@@ -1585,13 +1631,11 @@ export default function LOA_Submit() {
                                                                 setPdfPreviewUrl(previewUrl);
                                                                 setShowPdfPreview(true);
                                                             } else {
-                                                                setErrorMessage('No signed document available to preview.');
-                                                                setShowErrorModal(true);
+                                                                showError('No signed document available to preview', "validation");
                                                             }
                                                         } catch (error) {
                                                             console.error('Preview failed:', error);
-                                                            setErrorMessage('Failed to load preview. Please try again.');
-                                                            setShowErrorModal(true);
+                                                            showError(error, "network", "Failed to load preview");
                                                         }
                                                     }}
                                                     className="w-full flex items-center justify-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-colors text-xs sm:text-sm cursor-pointer font-semibold"
@@ -1677,8 +1721,7 @@ export default function LOA_Submit() {
                                                     }, 100);
                                                 } catch (error) {
                                                     console.error('Download failed:', error);
-                                                    setErrorMessage('Failed to download PDF. Please try again.');
-                                                    setShowErrorModal(true);
+                                                    showError(error, "network", "Failed to download PDF");
                                                 }
                                             }}
                                             className="w-full flex items-center justify-center space-x-1.5 sm:space-x-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs sm:text-sm cursor-pointer"
@@ -2221,50 +2264,107 @@ export default function LOA_Submit() {
                 </div>
             )}
 
-            {/* Error Modal - Enhanced with better formatting */}
+            {/* Enhanced Error Modal with Categories and Suggestions */}
             {showErrorModal && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
-                        {/* Modal Header */}
-                        <div className="bg-gradient-to-r from-red-500 via-red-600 to-red-700 text-white px-6 py-4">
-                            <h2 className="text-lg font-semibold flex items-center gap-2">
-                                <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                    </svg>
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden animate-fadeIn">
+                        {/* Modal Header - Dynamic based on error type */}
+                        <div className={`px-6 py-4 ${
+                            errorType === 'validation' ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600' :
+                            errorType === 'permission' ? 'bg-gradient-to-r from-purple-500 via-purple-600 to-indigo-600' :
+                            errorType === 'network' ? 'bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-600' :
+                            'bg-gradient-to-r from-red-500 via-red-600 to-red-700'
+                        } text-white`}>
+                            <h2 className="text-lg font-bold flex items-center gap-3">
+                                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                    {errorType === 'validation' ? (
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                        </svg>
+                                    ) : errorType === 'permission' ? (
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                    ) : errorType === 'network' ? (
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
+                                        </svg>
+                                    ) : (
+                                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                        </svg>
+                                    )}
                                 </div>
-                                Action Failed
+                                <div>
+                                    <div className="text-xl">
+                                        {errorType === 'validation' ? 'Validation Error' :
+                                         errorType === 'permission' ? 'Permission Denied' :
+                                         errorType === 'network' ? 'Connection Error' :
+                                         'Action Failed'}
+                                    </div>
+                                    <div className="text-xs font-normal opacity-90 mt-0.5">
+                                        {errorType === 'validation' ? 'Please check your input' :
+                                         errorType === 'permission' ? 'You don\'t have access' :
+                                         errorType === 'network' ? 'Check your connection' :
+                                         'Something went wrong'}
+                                    </div>
+                                </div>
                             </h2>
                         </div>
 
-                        {/* Modal Body with enhanced formatting */}
-                        <div className="p-6">
-                            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-r-lg">
-                                <div className="flex items-start">
-                                    <div className="flex-shrink-0">
-                                        <svg className="h-5 w-5 text-red-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div className="ml-3 flex-1">
-                                        <div className="text-sm text-red-800 whitespace-pre-line leading-relaxed">
-                                            {errorMessage}
-                                        </div>
+                        {/* Modal Body */}
+                        <div className="p-6 max-h-[70vh] overflow-y-auto">
+                            {/* Error Message */}
+                            <div className={`border-l-4 p-4 mb-4 rounded-r-lg ${
+                                errorType === 'validation' ? 'bg-amber-50 border-amber-500' :
+                                errorType === 'permission' ? 'bg-purple-50 border-purple-500' :
+                                errorType === 'network' ? 'bg-blue-50 border-blue-500' :
+                                'bg-red-50 border-red-500'
+                            }`}>
+                                <div className="flex items-start gap-3">
+                                    <div className={`text-base font-semibold flex-1 ${
+                                        errorType === 'validation' ? 'text-amber-900' :
+                                        errorType === 'permission' ? 'text-purple-900' :
+                                        errorType === 'network' ? 'text-blue-900' :
+                                        'text-red-900'
+                                    }`}>
+                                        {errorMessage}
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="text-xs text-gray-500 mb-4 italic">
-                                Please review the errors above and try again after making the necessary corrections.
-                            </div>
+                            {/* Suggestions Section */}
+                            {errorSuggestions && errorSuggestions.length > 0 && (
+                                <div className="mb-4">
+                                    <h3 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        How to fix this:
+                                    </h3>
+                                    <ul className="space-y-2">
+                                        {errorSuggestions.map((suggestion, index) => (
+                                            <li key={index} className="flex items-start gap-2 text-sm text-gray-700">
+                                                <span className="text-blue-600 font-bold mt-0.5">•</span>
+                                                <span className="flex-1">{suggestion}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
 
                             {/* Action Button */}
-                            <div className="flex justify-center">
+                            <div className="flex justify-end gap-3 mt-6">
                                 <button
                                     onClick={() => setShowErrorModal(false)}
-                                    className="px-8 py-3 bg-red-600 text-white rounded-full font-medium hover:bg-red-700 transition-all shadow-md hover:shadow-lg text-sm sm:text-base"
+                                    className={`px-6 py-2.5 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg text-sm ${
+                                        errorType === 'validation' ? 'bg-amber-600 hover:bg-amber-700' :
+                                        errorType === 'permission' ? 'bg-purple-600 hover:bg-purple-700' :
+                                        errorType === 'network' ? 'bg-blue-600 hover:bg-blue-700' :
+                                        'bg-red-600 hover:bg-red-700'
+                                    }`}
                                 >
-                                    I Understand
+                                    Got it
                                 </button>
                             </div>
                         </div>
