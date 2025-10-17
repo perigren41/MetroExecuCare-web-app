@@ -836,8 +836,17 @@ export default function LOA_Submit() {
     };
 
     const confirmReject = async () => {
+        // Validate rejection reason
         if (!rejectionReason.trim()) {
             showError("Please provide a reason for rejection", "validation");
+            return;
+        }
+
+        if (rejectionReason.trim().length < 10) {
+            showError({
+                error: "Rejection reason is too short",
+                details: ["Rejection reason (comments) must be at least 10 characters"]
+            }, "validation");
             return;
         }
 
@@ -2014,13 +2023,40 @@ export default function LOA_Submit() {
                             <p className="text-gray-700 mb-4 text-sm sm:text-base">Kindly leave a comment explaining the reason for rejection.</p>
 
                             {/* Text area with box - Responsive */}
-                            <div className="relative mb-6">
+                            <div className="relative mb-2">
                                 <textarea
                                     value={rejectionReason}
                                     onChange={(e) => setRejectionReason(e.target.value)}
-                                    className="w-full h-32 sm:h-40 md:h-48 p-4 border-2 border-gray-300 rounded-lg resize-none outline-none text-gray-700 focus:border-[#023184] transition-colors text-sm sm:text-base"
-                                    placeholder="Enter your comment here..."
+                                    className={`w-full h-32 sm:h-40 md:h-48 p-4 border-2 rounded-lg resize-none outline-none text-gray-700 transition-colors text-sm sm:text-base ${
+                                        rejectionReason.trim().length > 0 && rejectionReason.trim().length < 10
+                                            ? 'border-red-400 focus:border-red-500'
+                                            : 'border-gray-300 focus:border-[#023184]'
+                                    }`}
+                                    placeholder="Enter your comment here... (minimum 10 characters)"
                                 />
+                            </div>
+
+                            {/* Character counter and validation message */}
+                            <div className="mb-4">
+                                <div className="flex items-center justify-between text-xs sm:text-sm">
+                                    <span className={`${
+                                        rejectionReason.trim().length === 0
+                                            ? 'text-gray-500'
+                                            : rejectionReason.trim().length < 10
+                                                ? 'text-red-600 font-semibold'
+                                                : 'text-green-600 font-semibold'
+                                    }`}>
+                                        {rejectionReason.trim().length === 0 && 'No characters entered'}
+                                        {rejectionReason.trim().length > 0 && rejectionReason.trim().length < 10 &&
+                                            `Need ${10 - rejectionReason.trim().length} more characters`}
+                                        {rejectionReason.trim().length >= 10 && '✓ Minimum requirement met'}
+                                    </span>
+                                    <span className={`${
+                                        rejectionReason.trim().length < 10 ? 'text-red-600' : 'text-gray-600'
+                                    }`}>
+                                        {rejectionReason.trim().length} / 10 characters
+                                    </span>
+                                </div>
                             </div>
 
                             {/* Action buttons - Responsive */}
