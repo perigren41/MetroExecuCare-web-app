@@ -8,6 +8,7 @@ import DepartmentManagementModal from "@/AdminUserPageComponents/DepartmentManag
 import BranchManagementModal from "@/AdminUserPageComponents/BranchManagementModal";
 import RequestStatsCards from "@/AdminUserPageComponents/RequestStatsCards";
 import RequestManagementTable from "@/AdminUserPageComponents/RequestManagementTable";
+import RequestDetailsModal from "@/AdminUserPageComponents/RequestDetailsModal";
 import NavBarMain from "@/Components/NavBarMain";
 import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
 import MetroBankLogo from "@/assets/mainLogo-foreground.svg";
@@ -510,19 +511,66 @@ export default function AdminUsersPage() {
           </div>
         )}
 
-        {/* Table Container - Scrollable */}
-        <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-          {/* Loading State */}
-          {loading ? (
-            <div className="flex justify-center items-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
-              <span className="ml-2 text-gray-600">Loading users...</span>
+        {/* Conditional View: User Management or Request Management */}
+        {viewMode === "users" ? (
+          <>
+            {/* USER MANAGEMENT TABLE */}
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+              {loading ? (
+                <div className="flex justify-center items-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
+                  <span className="ml-2 text-gray-600">Loading users...</span>
+                </div>
+              ) : (
+                <UserTable users={filteredUsers} onView={setSelectedUser} />
+              )}
             </div>
-          ) : (
-            /* Users Table */
-            <UserTable users={filteredUsers} onView={setSelectedUser} />
-          )}
-        </div>
+          </>
+        ) : (
+          <>
+            {/* REQUEST MANAGEMENT VIEW */}
+            {/* Search and Filters */}
+            <div className="mb-3 flex-shrink-0">
+              <div className="flex flex-col sm:flex-row gap-3">
+                <input
+                  type="text"
+                  placeholder="Search by request #, employee name, or ID..."
+                  value={requestSearchQuery}
+                  onChange={(e) => setRequestSearchQuery(e.target.value)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                />
+                <select
+                  value={requestStatusFilter}
+                  onChange={(e) => setRequestStatusFilter(e.target.value)}
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="assigned_to_hr">Assigned to HR</option>
+                  <option value="hr_processing">HR Processing</option>
+                  <option value="benefits_review">Benefits Review</option>
+                  <option value="welfare_review">Welfare Review</option>
+                  <option value="hr_final_verification">HR Final Verification</option>
+                  <option value="approved">Approved</option>
+                  <option value="completed">Completed</option>
+                  <option value="rejected">Rejected</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Stats Cards */}
+            <RequestStatsCards stats={requestStats} loading={requestsLoading} />
+
+            {/* Requests Table */}
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+              <RequestManagementTable
+                requests={filteredRequests}
+                onViewDetails={(request) => setSelectedRequest(request)}
+                loading={requestsLoading}
+              />
+            </div>
+          </>
+        )}
 
         {/* User Details Modal */}
         {selectedUser && (
@@ -572,6 +620,14 @@ export default function AdminUsersPage() {
               // Refresh users list if needed after branch changes
               fetchUsers();
             }}
+          />
+        )}
+
+        {/* Request Details Modal */}
+        {selectedRequest && (
+          <RequestDetailsModal
+            request={selectedRequest}
+            onClose={() => setSelectedRequest(null)}
           />
         )}
       </div>
