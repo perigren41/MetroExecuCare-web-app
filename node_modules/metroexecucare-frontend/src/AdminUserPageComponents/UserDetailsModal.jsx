@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import NoProfilePicture from "@/assets/profilegray.svg";
+import UserRequestHistoryModal from "@/AdminUserPageComponents/UserRequestHistoryModal";
 
 // Function to convert role variable names to user-friendly names
 const getRoleDisplayName = (role) => {
@@ -43,6 +44,7 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
   const [restorationReason, setRestorationReason] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   // Custom close function that prevents closing when success alerts are shown
   const handleModalClose = () => {
@@ -436,6 +438,12 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
                 Edit
               </button>
               <button
+                onClick={() => setShowHistoryModal(true)}
+                className="px-3 sm:px-4 py-1 w-full sm:w-20 h-6 rounded-full bg-purple-700 text-white text-xs hover:bg-purple-800 cursor-pointer"
+              >
+                View History
+              </button>
+              <button
                 onClick={handleDelete}
                 className="px-2 sm:px-2 py-1 w-full sm:w-15 h-6 rounded-full bg-red-600 text-white text-xs hover:bg-red-700 cursor-pointer"
               >
@@ -624,6 +632,15 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
             </button>
           </div>
         </div>
+      )}
+
+      {/* User Request History Modal */}
+      {showHistoryModal && (
+        <UserRequestHistoryModal
+          userId={user.id}
+          userName={`${user.first_name} ${user.last_name}`}
+          onClose={() => setShowHistoryModal(false)}
+        />
       )}
     </div>
   );
