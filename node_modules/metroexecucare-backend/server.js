@@ -218,6 +218,8 @@
   const requestRoutes = require('./routes/requestRoutes');
   // const emailRoutes = require('./routes/emailRoutes'); // Removed - handled by emailService
   const hospitalRoutes = require('./routes/hospitalRoutes');
+  const departmentRoutes = require('./routes/departmentRoutes');
+  const branchRoutes = require('./routes/branchRoutes');
   const testRoutes = require('./routes/testRoutes');
 
   // Use routes
@@ -226,6 +228,8 @@
   app.use('/api/requests', requestRoutes);
   // app.use('/api/email', emailRoutes); // Removed - handled by emailService
   app.use('/api/hospitals', hospitalRoutes);
+  app.use('/api/departments', departmentRoutes);
+  app.use('/api/branches', branchRoutes);
   app.use('/api/test', testRoutes);
 
   // Serve uploaded files statically

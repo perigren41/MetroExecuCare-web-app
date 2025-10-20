@@ -874,6 +874,74 @@ class ApiService {
       throw error;
     }
   }
+
+  // Generic HTTP Methods
+  async get(endpoint, options = {}) {
+    try {
+      const url = new URL(`${this.baseURL}${endpoint}`);
+
+      // Add query parameters if provided
+      if (options.params) {
+        Object.keys(options.params).forEach(key =>
+          url.searchParams.append(key, options.params[key])
+        );
+      }
+
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: this.getHeaders(true),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error(`GET ${endpoint} error:`, error);
+      throw error;
+    }
+  }
+
+  async post(endpoint, data) {
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        method: 'POST',
+        headers: this.getHeaders(true),
+        body: JSON.stringify(data),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error(`POST ${endpoint} error:`, error);
+      throw error;
+    }
+  }
+
+  async put(endpoint, data) {
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        method: 'PUT',
+        headers: this.getHeaders(true),
+        body: JSON.stringify(data),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error(`PUT ${endpoint} error:`, error);
+      throw error;
+    }
+  }
+
+  async delete(endpoint) {
+    try {
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        method: 'DELETE',
+        headers: this.getHeaders(true),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error(`DELETE ${endpoint} error:`, error);
+      throw error;
+    }
+  }
 }
 
 // Create and export a singleton instance

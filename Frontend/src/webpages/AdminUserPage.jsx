@@ -225,6 +225,28 @@ export default function AdminUsersPage() {
               />
             </div>
 
+            {/* Management Buttons - Full Width */}
+            <div className="flex items-center gap-2 mb-2">
+              <button
+                onClick={() => setShowDepartmentModal(true)}
+                disabled={loading}
+                className="px-3 py-1 bg-blue-700 text-white text-xs
+                  rounded-full hover:bg-blue-800 transition cursor-pointer
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Department Management
+              </button>
+              <button
+                onClick={() => setShowBranchModal(true)}
+                disabled={loading}
+                className="px-3 py-1 bg-blue-700 text-white text-xs
+                  rounded-full hover:bg-blue-800 transition cursor-pointer
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Branch Management
+              </button>
+            </div>
+
             {/* Buttons - Side by Side */}
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-1">
@@ -253,13 +275,13 @@ export default function AdminUsersPage() {
                   <span className="text-lg font-bold">+</span>
                 </button>
                 {showAddDropdown && (
-                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[150px]">
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[170px]">
                     <button
                       onClick={() => {
                         handleAddUser();
                         setShowAddDropdown(false);
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                      className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
                     >
                       Add User
                     </button>
@@ -268,18 +290,18 @@ export default function AdminUsersPage() {
                         setShowDepartmentModal(true);
                         setShowAddDropdown(false);
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                      className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
                     >
-                      Add Department
+                      Add New Department
                     </button>
                     <button
                       onClick={() => {
                         setShowBranchModal(true);
                         setShowAddDropdown(false);
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                      className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
                     >
-                      Add Branch
+                      Add New Branch
                     </button>
                   </div>
                 )}
@@ -297,6 +319,24 @@ export default function AdminUsersPage() {
             />
 
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowDepartmentModal(true)}
+                disabled={loading}
+                className="px-3 py-1 bg-blue-700 text-white text-xs
+                  rounded-full hover:bg-blue-800 transition cursor-pointer
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Department Management
+              </button>
+              <button
+                onClick={() => setShowBranchModal(true)}
+                disabled={loading}
+                className="px-3 py-1 bg-blue-700 text-white text-xs
+                  rounded-full hover:bg-blue-800 transition cursor-pointer
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Branch Management
+              </button>
               <div className="flex items-center gap-1">
                 <span className="text-sm font-medium text-gray-700">Deleted</span>
                 <button
@@ -322,13 +362,13 @@ export default function AdminUsersPage() {
                   <span className="text-lg font-bold">+</span>
                 </button>
                 {showAddDropdown && (
-                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[150px]">
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[170px]">
                     <button
                       onClick={() => {
                         handleAddUser();
                         setShowAddDropdown(false);
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                      className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
                     >
                       Add User
                     </button>
@@ -337,18 +377,18 @@ export default function AdminUsersPage() {
                         setShowDepartmentModal(true);
                         setShowAddDropdown(false);
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                      className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
                     >
-                      Add Department
+                      Add New Department
                     </button>
                     <button
                       onClick={() => {
                         setShowBranchModal(true);
                         setShowAddDropdown(false);
                       }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                      className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
                     >
-                      Add Branch
+                      Add New Branch
                     </button>
                   </div>
                 )}

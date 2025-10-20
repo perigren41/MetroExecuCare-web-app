@@ -105,7 +105,7 @@ export default function DepartmentManagementModal({ onClose, onDepartmentChange 
     <>
       {/* Main Modal Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+        className="fixed inset-0 bg-black/20 flex items-center justify-center z-50"
         onClick={onClose}
       >
         {/* Modal Content */}
@@ -295,7 +295,7 @@ function DepartmentFormModal({ department, onClose, onSave }) {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60]"
+      className="fixed inset-0 bg-black/20 flex items-center justify-center z-[60]"
       onClick={onClose}
     >
       <div
@@ -333,19 +333,6 @@ function DepartmentFormModal({ department, onClose, onSave }) {
                 rows="3"
                 placeholder="Brief description of the department"
               />
-            </div>
-
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="dept_is_active"
-                checked={formData.is_active}
-                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="dept_is_active" className="ml-2 block text-sm text-gray-900">
-                Active
-              </label>
             </div>
           </div>
 

@@ -896,3 +896,62 @@ I am currently having issue with HRDashboard, Benefits Dashboard and Welfare/Div
                     message: `There are ${claimedWaitingForApproval} waiting for your approval`,
                 };
             } For all approvers. **Fixed** (Backend getDashboardStats now returns separate counts for Benefits Officer and Division Head: pending_action for unclaimed requests + pending_review/pending_final_approval for claimed requests. Frontend getCountsByRole properly displays single-condition messages for all approvers)
+            **NOT YET FIXED**- HR ISSUE: 
+
+
+In loa-record-summary page for all approvers, it looks like we are unable to download previous requests. It's giving this error: metroexecucare-backe…equests/files/134:1 
+ 
+ Failed to load resource: the server responded with a status of 404 ()
+LOA_RecordSummary.jsx:115 
+ Download error: Error: Download failed: 
+    at p (LOA_RecordSummary.jsx:96:15)
+p	@	LOA_RecordSummary.jsx:115
+
+
+**NORMALIZATION FIX**
+- Read the DATABASE_NORMALIZATION_ANALYSYS.md first before reading all the fixes here to check if my solutions here a viable alternative for the DATABASE_NORMALIZATION_ANALYSYS.md's changes
+
+**READ CHANGE 1**
+1. Notification table:
+- attached_file_ids, delivery_status, sent_at, retry_count, max_retries, gmail_thread_id, scheduled_at and recipient_role is not being used in our live host, we can remove this
+
+
+2. request_assignments table:
+- it looks like completed_at, reassigned_at, reassigned_to, hr_assigned_hospital_id and reassignment_reason is not being used, we can remove these in the table. 
+
+3. checkup_requests table:
+- multiple Hospital data duplication, remove hospital_name	hospital_address	hospital_contact, letter_generated_at, letter_generated_by, and letter_sent_at. 
+- It must also analyze which assigned_benefits_id and assigned_welfare_id claimed the request. It looks like we are getting it from the request_approvals if im not mistaken.
+- It must also use assigned_hr_at, assigned_benefits_at, and assigned_welfare_at base on when the user role claimed the request.
+- the request claimed must also display completed_at when request_approvals' hr_final_stage is completed
+
+4. Branch normalization:
+**Goal:** when adding user, there are more branches included and we can use drop-down for departments as well to have consistency in department.
+- I think we can normalize branch for us to be able to manually add branches in the Frontend. Create only for the Branch, and Departments.
+- Create an Admin UI for adding a branch and its necessary information such as: CREATE TABLE departments (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  description TEXT,
+  head_user_id INT,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (head_user_id) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX idx_name (name)
+); for department, we can place an enum that includes the common company departments specially for a company like Metrobank so we can display the department as enum.
+
+CREATE TABLE branches (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(100) NOT NULL UNIQUE,
+  address TEXT,
+  city VARCHAR(100),
+  contact_number VARCHAR(20),
+  manager_user_id INT,
+  is_active BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP.
+  Though we can remove the **manager_user_id INT and head_user_id INT** since we don't have any manager and branch head specific user in the database.
+
+
+**Admin request checker function**
+- I want to have an overall log where: in UserDetailsModal, we can check each user's history of request. In the history of request, we can see each request number, whether approved or rejected, HR_assigned, date of request. And if the Admin click one of the history, they will be routed to history page of that request.
+

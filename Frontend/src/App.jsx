@@ -6,6 +6,8 @@ import { LandingPage } from "@/webpages/LandingPage.jsx";
 import { LoginPage } from "@/webpages/NewLoginPage.jsx";
 import AdminUserPage from "@/webpages/AdminUserPage.jsx";
 import AdminProfilePage from "./webpages/AdminProfilePage.jsx";
+import AdminDepartmentsPage from "@/webpages/AdminDepartmentsPage.jsx";
+import AdminBranchesPage from "@/webpages/AdminBranchesPage.jsx";
 import ExecutiveEmployeeDashboard  from "@/webpages/ExecutiveEmployeeDashboard.jsx";
 import ExecutiveEmployeeSubmitLOApproval from "@/webpages/ExecutiveEmployeeSubmitLOApproval.jsx";
 import ExecutiveEmployeeSubmitLOAuthorization from "./webpages/ExecutiveEmployeeSubmitLOAuthorization.jsx";

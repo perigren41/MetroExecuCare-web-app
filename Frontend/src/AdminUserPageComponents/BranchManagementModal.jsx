@@ -107,7 +107,7 @@ export default function BranchManagementModal({ onClose, onBranchChange }) {
     <>
       {/* Main Modal Backdrop */}
       <div
-        className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+        className="fixed inset-0 bg-black/20 flex items-center justify-center z-50"
         onClick={onClose}
       >
         {/* Modal Content */}
@@ -312,7 +312,7 @@ function BranchFormModal({ branch, onClose, onSave }) {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60] overflow-y-auto"
+      className="fixed inset-0 bg-black/20 flex items-center justify-center z-[60] overflow-y-auto"
       onClick={onClose}
     >
       <div
@@ -389,45 +389,6 @@ function BranchFormModal({ branch, onClose, onSave }) {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="e.g., NCR"
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Contact Number
-              </label>
-              <input
-                type="text"
-                value={formData.contact_number}
-                onChange={(e) => setFormData({ ...formData, contact_number: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., (02) 1234-5678"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email
-              </label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="branch@metrobank.com"
-              />
-            </div>
-
-            <div className="md:col-span-2 flex items-center">
-              <input
-                type="checkbox"
-                id="branch_is_active"
-                checked={formData.is_active}
-                onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="branch_is_active" className="ml-2 block text-sm text-gray-900">
-                Active
-              </label>
             </div>
           </div>
 
