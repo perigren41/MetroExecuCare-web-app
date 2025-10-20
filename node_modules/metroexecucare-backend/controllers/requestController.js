@@ -1086,37 +1086,143 @@ const getUserRequestHistory = async (req, res) => {
       });
     }
 
-    // Fetch user's request history with detailed information
-    const [requests] = await pool.execute(`
-      SELECT
-        cr.id,
-        cr.request_number,
-        cr.request_type,
-        cr.current_status,
-        cr.priority_level,
-        cr.created_at,
-        cr.updated_at,
-        cr.completed_at,
-        cr.rejected_at,
-        cr.rejection_reason,
-        cr.due_date,
-        cr.assigned_at,
-        h.name as hospital_name,
-        h.address as hospital_address,
-        h.city as hospital_city,
-        hr_user.first_name as hr_first_name,
-        hr_user.last_name as hr_last_name,
-        hr_user.employee_id as hr_employee_id,
-        (SELECT COUNT(*) FROM request_files WHERE request_id = cr.id AND uploaded_by = 'executive') as executive_files_count,
-        (SELECT COUNT(*) FROM request_files WHERE request_id = cr.id AND uploaded_by = 'hr') as hr_files_count,
-        (SELECT COUNT(*) FROM request_approvals WHERE request_id = cr.id AND action = 'approved') as approvals_count,
-        (SELECT COUNT(*) FROM request_approvals WHERE request_id = cr.id AND action = 'rejected') as rejections_count
-      FROM checkup_requests cr
-      LEFT JOIN hospitals h ON cr.hospital_id = h.id
-      LEFT JOIN users hr_user ON cr.assigned_hr_id = hr_user.id
-      WHERE cr.employee_id = ?
-      ORDER BY cr.created_at DESC
+    // Get the user's role to determine what type of history to fetch
+    const [userInfo] = await pool.execute(`
+      SELECT role FROM users WHERE id = ?
     `, [userId]);
+
+    if (userInfo.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    const userRole = userInfo[0].role;
+    let requests;
+
+    // Different query based on user role
+    if (userRole === 'executive') {
+      // For executives: fetch requests they submitted
+      [requests] = await pool.execute(`
+        SELECT
+          cr.id,
+          cr.request_number,
+          cr.request_type,
+          cr.current_status,
+          cr.priority_level,
+          cr.created_at,
+          cr.updated_at,
+          cr.completed_at,
+          cr.rejected_at,
+          cr.rejection_reason,
+          cr.due_date,
+          cr.assigned_at,
+          h.name as hospital_name,
+          h.address as hospital_address,
+          h.city as hospital_city,
+          hr_user.first_name as hr_first_name,
+          hr_user.last_name as hr_last_name,
+          hr_user.employee_id as hr_employee_id,
+          (SELECT COUNT(*) FROM request_files WHERE request_id = cr.id AND uploaded_by = 'executive') as executive_files_count,
+          (SELECT COUNT(*) FROM request_files WHERE request_id = cr.id AND uploaded_by = 'hr') as hr_files_count,
+          (SELECT COUNT(*) FROM request_approvals WHERE request_id = cr.id AND action = 'approved') as approvals_count,
+          (SELECT COUNT(*) FROM request_approvals WHERE request_id = cr.id AND action = 'rejected') as rejections_count
+        FROM checkup_requests cr
+        LEFT JOIN hospitals h ON cr.hospital_id = h.id
+        LEFT JOIN users hr_user ON cr.assigned_hr_id = hr_user.id
+        WHERE cr.employee_id = ?
+        ORDER BY cr.created_at DESC
+      `, [userId]);
+    } else if (userRole === 'hr_personnel') {
+      // For HR: fetch requests they were assigned to or claimed
+      [requests] = await pool.execute(`
+        SELECT
+          cr.id,
+          cr.request_number,
+          cr.request_type,
+          cr.current_status,
+          cr.priority_level,
+          cr.created_at,
+          cr.updated_at,
+          cr.completed_at,
+          cr.rejected_at,
+          cr.rejection_reason,
+          cr.due_date,
+          cr.assigned_at,
+          h.name as hospital_name,
+          exec_user.first_name as employee_first_name,
+          exec_user.last_name as employee_last_name,
+          exec_user.employee_id as employee_id,
+          (SELECT COUNT(*) FROM request_files WHERE request_id = cr.id AND uploaded_by = 'executive') as executive_files_count,
+          (SELECT COUNT(*) FROM request_files WHERE request_id = cr.id AND uploaded_by = 'hr') as hr_files_count,
+          (SELECT COUNT(*) FROM request_approvals WHERE request_id = cr.id AND action = 'approved') as approvals_count,
+          (SELECT COUNT(*) FROM request_approvals WHERE request_id = cr.id AND action = 'rejected') as rejections_count
+        FROM checkup_requests cr
+        LEFT JOIN hospitals h ON cr.hospital_id = h.id
+        LEFT JOIN users exec_user ON cr.employee_id = exec_user.id
+        WHERE cr.assigned_hr_id = ?
+        ORDER BY cr.created_at DESC
+      `, [userId]);
+    } else if (userRole === 'benefits_officer' || userRole === 'welfare_head') {
+      // For Benefits/Welfare: fetch requests they approved or rejected
+      const approvalStage = userRole === 'benefits_officer' ? 'benefits_stage' : 'welfare_stage';
+
+      [requests] = await pool.execute(`
+        SELECT DISTINCT
+          cr.id,
+          cr.request_number,
+          cr.request_type,
+          cr.current_status,
+          cr.priority_level,
+          cr.created_at,
+          cr.updated_at,
+          cr.completed_at,
+          cr.rejected_at,
+          cr.rejection_reason,
+          cr.due_date,
+          h.name as hospital_name,
+          exec_user.first_name as employee_first_name,
+          exec_user.last_name as employee_last_name,
+          exec_user.employee_id as employee_id,
+          hr_user.first_name as hr_first_name,
+          hr_user.last_name as hr_last_name,
+          ra.action as my_action,
+          ra.action_date as my_action_date,
+          ra.comments as my_comments,
+          (SELECT COUNT(*) FROM request_files WHERE request_id = cr.id AND uploaded_by = 'executive') as executive_files_count,
+          (SELECT COUNT(*) FROM request_files WHERE request_id = cr.id AND uploaded_by = 'hr') as hr_files_count
+        FROM checkup_requests cr
+        LEFT JOIN hospitals h ON cr.hospital_id = h.id
+        LEFT JOIN users exec_user ON cr.employee_id = exec_user.id
+        LEFT JOIN users hr_user ON cr.assigned_hr_id = hr_user.id
+        INNER JOIN request_approvals ra ON cr.id = ra.request_id
+        WHERE ra.approver_id = ? AND ra.approval_stage = ?
+        ORDER BY cr.created_at DESC
+      `, [userId, approvalStage]);
+    } else {
+      // For other roles (admin, etc): fetch requests they submitted
+      [requests] = await pool.execute(`
+        SELECT
+          cr.id,
+          cr.request_number,
+          cr.request_type,
+          cr.current_status,
+          cr.priority_level,
+          cr.created_at,
+          cr.updated_at,
+          cr.completed_at,
+          cr.rejected_at,
+          cr.rejection_reason,
+          cr.due_date,
+          h.name as hospital_name,
+          (SELECT COUNT(*) FROM request_files WHERE request_id = cr.id) as total_files
+        FROM checkup_requests cr
+        LEFT JOIN hospitals h ON cr.hospital_id = h.id
+        WHERE cr.employee_id = ?
+        ORDER BY cr.created_at DESC
+      `, [userId]);
+    }
 
     // Get approval timeline for each request
     const requestsWithTimeline = await Promise.all(requests.map(async (request) => {
@@ -1164,7 +1270,8 @@ const getUserRequestHistory = async (req, res) => {
       success: true,
       data: {
         requests: requestsWithTimeline,
-        stats
+        stats,
+        userRole: userRole // Include user role so frontend knows how to display
       }
     });
 

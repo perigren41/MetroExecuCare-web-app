@@ -404,52 +404,59 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 mt-0 mb-2 sm:mb-4 mx-2 sm:mx-4">
-          {isDeleted ? (
-            <>
+        <div className="flex flex-col gap-2 mt-0 mb-2 sm:mb-4 mx-2 sm:mx-4">
+          {/* Primary Actions Row */}
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
+            {isDeleted ? (
               <button
                 onClick={handleRestore}
-                className="px-3 sm:px-4 py-1 w-full sm:w-20 h-6 rounded-full bg-green-600 text-white text-xs hover:bg-green-700 cursor-pointer"
+                className="px-3 sm:px-4 py-2 w-full sm:w-auto h-8 rounded-lg bg-green-600 text-white text-xs font-medium hover:bg-green-700 cursor-pointer transition-colors"
               >
                 Restore Account
               </button>
-            </>
-          ) : isEditing ? (
-            <>
-              <button
-                onClick={handleSave}
-                className="px-3 sm:px-4 py-1 w-full sm:w-15 h-6 rounded-full bg-green-600 text-white text-xs hover:bg-green-700 cursor-pointer"
-              >
-                Save
-              </button>
-              <button
-                onClick={handleCancel}
-                className="px-2 sm:px-2 py-1 w-full sm:w-15 h-6 rounded-full bg-gray-600 text-white text-xs hover:bg-gray-700 cursor-pointer"
-              >
-                Cancel
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="px-3 sm:px-4 py-1 w-full sm:w-15 h-6 rounded-full bg-blue-700 text-white text-xs hover:bg-blue-800 cursor-pointer"
-              >
-                Edit
-              </button>
+            ) : isEditing ? (
+              <>
+                <button
+                  onClick={handleSave}
+                  className="px-3 sm:px-4 py-2 w-full sm:w-auto h-8 rounded-lg bg-green-600 text-white text-xs font-medium hover:bg-green-700 cursor-pointer transition-colors"
+                >
+                  Save
+                </button>
+                <button
+                  onClick={handleCancel}
+                  className="px-3 sm:px-4 py-2 w-full sm:w-auto h-8 rounded-lg bg-gray-600 text-white text-xs font-medium hover:bg-gray-700 cursor-pointer transition-colors"
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="px-3 sm:px-4 py-2 w-full sm:w-auto h-8 rounded-lg bg-blue-700 text-white text-xs font-medium hover:bg-blue-800 cursor-pointer transition-colors"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="px-3 sm:px-4 py-2 w-full sm:w-auto h-8 rounded-lg bg-red-600 text-white text-xs font-medium hover:bg-red-700 cursor-pointer transition-colors"
+                >
+                  Delete
+                </button>
+              </>
+            )}
+          </div>
+
+          {/* View History Button - Separate Row for Better UX */}
+          {!isDeleted && !isEditing && (
+            <div className="flex justify-end">
               <button
                 onClick={() => setShowHistoryModal(true)}
-                className="px-3 sm:px-4 py-1 w-full sm:w-20 h-6 rounded-full bg-purple-700 text-white text-xs hover:bg-purple-800 cursor-pointer"
+                className="px-4 sm:px-6 py-2 w-full sm:w-auto h-8 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs font-medium hover:from-purple-700 hover:to-blue-700 cursor-pointer transition-all shadow-sm hover:shadow-md"
               >
-                View History
+                📋 View Request History
               </button>
-              <button
-                onClick={handleDelete}
-                className="px-2 sm:px-2 py-1 w-full sm:w-15 h-6 rounded-full bg-red-600 text-white text-xs hover:bg-red-700 cursor-pointer"
-              >
-                Delete
-              </button>
-            </>
+            </div>
           )}
         </div>
       </div>
