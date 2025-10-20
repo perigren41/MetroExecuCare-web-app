@@ -253,7 +253,7 @@ export default function AdminUsersPage() {
                   <span className="text-lg font-bold">+</span>
                 </button>
                 {showAddDropdown && (
-                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[150px]">
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[150px]">
                     <button
                       onClick={() => {
                         handleAddUser();
@@ -322,7 +322,7 @@ export default function AdminUsersPage() {
                   <span className="text-lg font-bold">+</span>
                 </button>
                 {showAddDropdown && (
-                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[150px]">
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[150px]">
                     <button
                       onClick={() => {
                         handleAddUser();
