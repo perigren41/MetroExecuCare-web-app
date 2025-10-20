@@ -8,7 +8,7 @@ const {
   deleteBranch,
   getBranchUsers
 } = require('../controllers/branchController');
-const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
+const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware');
 
 // All routes require authentication
 router.use(authenticateToken);
@@ -19,8 +19,8 @@ router.get('/:id', getBranchById);
 router.get('/:id/users', getBranchUsers);
 
 // Admin-only routes
-router.post('/', authorizeRoles('admin'), createBranch);
-router.put('/:id', authorizeRoles('admin'), updateBranch);
-router.delete('/:id', authorizeRoles('admin'), deleteBranch);
+router.post('/', requireAdmin, createBranch);
+router.put('/:id', requireAdmin, updateBranch);
+router.delete('/:id', requireAdmin, deleteBranch);
 
 module.exports = router;

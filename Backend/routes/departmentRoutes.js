@@ -8,7 +8,7 @@ const {
   deleteDepartment,
   getDepartmentUsers
 } = require('../controllers/departmentController');
-const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
+const { authenticateToken, requireAdmin } = require('../middleware/authMiddleware');
 
 // All routes require authentication
 router.use(authenticateToken);
@@ -19,8 +19,8 @@ router.get('/:id', getDepartmentById);
 router.get('/:id/users', getDepartmentUsers);
 
 // Admin-only routes
-router.post('/', authorizeRoles('admin'), createDepartment);
-router.put('/:id', authorizeRoles('admin'), updateDepartment);
-router.delete('/:id', authorizeRoles('admin'), deleteDepartment);
+router.post('/', requireAdmin, createDepartment);
+router.put('/:id', requireAdmin, updateDepartment);
+router.delete('/:id', requireAdmin, deleteDepartment);
 
 module.exports = router;
