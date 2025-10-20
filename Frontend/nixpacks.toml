@@ -1,19 +1,11 @@
 [phases.setup]
 nixPkgs = ["nodejs_20"]
-nixpacksVersion = "1.21.0"
 
 [phases.install]
-dependsOn = ["setup"]
-cacheDirectories = ["/root/.npm"]
-cmds = ["npm ci || npm install --legacy-peer-deps"]
+cmds = ["npm install --legacy-peer-deps --no-audit --loglevel=error"]
 
 [phases.build]
-dependsOn = ["install"]
 cmds = ["npm run build"]
 
 [start]
 cmd = "npm start"
-
-[variables]
-NODE_ENV = "production"
-NPM_CONFIG_LOGLEVEL = "error"
