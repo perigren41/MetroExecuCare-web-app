@@ -190,7 +190,7 @@ export default function AdminUsersPage() {
       setRequestsLoading(true);
       setError("");
 
-      const response = await apiService.getRequests({ limit: 1000 });
+      const response = await apiService.getRequests({ limit: 100 });
 
       if (response.success) {
         setRequests(response.data?.requests || []);
