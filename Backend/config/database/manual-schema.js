@@ -38,6 +38,45 @@ async function createTablesManually() {
     await pool.execute('SET FOREIGN_KEY_CHECKS = 1');
     console.log('✅ Tables dropped successfully');
 
+    // Create departments table
+    await pool.execute(`
+      CREATE TABLE departments (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        description TEXT,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+        INDEX idx_name (name),
+        INDEX idx_is_active (is_active)
+      )
+    `);
+    console.log('✅ Departments table created');
+
+    // Create branches table
+    await pool.execute(`
+      CREATE TABLE branches (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        code VARCHAR(20) UNIQUE,
+        address TEXT,
+        city VARCHAR(100),
+        region VARCHAR(100),
+        contact_number VARCHAR(20),
+        email VARCHAR(100),
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+        INDEX idx_name (name),
+        INDEX idx_code (code),
+        INDEX idx_city (city),
+        INDEX idx_is_active (is_active)
+      )
+    `);
+    console.log('✅ Branches table created');
+
     // Create users table
     await pool.execute(`
       CREATE TABLE users (
@@ -49,6 +88,8 @@ async function createTablesManually() {
         last_name VARCHAR(50) NOT NULL,
         middle_name VARCHAR(50),
         role ENUM('executive', 'hr_personnel', 'benefits_officer', 'welfare_head', 'admin') NOT NULL,
+        department_id INT,
+        branch_id INT,
         department VARCHAR(100),
         position VARCHAR(100),
         branch VARCHAR(100),
@@ -60,11 +101,16 @@ async function createTablesManually() {
         last_login TIMESTAMP NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-        
+
+        FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL,
+        FOREIGN KEY (branch_id) REFERENCES branches(id) ON DELETE SET NULL,
+
         INDEX idx_employee_id (employee_id),
         INDEX idx_email (email),
         INDEX idx_role (role),
-        INDEX idx_is_active (is_active)
+        INDEX idx_is_active (is_active),
+        INDEX idx_department_id (department_id),
+        INDEX idx_branch_id (branch_id)
       )
     `);
     console.log('✅ Users table created');
