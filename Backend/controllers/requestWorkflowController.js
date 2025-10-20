@@ -420,9 +420,7 @@ const processRequest = async (req, res) => {
     const { id } = req.params;
     const {
       hospital_id,
-      hospital_name,
-      hospital_address,
-      hospital_contact,
+      existing_hospital_id,
       hr_assigned_hospital_id,
       approved_date,
       comments,
@@ -489,12 +487,28 @@ const processRequest = async (req, res) => {
         });
       }
     } else if (request.request_type === 'letter_of_authorization') {
-      // For non-accredited hospitals - need manual hospital details
-      if (!hospital_name || hospital_name.trim().length < 2) {
+      // For non-accredited hospitals - hospital created via POST /api/hospitals
+      // Frontend sends existing_hospital_id after creation
+      if (!existing_hospital_id && !hr_assigned_hospital_id) {
         return res.status(400).json({
           success: false,
-          error: 'Hospital name is required for Letter of Authorization'
+          error: 'Hospital information is required for Letter of Authorization'
         });
+      }
+
+      // Validate hospital exists
+      if (existing_hospital_id) {
+        const [hospitals] = await pool.execute(
+          'SELECT id, name FROM hospitals WHERE id = ? AND is_active = 1',
+          [existing_hospital_id]
+        );
+
+        if (hospitals.length === 0) {
+          return res.status(400).json({
+            success: false,
+            error: 'Invalid hospital ID'
+          });
+        }
       }
     }
 
@@ -522,16 +536,14 @@ const processRequest = async (req, res) => {
       updateFields.push('hospital_id = ?');
       updateValues.push(hospital_id);
     } else if (request.request_type === 'letter_of_authorization') {
-      // For Letter of Authorization, we should have already created the hospital
-      // and have the hospital_id available. Use the existing_hospital_id if provided.
-      const { existing_hospital_id } = req.body;
-
+      // For Letter of Authorization, hospital created via POST /api/hospitals
+      // Frontend sends existing_hospital_id
       if (existing_hospital_id) {
         updateFields.push('hospital_id = ?');
         updateValues.push(existing_hospital_id);
-        console.log('📝 Letter of Authorization - using existing hospital ID:', existing_hospital_id);
+        console.log('📝 Letter of Authorization - using hospital ID:', existing_hospital_id);
       } else if (hr_assigned_hospital_id) {
-        // If no existing hospital but HR assigned one, use that
+        // Fallback to HR assigned hospital if provided
         updateFields.push('hospital_id = ?');
         updateValues.push(hr_assigned_hospital_id);
         console.log('📝 Letter of Authorization - using HR assigned hospital ID:', hr_assigned_hospital_id);
@@ -587,13 +599,11 @@ const processRequest = async (req, res) => {
       approved_date
     };
 
-    if (request.request_type === 'letter_of_approval' && hospital_id) {
+    if (hospital_id) {
       activityData.hospital_id = hospital_id;
-      activityData.hospital_type = 'accredited';
-    } else if (request.request_type === 'letter_of_authorization') {
-      activityData.hospital_name = hospital_name;
-      activityData.hospital_address = hospital_address;
-      activityData.hospital_contact = hospital_contact;
+      activityData.hospital_type = request.request_type === 'letter_of_approval' ? 'accredited' : 'non-accredited';
+    } else if (existing_hospital_id) {
+      activityData.hospital_id = existing_hospital_id;
       activityData.hospital_type = 'non-accredited';
     }
 

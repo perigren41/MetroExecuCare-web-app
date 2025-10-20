@@ -779,14 +779,11 @@ export default function LOA_Submit() {
                     approved_date: approvalData.approved_date
                 };
 
-                // For Letter of Authorization, include hospital details
+                // For Letter of Authorization, include hospital ID and letter purpose
                 if (request?.request_type === 'letter_of_authorization') {
-                    processData.hospital_name = authorizationForm.preferred_hospital.trim();
-                    processData.hospital_address = authorizationForm.hospital_address.trim();
-                    processData.hospital_contact = authorizationForm.hospital_contact.trim();
                     processData.letter_purpose = authorizationForm.reason_of_request.trim();
 
-                    // If using existing hospital, pass the ID
+                    // Pass the hospital ID (created or existing)
                     if (approvalData.assigned_hospital_id) {
                         processData.existing_hospital_id = approvalData.assigned_hospital_id;
                     }

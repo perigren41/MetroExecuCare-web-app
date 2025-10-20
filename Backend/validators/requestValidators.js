@@ -209,15 +209,13 @@ const validateRequestQuery = (req, res, next) => {
 
 // Validate HR processing request (hospital information)
 const validateHRProcessing = (req, res, next) => {
-  const { 
-    hospital_id, 
-    hospital_name, 
-    hospital_address, 
-    hospital_contact,
+  const {
+    hospital_id,
+    existing_hospital_id,
     hr_assigned_hospital_id,
-    approved_date, 
-    comments, 
-    conditions 
+    approved_date,
+    comments,
+    conditions
   } = req.body;
   const errors = [];
 
@@ -228,30 +226,8 @@ const validateHRProcessing = (req, res, next) => {
     errors.push('Valid hospital ID is required if provided');
   }
 
-  if (hospital_name && hospital_name.trim().length < 2) {
-    errors.push('Hospital name must be at least 2 characters if provided');
-  }
-
-  if (hospital_address && hospital_address.trim().length < 10) {
-    errors.push('Hospital address must be at least 10 characters if provided');
-  }
-
-  // Validate hospital contact number - allow Philippine landlines and mobile numbers
-  // Format examples: (02) 1234-5678, 02-12345678, 0917-123-4567, +639171234567, 09171234567, 9195116
-  if (hospital_contact) {
-    const contactStr = hospital_contact.trim();
-    // Remove common phone number formatting characters for validation
-    const cleaned = contactStr.replace(/[\s\-\(\)]/g, '');
-
-    // Check if it's a valid Philippine phone number format
-    // Mobile: starts with 09 or +639, 11 digits (09171234567) or 13 digits (+639171234567)
-    // Landline: 7-11 digits, may or may not start with 0 or area code
-    // Allow: 9195116, 029195116, 09171234567, +639171234567, etc.
-    const isValidFormat = /^(\+?63)?[0-9]{7,11}$/.test(cleaned);
-
-    if (!isValidFormat || cleaned.length < 7) {
-      errors.push('Valid hospital contact number is required if provided');
-    }
+  if (existing_hospital_id && !validator.isInt(existing_hospital_id.toString(), { min: 1 })) {
+    errors.push('Valid existing hospital ID is required if provided');
   }
 
   if (hr_assigned_hospital_id && !validator.isInt(hr_assigned_hospital_id.toString(), { min: 1 })) {
@@ -281,14 +257,6 @@ const validateHRProcessing = (req, res, next) => {
   }
 
   // Sanitize inputs
-  if (hospital_name) {
-    req.body.hospital_name = validator.escape(hospital_name.trim());
-  }
-  
-  if (hospital_address) {
-    req.body.hospital_address = validator.escape(hospital_address.trim());
-  }
-
   if (comments) {
     req.body.comments = validator.escape(comments.trim());
   }

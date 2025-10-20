@@ -81,9 +81,7 @@ const editRequest = async (req, res) => {
     const employeeId = req.user.employee_id;
     const {
       letter_purpose,
-      selected_hospital_name,
-      selected_hospital_address,
-      selected_hospital_contact
+      hospital_id
     } = req.body;
 
     console.log(`Edit request ${requestId} by executive ${employeeId}`);
@@ -120,20 +118,31 @@ const editRequest = async (req, res) => {
       });
     }
 
+    // Validate hospital if provided
+    if (hospital_id) {
+      const [hospitals] = await pool.execute(
+        'SELECT id FROM hospitals WHERE id = ? AND is_active = 1',
+        [hospital_id]
+      );
+
+      if (hospitals.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid hospital ID'
+        });
+      }
+    }
+
     // Update request
     const [result] = await pool.execute(
       `UPDATE checkup_requests
        SET letter_purpose = ?,
-           selected_hospital_name = ?,
-           selected_hospital_address = ?,
-           selected_hospital_contact = ?,
+           hospital_id = ?,
            updated_at = CURRENT_TIMESTAMP
        WHERE id = ?`,
       [
         letter_purpose,
-        selected_hospital_name,
-        selected_hospital_address,
-        selected_hospital_contact,
+        hospital_id || null,
         requestId
       ]
     );

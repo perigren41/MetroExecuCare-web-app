@@ -99,9 +99,6 @@ async function createTablesManually() {
         employee_id INT NOT NULL,
         request_type ENUM('letter_of_approval', 'letter_of_authorization') NOT NULL,
         hospital_id INT,
-        hospital_name VARCHAR(200),
-        hospital_address TEXT,
-        hospital_contact VARCHAR(20),
         hr_assigned_hospital_id INT,
         preferred_date DATE,
         letter_purpose TEXT,
@@ -223,17 +220,12 @@ async function createTablesManually() {
         assignment_type ENUM('auto_assigned', 'manually_assigned', 'self_claimed') NOT NULL,
         assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         is_active BOOLEAN DEFAULT TRUE,
-        completed_at TIMESTAMP NULL,
-        reassigned_at TIMESTAMP NULL,
-        reassigned_to INT,
-        reassignment_reason TEXT,
         notes TEXT,
-        
+
         FOREIGN KEY (request_id) REFERENCES checkup_requests(id) ON DELETE CASCADE,
         FOREIGN KEY (hr_personnel_id) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (reassigned_to) REFERENCES users(id) ON DELETE SET NULL,
-        
+
         INDEX idx_request_id (request_id),
         INDEX idx_hr_personnel_id (hr_personnel_id),
         INDEX idx_is_active (is_active)
@@ -279,26 +271,18 @@ async function createTablesManually() {
         request_id INT,
         notification_type ENUM('request_submitted', 'request_assigned', 'hr_processing_started', 'hr_approved', 'benefits_review_started', 'benefits_approved', 'welfare_review_started', 'welfare_approved', 'request_approved_final', 'request_rejected', 'letter_generated', 'letter_sent_to_executive', 'file_uploaded', 'file_requested', 'due_date_reminder', 'overdue_alert', 'request_completed') NOT NULL,
         recipient_email VARCHAR(100) NOT NULL,
-        recipient_role VARCHAR(50),
         recipient_id INT,
         subject VARCHAR(255) NOT NULL,
         message TEXT NOT NULL,
         html_content TEXT,
-        attached_file_ids JSON,
         status ENUM('pending', 'sent', 'failed', 'bounced', 'delivered') DEFAULT 'pending',
-        sent_at TIMESTAMP NULL,
-        delivery_status TEXT,
         error_message TEXT,
-        retry_count INT DEFAULT 0,
-        max_retries INT DEFAULT 3,
         gmail_message_id VARCHAR(255),
-        gmail_thread_id VARCHAR(255),
-        scheduled_at TIMESTAMP NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        
+
         FOREIGN KEY (request_id) REFERENCES checkup_requests(id) ON DELETE CASCADE,
         FOREIGN KEY (recipient_id) REFERENCES users(id) ON DELETE SET NULL,
-        
+
         INDEX idx_request_id (request_id),
         INDEX idx_recipient_email (recipient_email),
         INDEX idx_notification_type (notification_type),
