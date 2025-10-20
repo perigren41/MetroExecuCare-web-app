@@ -4,6 +4,8 @@ import UserTable from "@/AdminUserPageComponents/UserTable";
 import UserDetailsModal from "@/AdminUserPageComponents/UserDetailsModal";
 import NewUserFormModal from "@/AdminUserPageComponents/NewUserFormModal";
 import DeletedUsersModal from "@/AdminUserPageComponents/DeletedUsersModal";
+import DepartmentManagementModal from "@/AdminUserPageComponents/DepartmentManagementModal";
+import BranchManagementModal from "@/AdminUserPageComponents/BranchManagementModal";
 import NavBarMain from "@/Components/NavBarMain";
 import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
 import MetroBankLogo from "@/assets/mainLogo-foreground.svg";
@@ -26,6 +28,9 @@ export default function AdminUsersPage() {
   const [editUser, setEditUser] = useState(null);
   const [filter, setFilter] = useState("all");
   const [showDeletedUsersModal, setShowDeletedUsersModal] = useState(false);
+  const [showDepartmentModal, setShowDepartmentModal] = useState(false);
+  const [showBranchModal, setShowBranchModal] = useState(false);
+  const [showAddDropdown, setShowAddDropdown] = useState(false);
 
   // Fetch users from API on component mount
   useEffect(() => {
@@ -235,10 +240,10 @@ export default function AdminUsersPage() {
                 </button>
               </div>
 
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 relative">
                 <span className="text-xs font-medium text-gray-700">Add</span>
                 <button
-                  onClick={handleAddUser}
+                  onClick={() => setShowAddDropdown(!showAddDropdown)}
                   disabled={loading}
                   className="w-8 h-8 bg-blue-700 text-white
                     rounded-full hover:bg-blue-800 transition cursor-pointer
@@ -247,6 +252,37 @@ export default function AdminUsersPage() {
                 >
                   <span className="text-lg font-bold">+</span>
                 </button>
+                {showAddDropdown && (
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[150px]">
+                    <button
+                      onClick={() => {
+                        handleAddUser();
+                        setShowAddDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Add User
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowDepartmentModal(true);
+                        setShowAddDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Add Department
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowBranchModal(true);
+                        setShowAddDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Add Branch
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -273,10 +309,10 @@ export default function AdminUsersPage() {
                   View
                 </button>
               </div>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 relative">
                 <span className="text-sm font-medium text-gray-700">Add</span>
                 <button
-                  onClick={handleAddUser}
+                  onClick={() => setShowAddDropdown(!showAddDropdown)}
                   disabled={loading}
                   className="w-8 h-8 bg-blue-700 text-white
                     rounded-full hover:bg-blue-800 transition cursor-pointer
@@ -285,6 +321,37 @@ export default function AdminUsersPage() {
                 >
                   <span className="text-lg font-bold">+</span>
                 </button>
+                {showAddDropdown && (
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[150px]">
+                    <button
+                      onClick={() => {
+                        handleAddUser();
+                        setShowAddDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Add User
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowDepartmentModal(true);
+                        setShowAddDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Add Department
+                    </button>
+                    <button
+                      onClick={() => {
+                        setShowBranchModal(true);
+                        setShowAddDropdown(false);
+                      }}
+                      className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                    >
+                      Add Branch
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -345,6 +412,28 @@ export default function AdminUsersPage() {
             fetchUsers();
           }}
         />
+
+        {/* Department Management Modal */}
+        {showDepartmentModal && (
+          <DepartmentManagementModal
+            onClose={() => setShowDepartmentModal(false)}
+            onDepartmentChange={() => {
+              // Refresh users list if needed after department changes
+              fetchUsers();
+            }}
+          />
+        )}
+
+        {/* Branch Management Modal */}
+        {showBranchModal && (
+          <BranchManagementModal
+            onClose={() => setShowBranchModal(false)}
+            onBranchChange={() => {
+              // Refresh users list if needed after branch changes
+              fetchUsers();
+            }}
+          />
+        )}
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import EyeOpen from "@/assets/eyeopen.svg";
 import EyeClose from "@/assets/eyeclose.svg";
+import apiService from "@/services/api";
 
 export default function NewUserFormModal({ user, onClose, onSave }) {
   const [formData, setFormData] = useState({
@@ -12,10 +13,10 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
     password: "",
     position: "",
     role: "",
-    branch: "",
+    branch_id: "",
     email: "",
     contact_number: "",
-    department: "",
+    department_id: "",
     birthDate: "",
   });
 
@@ -26,6 +27,31 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [departments, setDepartments] = useState([]);
+  const [branches, setBranches] = useState([]);
+
+  // Fetch departments and branches on component mount
+  useEffect(() => {
+    const fetchDepartmentsAndBranches = async () => {
+      try {
+        const [deptsResponse, branchesResponse] = await Promise.all([
+          apiService.get("/departments", { params: { is_active: "1" } }),
+          apiService.get("/branches", { params: { is_active: "1" } })
+        ]);
+
+        if (deptsResponse.success) {
+          setDepartments(deptsResponse.data || []);
+        }
+        if (branchesResponse.success) {
+          setBranches(branchesResponse.data || []);
+        }
+      } catch (error) {
+        console.error("Error fetching departments/branches:", error);
+      }
+    };
+
+    fetchDepartmentsAndBranches();
+  }, []);
 
   // Generate Employee ID based on role
   const generateEmployeeId = (role) => {
@@ -69,10 +95,10 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
         password: "", // Don't pre-fill password for security
         position: user.position || "",
         role: user.role || "",
-        branch: user.branch || "",
+        branch_id: user.branch_id || "",
         email: user.email || "",
         contact_number: user.contact_number || "",
-        department: user.department || "",
+        department_id: user.department_id || "",
         birthDate: user.birth_date || "", // Map birth_date from backend
       });
     } else {
@@ -87,10 +113,10 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
         password: "",
         position: "",
         role: "",
-        branch: "",
+        branch_id: "",
         email: "",
         contact_number: "",
-        department: "",
+        department_id: "",
         birthDate: "",
       });
     }
@@ -130,10 +156,10 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
       "password",
       "position",
       "role",
-      "branch",
+      "branch_id",
       "email",
       "contact_number",
-      "department",
+      "department_id",
       "birthDate",
     ];
 
@@ -177,10 +203,10 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
         email: formData.email,
         password: formData.password,
         role: formData.role,
-        department: formData.department,
+        department_id: formData.department_id ? parseInt(formData.department_id) : null,
         position: formData.position,
         contact_number: formData.contact_number,
-        branch: formData.branch,
+        branch_id: formData.branch_id ? parseInt(formData.branch_id) : null,
         birth_date: formData.birthDate,
       };
 
@@ -460,43 +486,48 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
               </div>
             </div>
 
-            {/* Branch */}
+            {/* Department */}
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-gray-700">Branch</label>
+              <label className="block text-xs font-medium text-gray-700">Department</label>
               <select
-                name="branch"
-                value={formData.branch}
+                name="department_id"
+                value={formData.department_id}
                 onChange={handleChange}
                 className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                  borderClass("branch") === "border-red-500"
+                  borderClass("department_id") === "border-red-500"
                     ? "border-red-500 bg-red-50"
                     : "border-gray-300 hover:border-gray-400"
                 }`}
               >
-                <option value="" disabled>Select branch</option>
-                <option value="Metrobank Fort - Mckinley Branch">Metrobank Fort - Mckinley Branch</option>
-                <option value="Metrobank Fort - Ecoprime Tower">Metrobank Fort - Ecoprime Tower</option>
-                <option value="Metrobank Taguig - Puregold Branch">Metrobank Taguig - Puregold Branch</option>
-                <option value="Metrobank Fort-Ten West Campus Branch">Metrobank Fort-Ten West Campus Branch</option>
-                <option value="Metrobank Fort - Bayani Road Branch">Metrobank Fort - Bayani Road Branch</option>
+                <option value="">Select department</option>
+                {departments.map((dept) => (
+                  <option key={dept.id} value={dept.id}>
+                    {dept.name}
+                  </option>
+                ))}
               </select>
             </div>
 
-            {/* Department */}
+            {/* Branch */}
             <div className="space-y-1">
-              <label className="block text-xs font-medium text-gray-700">Department</label>
-              <input
-                type="text"
-                name="department"
-                value={formData.department}
+              <label className="block text-xs font-medium text-gray-700">Branch</label>
+              <select
+                name="branch_id"
+                value={formData.branch_id}
                 onChange={handleChange}
                 className={`w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                  borderClass("department") === "border-red-500"
+                  borderClass("branch_id") === "border-red-500"
                     ? "border-red-500 bg-red-50"
                     : "border-gray-300 hover:border-gray-400"
                 }`}
-                placeholder="Enter department"
-              />
+              >
+                <option value="">Select branch</option>
+                {branches.map((branch) => (
+                  <option key={branch.id} value={branch.id}>
+                    {branch.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
