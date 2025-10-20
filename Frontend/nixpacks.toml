@@ -2,10 +2,15 @@
 nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["npm install --no-audit --prefer-offline"]
+cmds = [
+  "npm config set fetch-retries 5",
+  "npm config set fetch-retry-factor 2",
+  "npm config set fetch-retry-mintimeout 10000",
+  "npm install --legacy-peer-deps --no-audit --prefer-offline --loglevel=error"
+]
 
 [phases.build]
-cmds = ["npm run build"]
+cmds = ["NODE_OPTIONS='--max-old-space-size=4096' npm run build"]
 
 [start]
 cmd = "npm start"

@@ -2,7 +2,11 @@
 nixPkgs = ["nodejs_20"]
 
 [phases.install]
-cmds = ["npm install --production --no-audit --prefer-offline"]
+cmds = [
+  "npm config set fetch-retries 5",
+  "npm config set fetch-retry-factor 2",
+  "npm install --production --legacy-peer-deps --no-audit --prefer-offline --loglevel=error"
+]
 
 [phases.build]
 cmds = []
