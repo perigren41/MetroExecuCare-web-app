@@ -6,6 +6,8 @@ import NewUserFormModal from "@/AdminUserPageComponents/NewUserFormModal";
 import DeletedUsersModal from "@/AdminUserPageComponents/DeletedUsersModal";
 import DepartmentManagementModal from "@/AdminUserPageComponents/DepartmentManagementModal";
 import BranchManagementModal from "@/AdminUserPageComponents/BranchManagementModal";
+import RequestStatsCards from "@/AdminUserPageComponents/RequestStatsCards";
+import RequestManagementTable from "@/AdminUserPageComponents/RequestManagementTable";
 import NavBarMain from "@/Components/NavBarMain";
 import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
 import MetroBankLogo from "@/assets/mainLogo-foreground.svg";
@@ -32,10 +34,24 @@ export default function AdminUsersPage() {
   const [showBranchModal, setShowBranchModal] = useState(false);
   const [showAddDropdown, setShowAddDropdown] = useState(false);
 
+  // Request Management View State
+  const [viewMode, setViewMode] = useState("users"); // "users" or "requests"
+  const [requests, setRequests] = useState([]);
+  const [requestStats, setRequestStats] = useState({});
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [requestSearchQuery, setRequestSearchQuery] = useState("");
+  const [requestStatusFilter, setRequestStatusFilter] = useState("all");
+  const [selectedRequest, setSelectedRequest] = useState(null);
+
   // Fetch users from API on component mount
   useEffect(() => {
-    fetchUsers();
-  }, []);
+    if (viewMode === "users") {
+      fetchUsers();
+    } else {
+      fetchRequests();
+      fetchRequestStats();
+    }
+  }, [viewMode]);
 
   const fetchUsers = async () => {
     try {
@@ -167,6 +183,48 @@ export default function AdminUsersPage() {
     }
   };
 
+  // Fetch all requests for Request Management view
+  const fetchRequests = async () => {
+    try {
+      setRequestsLoading(true);
+      setError("");
+
+      const response = await apiService.getRequests({ limit: 1000 });
+
+      if (response.success) {
+        setRequests(response.data?.requests || []);
+      } else {
+        setError(response.message || "Failed to fetch requests");
+        setRequests([]);
+      }
+    } catch (error) {
+      console.error("Error fetching requests:", error);
+      setError(error.message || "Failed to load requests");
+      setRequests([]);
+    } finally {
+      setRequestsLoading(false);
+    }
+  };
+
+  // Fetch dashboard stats for Request Management view
+  const fetchRequestStats = async () => {
+    try {
+      const response = await apiService.getDashboardStats();
+
+      if (response.success) {
+        setRequestStats(response.data?.stats || {});
+      }
+    } catch (error) {
+      console.error("Error fetching request stats:", error);
+    }
+  };
+
+  // Toggle between User Management and Request Management views
+  const toggleView = () => {
+    setViewMode(viewMode === "users" ? "requests" : "users");
+    setError(""); // Clear any existing errors
+  };
+
   // Filtered Users - ensure users is an array and only show active users
   const filteredUsers = (Array.isArray(users) ? users : []).filter((u) => {
     // Only show active users (is_active = 1)
@@ -182,6 +240,20 @@ export default function AdminUsersPage() {
       filter === "all" ? true : u.role === filter;
 
     return isActive && matchesSearch && matchesFilter;
+  });
+
+  // Filtered Requests
+  const filteredRequests = (Array.isArray(requests) ? requests : []).filter((r) => {
+    const matchesSearch =
+      r.request_number?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+      r.employee_first_name?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+      r.employee_last_name?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
+      r.employee_id?.toLowerCase().includes(requestSearchQuery.toLowerCase());
+
+    const matchesStatusFilter =
+      requestStatusFilter === "all" ? true : r.current_status === requestStatusFilter;
+
+    return matchesSearch && matchesStatusFilter;
   });
 
   return (
@@ -203,15 +275,25 @@ export default function AdminUsersPage() {
       />
 
       <h1 className="text-center text-base font-bold mb-2 pt-6 text-blue-900 flex-shrink-0">
-        MetroExecuCare Users
+        {viewMode === "users" ? "MetroExecuCare Users" : "Request Management"}
       </h1>
 
       <div className="flex-1 flex flex-col px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pb-4 overflow-hidden">
-        {/* SearchBar + Add Button */}
+        {/* View Header */}
         <div className="flex flex-col mb-3 flex-shrink-0">
-          <h1 className="text-left text-xs mb-2">
-            <span className="font-bold">Branch:</span> {currentUser?.branch || "All Branches"}
-          </h1>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-left text-xs">
+              <span className="font-bold">Branch:</span> {currentUser?.branch || "All Branches"}
+            </h1>
+            {viewMode === "requests" && (
+              <button
+                onClick={toggleView}
+                className="px-3 py-1 bg-gray-600 text-white text-xs rounded-full hover:bg-gray-700 transition cursor-pointer"
+              >
+                ← Back to Users
+              </button>
+            )}
+          </div>
 
           {/* Mobile Layout */}
           <div className="block sm:hidden mb-1">
@@ -226,11 +308,11 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Management Buttons - Full Width */}
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-2 overflow-x-auto">
               <button
                 onClick={() => setShowDepartmentModal(true)}
                 disabled={loading}
-                className="px-3 py-1 bg-blue-700 text-white text-xs
+                className="px-3 py-1 bg-blue-700 text-white text-xs whitespace-nowrap
                   rounded-full hover:bg-blue-800 transition cursor-pointer
                   disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -239,11 +321,20 @@ export default function AdminUsersPage() {
               <button
                 onClick={() => setShowBranchModal(true)}
                 disabled={loading}
-                className="px-3 py-1 bg-blue-700 text-white text-xs
+                className="px-3 py-1 bg-blue-700 text-white text-xs whitespace-nowrap
                   rounded-full hover:bg-blue-800 transition cursor-pointer
                   disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Branch Management
+              </button>
+              <button
+                onClick={toggleView}
+                disabled={loading}
+                className="px-3 py-1 bg-purple-700 text-white text-xs whitespace-nowrap
+                  rounded-full hover:bg-purple-800 transition cursor-pointer
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Request Management
               </button>
             </div>
 
@@ -336,6 +427,15 @@ export default function AdminUsersPage() {
                   disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Branch Management
+              </button>
+              <button
+                onClick={toggleView}
+                disabled={loading}
+                className="px-3 py-1 bg-purple-700 text-white text-xs
+                  rounded-full hover:bg-purple-800 transition cursor-pointer
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Request Management
               </button>
               <div className="flex items-center gap-1">
                 <span className="text-sm font-medium text-gray-700">Deleted</span>

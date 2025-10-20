@@ -5,7 +5,8 @@ const router = express.Router();
 const {
   createRequest,
   getRequests,
-  getRequestById
+  getRequestById,
+  getUserRequestHistory
 } = require('../controllers/requestController');
 
 const {
@@ -68,6 +69,9 @@ router.get('/user-stats', getUserActionStats);
 
 // GET /api/requests/user-action-logs - Get user-specific action logs
 router.get('/user-action-logs', getUserActionLogs);
+
+// GET /api/requests/user/:userId/history - Get user's request history (Admin or self)
+router.get('/user/:userId/history', getUserRequestHistory);
 
 // Request Management Routes (Executive)
 // GET /api/requests/check-active - Check if executive has active request

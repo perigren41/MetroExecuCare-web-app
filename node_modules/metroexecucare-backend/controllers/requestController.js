@@ -1071,6 +1071,112 @@ const downloadExecutiveFile = async (req, res) => {
   }
 };
 
+// GET /api/requests/user/:userId/history - Get user's request history
+const getUserRequestHistory = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const requestingUserId = req.user.id;
+    const requestingUserRole = req.user.role;
+
+    // Permission check: Only admin or the user themselves can view history
+    if (requestingUserRole !== 'admin' && requestingUserId !== parseInt(userId)) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied. You can only view your own request history.'
+      });
+    }
+
+    // Fetch user's request history with detailed information
+    const [requests] = await pool.execute(`
+      SELECT
+        cr.id,
+        cr.request_number,
+        cr.request_type,
+        cr.current_status,
+        cr.priority_level,
+        cr.created_at,
+        cr.updated_at,
+        cr.completed_at,
+        cr.rejected_at,
+        cr.rejection_reason,
+        cr.due_date,
+        cr.assigned_at,
+        h.name as hospital_name,
+        h.address as hospital_address,
+        h.city as hospital_city,
+        hr_user.first_name as hr_first_name,
+        hr_user.last_name as hr_last_name,
+        hr_user.employee_id as hr_employee_id,
+        (SELECT COUNT(*) FROM request_files WHERE request_id = cr.id AND uploaded_by = 'executive') as executive_files_count,
+        (SELECT COUNT(*) FROM request_files WHERE request_id = cr.id AND uploaded_by = 'hr') as hr_files_count,
+        (SELECT COUNT(*) FROM request_approvals WHERE request_id = cr.id AND action = 'approved') as approvals_count,
+        (SELECT COUNT(*) FROM request_approvals WHERE request_id = cr.id AND action = 'rejected') as rejections_count
+      FROM checkup_requests cr
+      LEFT JOIN hospitals h ON cr.hospital_id = h.id
+      LEFT JOIN users hr_user ON cr.assigned_hr_id = hr_user.id
+      WHERE cr.employee_id = ?
+      ORDER BY cr.created_at DESC
+    `, [userId]);
+
+    // Get approval timeline for each request
+    const requestsWithTimeline = await Promise.all(requests.map(async (request) => {
+      const [approvals] = await pool.execute(`
+        SELECT
+          ra.approval_stage,
+          ra.approver_role,
+          ra.action,
+          ra.action_date,
+          ra.comments,
+          ra.stage_order,
+          u.first_name,
+          u.last_name,
+          u.employee_id
+        FROM request_approvals ra
+        LEFT JOIN users u ON ra.approver_id = u.id
+        WHERE ra.request_id = ?
+        ORDER BY ra.stage_order ASC, ra.action_date ASC
+      `, [request.id]);
+
+      return {
+        ...request,
+        approval_timeline: approvals
+      };
+    }));
+
+    // Calculate summary statistics
+    const stats = {
+      total_requests: requests.length,
+      pending: requests.filter(r => ['pending', 'assigned_to_hr', 'hr_processing'].includes(r.current_status)).length,
+      under_review: requests.filter(r => ['benefits_review', 'welfare_review', 'hr_final_verification'].includes(r.current_status)).length,
+      approved: requests.filter(r => r.current_status === 'approved').length,
+      completed: requests.filter(r => r.current_status === 'completed').length,
+      rejected: requests.filter(r => r.current_status === 'rejected').length,
+      urgent: requests.filter(r => r.priority_level === 'urgent').length,
+      overdue: requests.filter(r => {
+        if (['completed', 'rejected'].includes(r.current_status)) return false;
+        const dueDate = new Date(r.due_date);
+        const today = new Date();
+        return dueDate < today;
+      }).length
+    };
+
+    res.json({
+      success: true,
+      data: {
+        requests: requestsWithTimeline,
+        stats
+      }
+    });
+
+  } catch (error) {
+    console.error('Get user request history error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch user request history'
+    });
+  }
+};
+
 module.exports = {
   createRequest,
   getRequests,
@@ -1079,5 +1185,6 @@ module.exports = {
   downloadRequestFile,
   downloadLatestFile,
   downloadExecutiveFile,
-  deleteRequestFile
+  deleteRequestFile,
+  getUserRequestHistory
 };

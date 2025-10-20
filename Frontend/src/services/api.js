@@ -331,6 +331,35 @@ class ApiService {
     }
   }
 
+  // Request Dashboard & Analytics APIs
+  async getDashboardStats() {
+    try {
+      const response = await fetch(`${this.baseURL}/requests/dashboard`, {
+        method: 'GET',
+        headers: this.getHeaders(true),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Get dashboard stats error:', error);
+      throw error;
+    }
+  }
+
+  async getUserRequestHistory(userId) {
+    try {
+      const response = await fetch(`${this.baseURL}/requests/user/${userId}/history`, {
+        method: 'GET',
+        headers: this.getHeaders(true),
+      });
+
+      return await this.handleResponse(response);
+    } catch (error) {
+      console.error('Get user request history error:', error);
+      throw error;
+    }
+  }
+
   // User Management APIs (Admin only)
   async getUsers(params = {}) {
     try {
