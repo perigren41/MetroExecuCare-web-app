@@ -1,16 +1,19 @@
 [phases.setup]
 nixPkgs = ["nodejs_20"]
+nixpacksVersion = "1.21.0"
 
 [phases.install]
-cmds = [
-  "npm config set fetch-retries 5",
-  "npm config set fetch-retry-factor 2",
-  "npm config set fetch-retry-mintimeout 10000",
-  "npm install --legacy-peer-deps --no-audit --prefer-offline --loglevel=error"
-]
+dependsOn = ["setup"]
+cacheDirectories = ["/root/.npm"]
+cmds = ["npm ci || npm install --legacy-peer-deps"]
 
 [phases.build]
-cmds = ["NODE_OPTIONS='--max-old-space-size=4096' npm run build"]
+dependsOn = ["install"]
+cmds = ["npm run build"]
 
 [start]
 cmd = "npm start"
+
+[variables]
+NODE_ENV = "production"
+NPM_CONFIG_LOGLEVEL = "error"
