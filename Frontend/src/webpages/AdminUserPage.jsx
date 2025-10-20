@@ -313,8 +313,8 @@ export default function AdminUsersPage() {
               <button
                 onClick={() => setShowDepartmentModal(true)}
                 disabled={loading}
-                className="px-3 py-1 bg-blue-700 text-white text-xs whitespace-nowrap
-                  rounded-full hover:bg-blue-800 transition cursor-pointer
+                className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs whitespace-nowrap
+                  rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
                   disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Department Management
@@ -322,8 +322,8 @@ export default function AdminUsersPage() {
               <button
                 onClick={() => setShowBranchModal(true)}
                 disabled={loading}
-                className="px-3 py-1 bg-blue-700 text-white text-xs whitespace-nowrap
-                  rounded-full hover:bg-blue-800 transition cursor-pointer
+                className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs whitespace-nowrap
+                  rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
                   disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Branch Management
@@ -331,8 +331,8 @@ export default function AdminUsersPage() {
               <button
                 onClick={toggleView}
                 disabled={loading}
-                className="px-3 py-1 bg-purple-700 text-white text-xs whitespace-nowrap
-                  rounded-full hover:bg-purple-800 transition cursor-pointer
+                className="px-3 py-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-xs whitespace-nowrap
+                  rounded-full hover:from-purple-700 hover:to-purple-800 transition-all cursor-pointer shadow-sm hover:shadow-md
                   disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Request Management
@@ -341,18 +341,15 @@ export default function AdminUsersPage() {
 
             {/* Buttons - Side by Side */}
             <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1">
-                <span className="text-xs font-medium text-gray-700">Deleted</span>
-                <button
-                  onClick={() => setShowDeletedUsersModal(true)}
-                  disabled={loading}
-                  className="px-2 py-1 bg-gray-600 text-white text-xs
-                    rounded-full hover:bg-gray-700 transition cursor-pointer
-                    disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  View
-                </button>
-              </div>
+              <button
+                onClick={() => setShowDeletedUsersModal(true)}
+                disabled={loading}
+                className="px-3 py-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white text-xs
+                  rounded-full hover:from-gray-700 hover:to-gray-800 transition-all cursor-pointer shadow-sm hover:shadow-md
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🗑️ Deleted Users
+              </button>
 
               <div className="flex items-center gap-1 relative">
                 <span className="text-xs font-medium text-gray-700">Add</span>
@@ -414,8 +411,8 @@ export default function AdminUsersPage() {
               <button
                 onClick={() => setShowDepartmentModal(true)}
                 disabled={loading}
-                className="px-3 py-1 bg-blue-700 text-white text-xs
-                  rounded-full hover:bg-blue-800 transition cursor-pointer
+                className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs
+                  rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
                   disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Department Management
@@ -423,8 +420,8 @@ export default function AdminUsersPage() {
               <button
                 onClick={() => setShowBranchModal(true)}
                 disabled={loading}
-                className="px-3 py-1 bg-blue-700 text-white text-xs
-                  rounded-full hover:bg-blue-800 transition cursor-pointer
+                className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs
+                  rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
                   disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Branch Management
@@ -432,24 +429,21 @@ export default function AdminUsersPage() {
               <button
                 onClick={toggleView}
                 disabled={loading}
-                className="px-3 py-1 bg-purple-700 text-white text-xs
-                  rounded-full hover:bg-purple-800 transition cursor-pointer
+                className="px-3 py-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-xs
+                  rounded-full hover:from-purple-700 hover:to-purple-800 transition-all cursor-pointer shadow-sm hover:shadow-md
                   disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Request Management
               </button>
-              <div className="flex items-center gap-1">
-                <span className="text-sm font-medium text-gray-700">Deleted</span>
-                <button
-                  onClick={() => setShowDeletedUsersModal(true)}
-                  disabled={loading}
-                  className="px-3 py-1 bg-gray-600 text-white text-xs
-                    rounded-full hover:bg-gray-700 transition cursor-pointer
-                    disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  View
-                </button>
-              </div>
+              <button
+                onClick={() => setShowDeletedUsersModal(true)}
+                disabled={loading}
+                className="px-3 py-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white text-xs
+                  rounded-full hover:from-gray-700 hover:to-gray-800 transition-all cursor-pointer shadow-sm hover:shadow-md
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                🗑️ View Deleted Users
+              </button>
               <div className="flex items-center gap-1 relative">
                 <span className="text-sm font-medium text-gray-700">Add</span>
                 <button
