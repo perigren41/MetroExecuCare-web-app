@@ -8,7 +8,7 @@ const {
   deleteDepartment,
   getDepartmentUsers
 } = require('../controllers/departmentController');
-const { authenticateToken, authorizeRoles } = require('../middleware/auth');
+const { authenticateToken, authorizeRoles } = require('../middleware/authMiddleware');
 
 // All routes require authentication
 router.use(authenticateToken);
