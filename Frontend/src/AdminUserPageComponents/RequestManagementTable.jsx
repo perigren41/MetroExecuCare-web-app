@@ -122,9 +122,6 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
                 Status
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Priority
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Assigned HR
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -163,17 +160,6 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
                   <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(request.current_status)}`}>
                     {getStatusLabel(request.current_status)}
                   </span>
-                </td>
-                <td className="px-4 py-3 whitespace-nowrap">
-                  {request.priority_level === 'urgent' ? (
-                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                      Urgent
-                    </span>
-                  ) : (
-                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                      Normal
-                    </span>
-                  )}
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
@@ -227,11 +213,6 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
                 <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(request.current_status)}`}>
                   {getStatusLabel(request.current_status)}
                 </span>
-                {request.priority_level === 'urgent' && (
-                  <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                    Urgent
-                  </span>
-                )}
               </div>
             </div>
 

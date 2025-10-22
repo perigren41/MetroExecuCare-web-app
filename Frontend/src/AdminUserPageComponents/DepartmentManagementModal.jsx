@@ -130,13 +130,24 @@ export default function DepartmentManagementModal({ onClose, onDepartmentChange 
           {/* Search and Filters */}
           <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div className="flex gap-4 flex-wrap">
-              <input
-                type="text"
-                placeholder="Search departments..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 min-w-[200px] px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-text"
-              />
+              <div className="relative flex-1 min-w-[200px] h-[38px]">
+                <div
+                  className="absolute inset-0 rounded-full p-[2px]"
+                  style={{
+                    background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
+                  }}
+                >
+                  <div className="w-full h-full bg-white rounded-full flex items-center px-4">
+                    <input
+                      type="text"
+                      placeholder="Search departments..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full h-full border-0 bg-transparent focus:outline-none text-gray-700 placeholder-gray-400"
+                    />
+                  </div>
+                </div>
+              </div>
 
               <button
                 onClick={handleAddDepartment}
@@ -204,8 +215,8 @@ export default function DepartmentManagementModal({ onClose, onDepartmentChange 
                               {dept.description || "-"}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-sm">
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <span className="text-sm text-gray-700">
                               {dept.user_count || 0} {dept.user_count === 1 ? 'user' : 'users'}
                             </span>
                           </td>
@@ -215,14 +226,14 @@ export default function DepartmentManagementModal({ onClose, onDepartmentChange 
                                 onClick={() => handleEditDepartment(dept)}
                                 className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm hover:shadow-md cursor-pointer font-medium"
                               >
-                                ✏️ Edit
+                                Edit
                               </button>
                               {dept.user_count === 0 && (
                                 <button
                                   onClick={() => handleDeleteDepartment(dept.id)}
                                   className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-lg hover:from-red-600 hover:to-red-700 transition-all shadow-sm hover:shadow-md cursor-pointer font-medium"
                                 >
-                                  🗑️ Delete
+                                  Delete
                                 </button>
                               )}
                             </div>
