@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ChevronRight from "@/assets/chevronright.svg";
 import NoProfilePicture from "@/assets/profilegray.svg";
 
@@ -16,11 +16,39 @@ const getRoleDisplayName = (role) => {
 };
 
 export default function UserTable({ users, onView }) {
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+  const tableContainerRef = useRef(null);
+
+  useEffect(() => {
+    const checkScroll = () => {
+      if (tableContainerRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = tableContainerRef.current;
+        const hasMoreContent = scrollHeight > clientHeight;
+        const isAtBottom = scrollHeight - scrollTop - clientHeight < 10;
+        setShowScrollIndicator(hasMoreContent && !isAtBottom);
+      }
+    };
+
+    checkScroll();
+    const container = tableContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScroll);
+      window.addEventListener('resize', checkScroll);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', checkScroll);
+      }
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, [users]);
   return (
     <>
       {/* Desktop Table */}
-      <div className="hidden sm:block overflow-auto rounded-lg bg-white h-full shadow-sm border border-gray-200">
-        <table className="min-w-full">
+      <div className="hidden sm:block relative h-full">
+        <div ref={tableContainerRef} className="overflow-auto rounded-lg bg-white h-full shadow-sm border border-gray-200">
+          <table className="min-w-full">
           <thead className="sticky top-0 z-10">
             <tr className="bg-[linear-gradient(to_right,#3F6EC0_10%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] text-white">
               <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">Name</th>
@@ -98,10 +126,25 @@ export default function UserTable({ users, onView }) {
             )}
           </tbody>
         </table>
+        </div>
+
+        {/* Scroll Indicator - Desktop */}
+        {showScrollIndicator && (
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none animate-bounce">
+            <div className="bg-white rounded-full p-2 shadow-lg border-2 border-blue-500">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            <div className="text-center mt-1">
+              <span className="text-xs font-medium text-blue-600 bg-white px-2 py-1 rounded-full shadow">Scroll</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Mobile Card View */}
-      <div className="block sm:hidden space-y-3 h-full overflow-y-auto">
+      <div className="block sm:hidden space-y-3 h-full overflow-y-auto pb-16">
         {users.length > 0 ? (
           users.map((user) => (
             <div

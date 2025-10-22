@@ -1,6 +1,60 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 export default function RequestManagementTable({ requests, onViewDetails, loading, activeFilter }) {
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+  const [showMobileScrollIndicator, setShowMobileScrollIndicator] = useState(false);
+  const tableContainerRef = useRef(null);
+  const mobileContainerRef = useRef(null);
+
+  useEffect(() => {
+    const checkScroll = () => {
+      if (tableContainerRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = tableContainerRef.current;
+        const hasMoreContent = scrollHeight > clientHeight;
+        const isAtBottom = scrollHeight - scrollTop - clientHeight < 10;
+        setShowScrollIndicator(hasMoreContent && !isAtBottom);
+      }
+    };
+
+    checkScroll();
+    const container = tableContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScroll);
+      window.addEventListener('resize', checkScroll);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', checkScroll);
+      }
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, [requests]);
+
+  useEffect(() => {
+    const checkMobileScroll = () => {
+      if (mobileContainerRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = mobileContainerRef.current;
+        const hasMoreContent = scrollHeight > clientHeight;
+        const isAtBottom = scrollHeight - scrollTop - clientHeight < 10;
+        setShowMobileScrollIndicator(hasMoreContent && !isAtBottom);
+      }
+    };
+
+    checkMobileScroll();
+    const container = mobileContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkMobileScroll);
+      window.addEventListener('resize', checkMobileScroll);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', checkMobileScroll);
+      }
+      window.removeEventListener('resize', checkMobileScroll);
+    };
+  }, [requests]);
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -105,36 +159,37 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
   return (
     <>
       {/* Desktop Table View - Hidden on mobile */}
-      <div className="hidden md:block overflow-x-auto bg-white rounded-lg shadow">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Request #
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Employee
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Type
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Assigned HR
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Hospital
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Created
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Due Date
-              </th>
-            </tr>
-          </thead>
+      <div className="hidden md:block relative h-full">
+        <div ref={tableContainerRef} className="overflow-auto bg-white rounded-lg shadow h-full border border-gray-200">
+          <table className="min-w-full">
+            <thead className="sticky top-0 z-10">
+              <tr className="bg-[linear-gradient(to_right,#3F6EC0_10%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] text-white">
+                <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  Request #
+                </th>
+                <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  Employee
+                </th>
+                <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  Type
+                </th>
+                <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  Assigned HR
+                </th>
+                <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  Hospital
+                </th>
+                <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  Created
+                </th>
+                <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  Due Date
+                </th>
+              </tr>
+            </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {requests.map((request) => (
               <tr
@@ -189,16 +244,32 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
             ))}
           </tbody>
         </table>
+        </div>
+
+        {/* Scroll Indicator - Desktop */}
+        {showScrollIndicator && (
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none animate-bounce">
+            <div className="bg-white rounded-full p-2 shadow-lg border-2 border-blue-500">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            <div className="text-center mt-1">
+              <span className="text-xs font-medium text-blue-600 bg-white px-2 py-1 rounded-full shadow">Scroll</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Mobile Card View - Visible only on mobile */}
-      <div className="md:hidden space-y-4">
-        {requests.map((request) => (
-          <div
-            key={request.id}
-            className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:scale-[1.02]"
-            onClick={() => onViewDetails(request)}
-          >
+      <div className="md:hidden relative h-full">
+        <div ref={mobileContainerRef} className="overflow-auto space-y-4 pb-16 h-full">
+          {requests.map((request) => (
+            <div
+              key={request.id}
+              className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:scale-[1.02]"
+              onClick={() => onViewDetails(request)}
+            >
             <div className="flex items-start justify-between mb-3">
               <div className="flex-1">
                 <div className="text-sm font-bold text-blue-600 mb-1">
@@ -253,6 +324,21 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
             )}
           </div>
         ))}
+        </div>
+
+        {/* Scroll Indicator - Mobile */}
+        {showMobileScrollIndicator && (
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none animate-bounce">
+            <div className="bg-white rounded-full p-2 shadow-lg border-2 border-blue-500">
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+            <div className="text-center mt-1">
+              <span className="text-xs font-medium text-blue-600 bg-white px-2 py-1 rounded-full shadow">Scroll</span>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );
