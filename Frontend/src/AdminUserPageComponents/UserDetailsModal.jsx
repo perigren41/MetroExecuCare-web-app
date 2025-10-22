@@ -195,7 +195,7 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
           {isDeleted && (
             <div className="lg:col-span-2 mb-2 sm:mb-4 p-2 sm:p-4 bg-red-50 border border-red-200 rounded-lg cursor-pointer">
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-red-600 font-bold text-sm">🗄️ ACCOUNT ARCHIVED</span>
+                <span className="text-red-600 font-bold text-sm">ACCOUNT ARCHIVED</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-xs text-red-700">
                 <div>
@@ -307,13 +307,24 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
 
             <span className="font-bold">Department:</span>
             {isEditing && !isDeleted ? (
-              <input
-                type="text"
+              <select
                 name="department"
                 value={formData.department || ""}
                 onChange={handleChange}
                 className="border px-1 text-xs w-full rounded-sm"
-              />
+              >
+                <option value="">Select Department</option>
+                <option value="Human Resources">Human Resources</option>
+                <option value="Finance">Finance</option>
+                <option value="IT">IT</option>
+                <option value="Operations">Operations</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Sales">Sales</option>
+                <option value="Customer Service">Customer Service</option>
+                <option value="Legal">Legal</option>
+                <option value="Compliance">Compliance</option>
+                <option value="Administration">Administration</option>
+              </select>
             ) : (
               <span>{formData.department || "N/A"}</span>
             )}
@@ -454,7 +465,7 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
                 onClick={() => setShowHistoryModal(true)}
                 className="px-4 sm:px-6 py-2 w-full sm:w-auto h-8 rounded-lg bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs font-medium hover:from-purple-700 hover:to-blue-700 cursor-pointer transition-all shadow-sm hover:shadow-md"
               >
-                📋 View Request History
+                View Full History
               </button>
             </div>
           )}
@@ -615,7 +626,7 @@ export default function UserDetailsModal({ user, onClose, onDelete, onUpdate, on
               </div>
             </div>
             <h2 className="text-lg font-bold text-red-700 mb-3">
-              🗑️ User Deleted Successfully!
+              User Deleted Successfully!
             </h2>
             <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4 cursor-pointer">
               <p className="text-sm text-gray-700 mb-2">

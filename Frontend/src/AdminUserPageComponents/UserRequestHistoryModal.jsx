@@ -132,41 +132,57 @@ export default function UserRequestHistoryModal({ userId, userName, userRole, on
           </div>
         </div>
 
-        {/* Stats Summary with Gradient Cards */}
+        {/* Stats Summary */}
         {!loading && (
-          <div className="px-6 py-4 bg-gradient-to-br from-gray-50 to-blue-50 border-b border-gray-200">
+          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-3 shadow-md hover:shadow-lg transition-shadow">
-                <div className="text-xs text-blue-100">Total</div>
-                <div className="text-2xl font-bold text-white">{stats.total_requests || 0}</div>
+              <div className="relative p-[2px] rounded-lg" style={{ background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }}>
+                <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
+                  <div className="text-2xl font-bold text-gray-900">{stats.total_requests || 0}</div>
+                  <div className="text-xs font-medium text-gray-600">Total</div>
+                </div>
               </div>
-              <div className="bg-gradient-to-br from-gray-400 to-gray-500 rounded-xl p-3 shadow-md hover:shadow-lg transition-shadow">
-                <div className="text-xs text-gray-100">Pending</div>
-                <div className="text-2xl font-bold text-white">{stats.pending || 0}</div>
+              <div className="relative p-[2px] rounded-lg" style={{ background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }}>
+                <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
+                  <div className="text-2xl font-bold text-gray-900">{stats.pending || 0}</div>
+                  <div className="text-xs font-medium text-gray-600">Pending</div>
+                </div>
               </div>
-              <div className="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl p-3 shadow-md hover:shadow-lg transition-shadow">
-                <div className="text-xs text-yellow-100">Under Review</div>
-                <div className="text-2xl font-bold text-white">{stats.under_review || 0}</div>
+              <div className="relative p-[2px] rounded-lg" style={{ background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }}>
+                <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
+                  <div className="text-2xl font-bold text-gray-900">{stats.under_review || 0}</div>
+                  <div className="text-xs font-medium text-gray-600">Under Review</div>
+                </div>
               </div>
-              <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-3 shadow-md hover:shadow-lg transition-shadow">
-                <div className="text-xs text-green-100">Approved</div>
-                <div className="text-2xl font-bold text-white">{stats.approved || 0}</div>
+              <div className="relative p-[2px] rounded-lg" style={{ background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }}>
+                <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
+                  <div className="text-2xl font-bold text-gray-900">{stats.approved || 0}</div>
+                  <div className="text-xs font-medium text-gray-600">Approved</div>
+                </div>
               </div>
-              <div className="bg-gradient-to-br from-green-600 to-green-700 rounded-xl p-3 shadow-md hover:shadow-lg transition-shadow">
-                <div className="text-xs text-green-100">Completed</div>
-                <div className="text-2xl font-bold text-white">{stats.completed || 0}</div>
+              <div className="relative p-[2px] rounded-lg" style={{ background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }}>
+                <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
+                  <div className="text-2xl font-bold text-gray-900">{stats.completed || 0}</div>
+                  <div className="text-xs font-medium text-gray-600">Completed</div>
+                </div>
               </div>
-              <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-3 shadow-md hover:shadow-lg transition-shadow">
-                <div className="text-xs text-red-100">Rejected</div>
-                <div className="text-2xl font-bold text-white">{stats.rejected || 0}</div>
+              <div className="relative p-[2px] rounded-lg" style={{ background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }}>
+                <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
+                  <div className="text-2xl font-bold text-gray-900">{stats.rejected || 0}</div>
+                  <div className="text-xs font-medium text-gray-600">Rejected</div>
+                </div>
               </div>
-              <div className="bg-gradient-to-br from-orange-500 to-red-500 rounded-xl p-3 shadow-md hover:shadow-lg transition-shadow">
-                <div className="text-xs text-orange-100">Urgent</div>
-                <div className="text-2xl font-bold text-white">{stats.urgent || 0}</div>
+              <div className="relative p-[2px] rounded-lg" style={{ background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }}>
+                <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
+                  <div className="text-2xl font-bold text-gray-900">{stats.urgent || 0}</div>
+                  <div className="text-xs font-medium text-gray-600">Urgent</div>
+                </div>
               </div>
-              <div className="bg-gradient-to-br from-red-600 to-red-700 rounded-xl p-3 shadow-md hover:shadow-lg transition-shadow">
-                <div className="text-xs text-red-100">Overdue</div>
-                <div className="text-2xl font-bold text-white">{stats.overdue || 0}</div>
+              <div className="relative p-[2px] rounded-lg" style={{ background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }}>
+                <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
+                  <div className="text-2xl font-bold text-gray-900">{stats.overdue || 0}</div>
+                  <div className="text-xs font-medium text-gray-600">Overdue</div>
+                </div>
               </div>
             </div>
           </div>
@@ -185,7 +201,6 @@ export default function UserRequestHistoryModal({ userId, userName, userRole, on
             </div>
           ) : requests.length === 0 ? (
             <div className="text-center py-16 bg-gradient-to-br from-gray-100 to-blue-50 rounded-xl shadow-inner">
-              <div className="text-6xl mb-4">📋</div>
               <p className="text-gray-600 font-medium text-lg">No requests found</p>
               <p className="text-gray-500 text-sm mt-2">This user has no request history</p>
             </div>
@@ -219,7 +234,7 @@ export default function UserRequestHistoryModal({ userId, userName, userRole, on
                       </span>
                       {request.priority_level === 'urgent' && (
                         <span className="px-3 py-1.5 text-xs font-semibold rounded-lg shadow-sm bg-gradient-to-r from-red-500 to-red-600 text-white">
-                          🔥 URGENT
+                          URGENT
                         </span>
                       )}
                     </div>
@@ -279,7 +294,7 @@ export default function UserRequestHistoryModal({ userId, userName, userRole, on
                       <div className="text-xs text-blue-700 font-semibold mb-1">My Action:</div>
                       <div className="flex items-center gap-2">
                         <span className={`text-sm font-medium ${request.my_action === 'approved' ? 'text-green-700' : 'text-red-700'}`}>
-                          {request.my_action === 'approved' ? '✓ Approved' : '✗ Rejected'}
+                          {request.my_action === 'approved' ? 'Approved' : 'Rejected'}
                         </span>
                         {request.my_action_date && (
                           <span className="text-xs text-gray-600">on {formatDate(request.my_action_date)}</span>
