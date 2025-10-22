@@ -199,7 +199,7 @@ export default function FAQManagementModal({ onClose, onFAQChange }) {
             </div>
           )}
 
-          {/* Content Area - Table */}
+          {/* Content Area - Table with horizontal scroll */}
           <div className="flex-1 overflow-y-auto p-6">
             {loading ? (
               <div className="text-center py-12">
@@ -207,23 +207,23 @@ export default function FAQManagementModal({ onClose, onFAQChange }) {
                 <p className="mt-4 text-gray-600">Loading FAQs...</p>
               </div>
             ) : (
-              <div className="bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                <table className="w-full">
+              <div className="bg-white rounded-lg overflow-x-auto border border-gray-200 shadow-sm">
+                <table className="w-full min-w-max">
                   <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-36">
                         Category
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider min-w-[200px]">
                         Question
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider min-w-[250px]">
                         Answer
                       </th>
-                      <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
                         Order
                       </th>
-                      <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-48">
                         Actions
                       </th>
                     </tr>
@@ -244,37 +244,37 @@ export default function FAQManagementModal({ onClose, onFAQChange }) {
                     ) : (
                       filteredFAQs.map((faq) => (
                         <tr key={faq.id} className="hover:bg-blue-50/50 transition-colors">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
                               {faq.categoryDisplayName}
                             </span>
                           </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm font-semibold text-gray-900 max-w-xs truncate">
+                          <td className="px-4 py-4">
+                            <div className="text-sm font-semibold text-gray-900 max-w-[300px] break-words">
                               {faq.question}
                             </div>
                           </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-600 max-w-md truncate">
+                          <td className="px-4 py-4">
+                            <div className="text-sm text-gray-600 max-w-[350px] line-clamp-2">
                               {faq.answer}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <td className="px-4 py-4 whitespace-nowrap text-center">
                             <span className="text-sm text-gray-700">
                               {faq.displayOrder || 0}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                          <td className="px-4 py-4 whitespace-nowrap text-center">
                             <div className="flex items-center justify-center gap-2">
                               <button
                                 onClick={() => handleEditFAQ(faq)}
-                                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm hover:shadow-md cursor-pointer font-medium"
+                                className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm hover:shadow-md cursor-pointer font-medium"
                               >
                                 Edit
                               </button>
                               <button
                                 onClick={() => handleDeleteFAQ(faq.id)}
-                                className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-lg hover:from-red-600 hover:to-red-700 transition-all shadow-sm hover:shadow-md cursor-pointer font-medium"
+                                className="px-3 py-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-lg hover:from-red-600 hover:to-red-700 transition-all shadow-sm hover:shadow-md cursor-pointer font-medium"
                               >
                                 Delete
                               </button>

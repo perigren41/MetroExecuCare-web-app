@@ -506,8 +506,8 @@ export default function AdminUsersPage() {
                   <button
                     onClick={() => setShowFAQManagementModal(true)}
                     disabled={loading}
-                    className="px-2.5 py-1 sm:px-3 bg-gradient-to-r from-green-600 to-green-700 text-white text-[11px] sm:text-xs whitespace-nowrap
-                      rounded-full hover:from-green-700 hover:to-green-800 transition-all cursor-pointer shadow-sm hover:shadow-md
+                    className="px-2.5 py-1 sm:px-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-[11px] sm:text-xs whitespace-nowrap
+                      rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
                       disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     FAQ
