@@ -10,6 +10,7 @@ import RequestStatsCards from "@/AdminUserPageComponents/RequestStatsCards";
 import RequestManagementTable from "@/AdminUserPageComponents/RequestManagementTable";
 import RequestDetailsModal from "@/AdminUserPageComponents/RequestDetailsModal";
 import AddFAQModal from "@/Components/AddFAQModal";
+import FAQManagementModal from "@/Components/FAQManagementModal";
 import NavBarMain from "@/Components/NavBarMain";
 import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
 import MetroBankLogo from "@/assets/mainLogo-foreground.svg";
@@ -36,6 +37,7 @@ export default function AdminUsersPage() {
   const [showBranchModal, setShowBranchModal] = useState(false);
   const [showAddDropdown, setShowAddDropdown] = useState(false);
   const [showAddFAQModal, setShowAddFAQModal] = useState(false);
+  const [showFAQManagementModal, setShowFAQManagementModal] = useState(false);
 
   // Request Management View State
   const [viewMode, setViewMode] = useState("users"); // "users" or "requests"
@@ -502,6 +504,15 @@ export default function AdminUsersPage() {
                     Branch
                   </button>
                   <button
+                    onClick={() => setShowFAQManagementModal(true)}
+                    disabled={loading}
+                    className="px-2.5 py-1 sm:px-3 bg-gradient-to-r from-green-600 to-green-700 text-white text-[11px] sm:text-xs whitespace-nowrap
+                      rounded-full hover:from-green-700 hover:to-green-800 transition-all cursor-pointer shadow-sm hover:shadow-md
+                      disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    FAQ
+                  </button>
+                  <button
                     onClick={toggleView}
                     disabled={loading}
                     className="px-2.5 py-1 sm:px-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-[11px] sm:text-xs whitespace-nowrap
@@ -712,6 +723,16 @@ export default function AdminUsersPage() {
             onSave={(newFAQ) => {
               console.log('New FAQ added:', newFAQ);
               // Optionally show a success message or refresh FAQ list
+            }}
+          />
+        )}
+
+        {/* FAQ Management Modal */}
+        {showFAQManagementModal && (
+          <FAQManagementModal
+            onClose={() => setShowFAQManagementModal(false)}
+            onFAQChange={() => {
+              console.log('FAQs updated');
             }}
           />
         )}

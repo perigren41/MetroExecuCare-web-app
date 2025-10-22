@@ -116,6 +116,9 @@ function formatActionName(action) {
     'ASSIGN_REQUEST': 'Assigned request',
     'UPLOAD_FILE': 'Uploaded file',
     'DELETE_FILE': 'Deleted file',
+    'FAQ_CREATED': 'Created FAQ',
+    'FAQ_UPDATED': 'Updated FAQ',
+    'FAQ_DELETED': 'Deleted FAQ',
     'VIEW_PAGE': 'Viewed page',
     'EXPORT_DATA': 'Exported data',
     'IMPORT_DATA': 'Imported data'
@@ -158,6 +161,11 @@ const ACTIVITY_TYPES = {
   // File Management
   UPLOAD_FILE: 'UPLOAD_FILE',
   DELETE_FILE: 'DELETE_FILE',
+
+  // FAQ Management
+  FAQ_CREATED: 'FAQ_CREATED',
+  FAQ_UPDATED: 'FAQ_UPDATED',
+  FAQ_DELETED: 'FAQ_DELETED',
 
   // System
   VIEW_PAGE: 'VIEW_PAGE',

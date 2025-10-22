@@ -1,5 +1,5 @@
 const { pool } = require('../config/database/connection');
-const { logActivity, ACTIVITY_TYPES } = require('../utils/activityLogger');
+const { logActivity, ACTIVITY_TYPES, getRequestInfo } = require('../utils/activityLogger');
 
 // Category mapping from database enum to display names
 const CATEGORY_DISPLAY_NAMES = {
@@ -140,16 +140,17 @@ const createFAQ = async (req, res) => {
     );
 
     // Log activity
-    await logActivity(
-      req.user.id,
-      ACTIVITY_TYPES.FAQ_CREATED,
-      `Added new FAQ in ${CATEGORY_DISPLAY_NAMES[category]} category`,
-      {
+    const requestInfo = getRequestInfo(req);
+    await logActivity({
+      userId: req.user.id,
+      action: ACTIVITY_TYPES.FAQ_CREATED,
+      description: `Added new FAQ in ${CATEGORY_DISPLAY_NAMES[category]} category`,
+      newValues: {
         faqId: result.insertId,
         question: question.substring(0, 100)
       },
-      req
-    );
+      ...requestInfo
+    });
 
     res.status(201).json({
       success: true,
@@ -250,16 +251,17 @@ const updateFAQ = async (req, res) => {
     );
 
     // Log activity
-    await logActivity(
-      req.user.id,
-      ACTIVITY_TYPES.FAQ_UPDATED,
-      `Updated FAQ`,
-      {
+    const requestInfo = getRequestInfo(req);
+    await logActivity({
+      userId: req.user.id,
+      action: ACTIVITY_TYPES.FAQ_UPDATED,
+      description: `Updated FAQ`,
+      newValues: {
         faqId: id,
         updates: Object.keys(req.body)
       },
-      req
-    );
+      ...requestInfo
+    });
 
     res.json({
       success: true,
@@ -310,16 +312,17 @@ const deleteFAQ = async (req, res) => {
     );
 
     // Log activity
-    await logActivity(
-      req.user.id,
-      ACTIVITY_TYPES.FAQ_DELETED,
-      `Deleted FAQ`,
-      {
+    const requestInfo = getRequestInfo(req);
+    await logActivity({
+      userId: req.user.id,
+      action: ACTIVITY_TYPES.FAQ_DELETED,
+      description: `Deleted FAQ`,
+      oldValues: {
         faqId: id,
         question: existingFAQ[0].question.substring(0, 100)
       },
-      req
-    );
+      ...requestInfo
+    });
 
     res.json({
       success: true,
