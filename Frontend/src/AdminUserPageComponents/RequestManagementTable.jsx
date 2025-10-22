@@ -248,14 +248,12 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
 
         {/* Scroll Indicator - Desktop */}
         {showScrollIndicator && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none animate-bounce">
-            <div className="bg-white rounded-full p-2 shadow-lg border-2 border-blue-500">
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
+            <div className="flex flex-col items-center animate-bounce">
+              <span className="text-sm font-medium text-blue-600 mb-1">Scroll</span>
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
               </svg>
-            </div>
-            <div className="text-center mt-1">
-              <span className="text-xs font-medium text-blue-600 bg-white px-2 py-1 rounded-full shadow">Scroll</span>
             </div>
           </div>
         )}
@@ -328,14 +326,12 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
 
         {/* Scroll Indicator - Mobile */}
         {showMobileScrollIndicator && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none animate-bounce">
-            <div className="bg-white rounded-full p-2 shadow-lg border-2 border-blue-500">
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
+            <div className="flex flex-col items-center animate-bounce">
+              <span className="text-sm font-medium text-blue-600 mb-1">Scroll</span>
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
               </svg>
-            </div>
-            <div className="text-center mt-1">
-              <span className="text-xs font-medium text-blue-600 bg-white px-2 py-1 rounded-full shadow">Scroll</span>
             </div>
           </div>
         )}

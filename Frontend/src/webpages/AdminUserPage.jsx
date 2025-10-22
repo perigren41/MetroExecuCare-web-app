@@ -605,12 +605,14 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Stats Cards */}
-            <RequestStatsCards
-              stats={requestStats}
-              loading={requestsLoading}
-              onFilterClick={handleStatFilterClick}
-              activeFilter={activeStatFilter}
-            />
+            <div className="flex-shrink-0 mb-3">
+              <RequestStatsCards
+                stats={requestStats}
+                loading={requestsLoading}
+                onFilterClick={handleStatFilterClick}
+                activeFilter={activeStatFilter}
+              />
+            </div>
 
             {/* Requests Table */}
             <div className="flex-1 overflow-hidden flex flex-col min-h-0">
