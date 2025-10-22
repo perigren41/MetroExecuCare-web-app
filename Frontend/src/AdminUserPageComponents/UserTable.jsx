@@ -19,58 +19,80 @@ export default function UserTable({ users, onView }) {
   return (
     <>
       {/* Desktop Table */}
-      <div className="hidden sm:block overflow-auto shadow-xl shadow-blue-500/30 rounded-xl bg-white h-full text-xs text-gray-900">
-        <table className="min-w-full border-collapse border-white">
+      <div className="hidden sm:block overflow-auto rounded-lg bg-white h-full shadow-sm border border-gray-200">
+        <table className="min-w-full">
           <thead className="sticky top-0 z-10">
             <tr className="bg-[linear-gradient(to_right,#3F6EC0_10%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] text-white">
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Employee ID</th>
-              <th className="px-4 py-3">Role</th>
-              <th className="px-4 py-3">Date Added</th>
-              <th className="px-4 py-3">Action</th>
+              <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">Name</th>
+              <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">Employee ID</th>
+              <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">Role</th>
+              <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">Date Added</th>
+              <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase tracking-wider">Action</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-200">
             {users.length > 0 ? (
-              users.map((user) => (
+              users.map((user, index) => (
                 <tr
                   key={user.id}
                   onClick={() => onView(user)}
-                  className="hover:bg-blue-50 transition text-center text-gray-900 cursor-pointer"
+                  className={`
+                    hover:bg-blue-50 transition-colors cursor-pointer
+                    ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}
+                  `}
                 >
-                  <td className="pl-5 pr-2 py-2 border-t text-left border-gray-700 text-gray-900">
-                    <div className="flex items-center gap-2">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
                       <img
                         src={user.profile_picture_url || NoProfilePicture}
                         alt={`${user.first_name} ${user.last_name}`}
-                        className="w-4 h-4 rounded-full object-cover"
+                        className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
                       />
-                      <span className="text-gray-900">{`${user.first_name || ""} ${user.last_name || ""}`.trim()}</span>
+                      <span className="text-sm font-medium text-gray-900">
+                        {`${user.first_name || ""} ${user.last_name || ""}`.trim()}
+                      </span>
                     </div>
                   </td>
-                  <td className="px-4 py-2 border-t border-gray-700 text-gray-900">{user.employee_id}</td>
-                  <td className="px-4 py-2 border-t border-gray-700 text-gray-900">{getRoleDisplayName(user.role)}</td>
-                  <td className="px-4 py-2 border-t border-gray-700 text-gray-900">{new Date(user.created_at).toLocaleDateString()}</td>
-                  <td className="px-4 py-2 border-t border-gray-700 justify-center">
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-gray-700 font-mono">{user.employee_id}</span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {getRoleDisplayName(user.role)}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-sm text-gray-600">
+                      {new Date(user.created_at).toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
                     <button
                       onClick={(e) => {
-                        e.stopPropagation(); // Prevent row click when clicking button
+                        e.stopPropagation();
                         onView(user);
                       }}
-                      className="bg-blue-700 text-white w-5 h-5 rounded-full hover:bg-blue-800 transition flex items-center justify-center mx-auto cursor-pointer"
+                      className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-600 hover:bg-blue-700 transition-colors cursor-pointer"
                     >
-                      <img src={ChevronRight} alt="Chevron Right" className="w-3 h-3" />
+                      <img src={ChevronRight} alt="View" className="w-4 h-4" />
                     </button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td
-                  colSpan="1000"
-                  className="text-center text-gray-500 py-4 border"
-                >
-                  No users found
+                <td colSpan="5" className="px-6 py-12 text-center">
+                  <div className="flex flex-col items-center justify-center">
+                    <svg className="w-12 h-12 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    <p className="text-gray-500 font-medium">No users found</p>
+                    <p className="text-gray-400 text-sm mt-1">Try adjusting your search or filters</p>
+                  </div>
                 </td>
               </tr>
             )}
