@@ -105,7 +105,7 @@ export default function DepartmentManagementModal({ onClose, onDepartmentChange 
     <>
       {/* Main Modal Backdrop */}
       <div
-        className="fixed inset-0 bg-gradient-to-br from-purple-900/30 via-blue-900/30 to-purple-900/30 backdrop-blur-sm flex items-center justify-center z-50"
+        className="fixed inset-0 bg-black/20 flex items-center justify-center z-50"
         onClick={onClose}
       >
         {/* Modal Content */}
@@ -281,7 +281,7 @@ function DepartmentFormModal({ department, onClose, onSave }) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-[60]"
+      className="fixed inset-0 bg-black/20 flex items-center justify-center z-[60]"
       onClick={onClose}
     >
       <div

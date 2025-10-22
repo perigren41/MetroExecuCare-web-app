@@ -407,7 +407,7 @@ export default function AdminUsersPage() {
                       rounded-full hover:from-gray-700 hover:to-gray-800 transition-all cursor-pointer shadow-sm hover:shadow-md
                       disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                   >
-                    🗑️ Deleted
+                    Deleted
                   </button>
                 </>
               )}
@@ -440,33 +440,15 @@ export default function AdminUsersPage() {
                     <span className="text-base sm:text-lg font-bold">+</span>
                   </button>
                   {showAddDropdown && (
-                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[150px] sm:min-w-[170px]">
+                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[120px]">
                       <button
                         onClick={() => {
                           handleAddUser();
                           setShowAddDropdown(false);
                         }}
-                        className="w-full text-left px-3 py-2 hover:bg-blue-50 text-xs sm:text-sm cursor-pointer transition-colors"
+                        className="w-full text-left px-3 py-2 hover:bg-blue-50 text-xs sm:text-sm cursor-pointer transition-colors rounded-lg"
                       >
                         Add User
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowDepartmentModal(true);
-                          setShowAddDropdown(false);
-                        }}
-                        className="w-full text-left px-3 py-2 hover:bg-blue-50 text-xs sm:text-sm cursor-pointer transition-colors"
-                      >
-                        Add Department
-                      </button>
-                      <button
-                        onClick={() => {
-                          setShowBranchModal(true);
-                          setShowAddDropdown(false);
-                        }}
-                        className="w-full text-left px-3 py-2 hover:bg-blue-50 text-xs sm:text-sm cursor-pointer transition-colors"
-                      >
-                        Add Branch
                       </button>
                     </div>
                   )}
@@ -523,7 +505,7 @@ export default function AdminUsersPage() {
                       rounded-full hover:from-gray-700 hover:to-gray-800 transition-all cursor-pointer shadow-sm hover:shadow-md
                       disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    🗑️ Deleted
+                    Deleted
                   </button>
                   <div className="flex items-center gap-1 relative">
                     <span className="text-xs sm:text-sm font-medium text-gray-700">Add</span>
@@ -538,33 +520,15 @@ export default function AdminUsersPage() {
                       <span className="text-base sm:text-lg font-bold">+</span>
                     </button>
                     {showAddDropdown && (
-                      <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[160px]">
+                      <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[120px]">
                         <button
                           onClick={() => {
                             handleAddUser();
                             setShowAddDropdown(false);
                           }}
-                          className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
+                          className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors rounded-lg"
                         >
                           Add User
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShowDepartmentModal(true);
-                            setShowAddDropdown(false);
-                          }}
-                          className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
-                        >
-                          Add Department
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShowBranchModal(true);
-                            setShowAddDropdown(false);
-                          }}
-                          className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
-                        >
-                          Add Branch
                         </button>
                       </div>
                     )}

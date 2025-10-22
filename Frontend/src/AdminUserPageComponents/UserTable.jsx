@@ -24,9 +24,9 @@ export default function UserTable({ users, onView }) {
           <thead className="sticky top-0 z-10">
             <tr className="bg-[linear-gradient(to_right,#3F6EC0_10%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] text-white">
               <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">Employee ID</th>
-              <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">Role</th>
-              <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">Date Added</th>
+              <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase tracking-wider">Employee ID</th>
+              <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase tracking-wider">Role</th>
+              <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase tracking-wider">Date Added</th>
               <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase tracking-wider">Action</th>
             </tr>
           </thead>
@@ -53,15 +53,15 @@ export default function UserTable({ users, onView }) {
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-center">
                     <span className="text-sm text-gray-700 font-mono">{user.employee_id}</span>
                   </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  <td className="px-6 py-4 text-center">
+                    <span className="text-sm text-gray-700">
                       {getRoleDisplayName(user.role)}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-center">
                     <span className="text-sm text-gray-600">
                       {new Date(user.created_at).toLocaleDateString('en-US', {
                         month: 'short',
