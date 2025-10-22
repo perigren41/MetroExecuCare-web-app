@@ -86,14 +86,30 @@ export default function RequestDetailsModal({ request, onClose }) {
                 <div className="text-sm font-medium text-gray-900">{request.hospital_name || "-"}</div>
               </div>
               <div>
-                <div className="text-xs text-gray-600 mb-1">Assigned HR</div>
+                <div className="text-xs text-gray-600 mb-1">Assigned HR Personnel</div>
                 <div className="text-sm font-medium text-gray-900">
                   {request.hr_first_name && request.hr_last_name
                     ? `${request.hr_first_name} ${request.hr_last_name}`
-                    : <span className="text-gray-400 italic">Unassigned</span>
+                    : <span className="text-gray-400 italic">Not Assigned</span>
                   }
                 </div>
               </div>
+              {request.assigned_bo_id && (
+                <div>
+                  <div className="text-xs text-gray-600 mb-1">Assigned Benefits Officer</div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {request.assigned_bo_first_name} {request.assigned_bo_last_name}
+                  </div>
+                </div>
+              )}
+              {request.assigned_wh_id && (
+                <div>
+                  <div className="text-xs text-gray-600 mb-1">Assigned Division Head</div>
+                  <div className="text-sm font-medium text-gray-900">
+                    {request.assigned_wh_first_name} {request.assigned_wh_last_name}
+                  </div>
+                </div>
+              )}
               <div>
                 <div className="text-xs text-gray-600 mb-1">Created Date</div>
                 <div className="text-sm text-gray-900">{formatDate(request.created_at)}</div>

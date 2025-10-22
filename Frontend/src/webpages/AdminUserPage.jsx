@@ -44,6 +44,7 @@ export default function AdminUsersPage() {
   const [requestStatusFilter, setRequestStatusFilter] = useState("all");
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [activeStatFilter, setActiveStatFilter] = useState("all");
+  const [requestDetailsLoading, setRequestDetailsLoading] = useState(false);
 
   // Fetch users from API on component mount
   useEffect(() => {
@@ -221,6 +222,25 @@ export default function AdminUsersPage() {
     }
   };
 
+  // Fetch full request details including BO and WH assignments
+  const handleViewRequestDetails = async (request) => {
+    try {
+      setRequestDetailsLoading(true);
+      const response = await apiService.getRequestById(request.id);
+
+      if (response.success) {
+        setSelectedRequest(response.data);
+      } else {
+        setError(response.message || "Failed to fetch request details");
+      }
+    } catch (error) {
+      console.error("Error fetching request details:", error);
+      setError(error.message || "Failed to load request details");
+    } finally {
+      setRequestDetailsLoading(false);
+    }
+  };
+
   // Toggle between User Management and Request Management views
   const toggleView = () => {
     setViewMode(viewMode === "users" ? "requests" : "users");
@@ -253,7 +273,7 @@ export default function AdminUsersPage() {
       case "all":
         setRequestStatusFilter("all");
         break;
-      case "urgent":
+      case "in_progress":
       case "overdue":
       case "unassigned":
         // These are special filters, keep status filter as "all"
@@ -275,13 +295,14 @@ export default function AdminUsersPage() {
       r.employee_id?.toLowerCase().includes(requestSearchQuery.toLowerCase());
 
     // Handle special stat filters
-    if (activeStatFilter === "urgent") {
-      return matchesSearch && r.priority_level === "urgent";
+    if (activeStatFilter === "in_progress") {
+      const inProgressStatuses = ["hr_processing", "assigned_to_hr", "benefits_review", "welfare_review", "hr_final_verification"];
+      return matchesSearch && inProgressStatuses.includes(r.current_status);
     }
 
     if (activeStatFilter === "overdue") {
       const isOverdue = (dueDate, status) => {
-        if (['completed', 'rejected'].includes(status)) return false;
+        if (['approved', 'completed', 'rejected'].includes(status)) return false;
         const due = new Date(dueDate);
         const today = new Date();
         return due < today;
@@ -294,8 +315,13 @@ export default function AdminUsersPage() {
     }
 
     // Handle status-based filters
-    const matchesStatusFilter =
-      activeStatFilter === "all" ? true : r.current_status === activeStatFilter;
+    let matchesStatusFilter = true;
+    if (activeStatFilter === "approved") {
+      // Approved filter now includes both approved and completed
+      matchesStatusFilter = r.current_status === "approved" || r.current_status === "completed";
+    } else if (activeStatFilter !== "all") {
+      matchesStatusFilter = r.current_status === activeStatFilter;
+    }
 
     return matchesSearch && matchesStatusFilter;
   });
@@ -329,14 +355,6 @@ export default function AdminUsersPage() {
             <h1 className="text-left text-xs">
               <span className="font-bold">Branch:</span> {currentUser?.branch || "All Branches"}
             </h1>
-            {viewMode === "requests" && (
-              <button
-                onClick={toggleView}
-                className="px-3 py-1 bg-blue-600 text-white text-xs rounded-full hover:bg-blue-700 transition cursor-pointer"
-              >
-                ← Back to Users
-              </button>
-            )}
           </div>
 
           {/* Mobile Layout */}
@@ -622,7 +640,7 @@ export default function AdminUsersPage() {
             <div className="flex-1 overflow-hidden flex flex-col min-h-0">
               <RequestManagementTable
                 requests={filteredRequests}
-                onViewDetails={(request) => setSelectedRequest(request)}
+                onViewDetails={handleViewRequestDetails}
                 loading={requestsLoading}
                 activeFilter={activeStatFilter}
               />

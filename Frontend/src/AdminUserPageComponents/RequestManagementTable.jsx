@@ -15,13 +15,9 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
       const labels = {
         all: "All Requests",
         pending: "Pending",
-        hr_processing: "HR Stage",
-        benefits_review: "Benefits Stage",
-        welfare_review: "Welfare Stage",
+        in_progress: "In Progress",
         approved: "Approved",
-        completed: "Completed",
         rejected: "Rejected",
-        urgent: "Urgent",
         overdue: "Overdue",
         unassigned: "Unassigned"
       };
@@ -93,6 +89,12 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
     });
   };
 
+  const formatRequestType = (type) => {
+    if (type === 'letter_of_authorization') return 'Letter of Authorization';
+    if (type === 'letter_of_approval') return 'Letter of Approval';
+    return type;
+  };
+
   const isOverdue = (dueDate, status) => {
     if (['completed', 'rejected'].includes(status)) return false;
     const due = new Date(dueDate);
@@ -134,14 +136,15 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Due Date
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {requests.map((request) => (
-              <tr key={request.id} className="hover:bg-gray-50">
+              <tr
+                key={request.id}
+                onClick={() => onViewDetails(request)}
+                className="hover:bg-gray-50 cursor-pointer transition-colors"
+              >
                 <td className="px-4 py-3 whitespace-nowrap">
                   <div className="text-sm font-medium text-blue-600">
                     {request.request_number}
@@ -154,7 +157,7 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
                   <div className="text-xs text-gray-500">{request.employee_id}</div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{request.request_type}</div>
+                  <div className="text-sm text-gray-900">{formatRequestType(request.request_type)}</div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
                   <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(request.current_status)}`}>
@@ -196,14 +199,6 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
                     )}
                   </div>
                 </td>
-                <td className="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                  <button
-                    onClick={() => onViewDetails(request)}
-                    className="text-blue-600 hover:text-blue-900"
-                  >
-                    View Details
-                  </button>
-                </td>
               </tr>
             ))}
           </tbody>
@@ -243,7 +238,7 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
             <div className="grid grid-cols-2 gap-3 text-xs">
               <div>
                 <span className="text-gray-500">Type:</span>
-                <div className="text-gray-900 font-medium">{request.request_type}</div>
+                <div className="text-gray-900 font-medium">{formatRequestType(request.request_type)}</div>
               </div>
               <div>
                 <span className="text-gray-500">Assigned HR:</span>
@@ -275,12 +270,6 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
                 <div className="text-gray-900 truncate">{request.hospital_name}</div>
               </div>
             )}
-
-            <div className="mt-3 pt-3 border-t border-gray-200">
-              <button className="text-blue-600 hover:text-blue-900 text-sm font-medium">
-                View Details →
-              </button>
-            </div>
           </div>
         ))}
       </div>
