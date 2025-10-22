@@ -220,6 +220,7 @@
   const hospitalRoutes = require('./routes/hospitalRoutes');
   const departmentRoutes = require('./routes/departmentRoutes');
   const branchRoutes = require('./routes/branchRoutes');
+  const faqRoutes = require('./routes/faqRoutes');
   const testRoutes = require('./routes/testRoutes');
 
   // Use routes
@@ -230,6 +231,7 @@
   app.use('/api/hospitals', hospitalRoutes);
   app.use('/api/departments', departmentRoutes);
   app.use('/api/branches', branchRoutes);
+  app.use('/api/faqs', faqRoutes);
   app.use('/api/test', testRoutes);
 
   // Serve uploaded files statically

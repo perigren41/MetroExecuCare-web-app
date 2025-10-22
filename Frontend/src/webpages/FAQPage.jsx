@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ChevronDown, HelpCircle } from 'lucide-react';
+import { ArrowLeft, ChevronDown, HelpCircle, Loader2 } from 'lucide-react';
 import mainLogo from '@/assets/mainLogo.svg';
 import mainLogoDark from '@/assets/mainLogo-foreground.svg';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,9 @@ export const FAQPage = () => {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [animate, setAnimate] = useState(false);
     const [openIndex, setOpenIndex] = useState(null);
+    const [faqCategories, setFaqCategories] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         const checkDarkMode = () => {
@@ -31,72 +34,39 @@ export const FAQPage = () => {
         };
     }, []);
 
-    const faqCategories = [
-        {
-            category: "Getting Started",
-            icon: "🚀",
-            faqs: [
-                {
-                    question: "How do I submit an executive checkup request?",
-                    answer: "To submit a request, log in to your account and navigate to your dashboard. Click on 'Submit New Request' button, fill out the required information including request type (Letter of Approval or Letter of Authorization), hospital preference, and upload any necessary supporting documents. Once completed, click 'Submit Request' to send it for Human Resource review."
-                },
-                {
-                    question: "What types of checkup requests can I submit?",
-                    answer: "MetroExecuCare supports two types of executive checkup requests:\n\n1. Letter of Approval - For standard executive checkup procedures at accredited hospitals\n2. Letter of Authorization - For specific medical procedures requiring special authorization\n\nBoth types follow the same 5-stage approval workflow and require proper documentation and hospital assignment."
-                },
-                {
-                    question: "What documents do I need to upload with my request?",
-                    answer: "Required Documents:\n\nFor Letter of Approval:\n- The filled-out Letter of Approval template (available in the submission form)\n- Supporting medical documents if needed (prescriptions, referrals, etc.)\n\nFor Letter of Authorization:\n- The filled-out Letter of Authorization template (available in the submission form)\n- Supporting medical documents if needed (medical certificates, test results, etc.)\n\nUpload Guidelines:\n- Documents must be in PDF format only\n- Maximum file size: 10MB per file\n- You can upload multiple documents by using the upload button multiple times\n- Each upload adds one file to your submission\n\nImportant: Ensure all necessary documents are complete and uploaded before submitting your request. Reviewers will evaluate based solely on the initially submitted materials. Incomplete documentation may result in rejection."
+    // Fetch FAQs from the database
+    useEffect(() => {
+        const fetchFAQs = async () => {
+            try {
+                setLoading(true);
+                const response = await fetch('http://localhost:5000/api/faqs');
+                const data = await response.json();
+
+                if (data.success) {
+                    // Transform the grouped FAQs into the format expected by the component
+                    const transformedCategories = Object.entries(data.data.categories).map(([categoryName, faqs]) => ({
+                        category: categoryName,
+                        faqs: faqs.map(faq => ({
+                            id: faq.id,
+                            question: faq.question,
+                            answer: faq.answer
+                        }))
+                    }));
+
+                    setFaqCategories(transformedCategories);
+                } else {
+                    setError('Failed to load FAQs');
                 }
-            ]
-        },
-        {
-            category: "Approval Workflow",
-            icon: "⚙️",
-            faqs: [
-                {
-                    question: "What are the different stages of the approval process?",
-                    answer: "The MetroExecuCare system follows a comprehensive 5-stage approval workflow:\n\n1. Request Submission - You submit your checkup request with supporting documents\n2. Human Resource Review - HR Personnel review and assign the appropriate hospital\n3. Benefits Officer Review - Benefits Officer validates and approves benefits allocation\n4. Division Head Review - Division Head provides final policy approval\n5. Final Human Resource Verification - HR performs final document verification before sending to you\n\nEach stage ensures thorough review and proper authorization of your request."
-                },
-                {
-                    question: "How long does the approval process typically take?",
-                    answer: "The approval timeline varies depending on the complexity of your request and current workload. Typically:\n\n- Human Resource initial review: 1-2 business days\n- Benefits Officer review: 1-2 business days\n- Division Head review: 1-2 business days\n- Final HR verification: 1 business day\n\nTotal processing time is usually 4-7 business days. You'll receive email notifications at each stage, and you can track your request's progress in real-time through the Request Status Tracker."
-                },
-                {
-                    question: "Can I edit or cancel my request after submission?",
-                    answer: "Once submitted, requests still be edited as long as a Human Resource Personnel has not claimed your request yet. \n\nImportant Notes:\n- There is no edit functionality after submission\n- Reviewers must approve or reject requests based on the initially submitted documents \n- Reviewers can request additional documents if necessary in the website. \n- If your request is rejected at any stage, you will receive feedback explaining the reason\n- After rejection, you can submit a new request with corrected information and complete documentation\n\nBest Practice: Ensure all information and documents are complete and accurate before submitting your request to avoid rejection."
-                }
-            ]
-        },
-        {
-            category: "Request Tracking",
-            icon: "📊",
-            faqs: [
-                {
-                    question: "How do I track the status of my request?",
-                    answer: "You can track your request status in multiple ways:\n\n1. Dashboard Status Cards - Your dashboard displays the current status of all your requests with color-coded indicators\n2. Request Status Tracker - Click on any request card to view detailed progress through all 5 stages\n3. Email Notifications - You'll receive automatic email updates whenever your request moves to a new stage\n\nThe status tracker shows you exactly which stage your request is in and what action is being taken."
-                },
-                {
-                    question: "Why was my request rejected and what should I do?",
-                    answer: "Requests may be rejected at any stage for various reasons:\n\nCommon Rejection Reasons:\n- Incomplete or missing documentation\n- Non-compliance with benefits policy\n- Ineligibility for requested checkup type\n- Issues with hospital assignment or availability\n\nWhat to Do:\n1. Check your email for detailed rejection feedback from the reviewer\n2. Review the comments provided in your request details\n3. Address the issues mentioned in the rejection\n4. Submit a new request with corrected information and proper documentation\n\nYou'll receive guidance from Human Resource if you need clarification on the rejection."
-                }
-            ]
-        },
-        {
-            category: "After Approval",
-            icon: "✅",
-            faqs: [
-                {
-                    question: "What happens after my request is approved?",
-                    answer: "After final approval and HR verification (Stage 5), you will:\n\n1. Receive Email Notification - You'll get a comprehensive email with all approved documents\n2. Download Documents - Access your Letter of Approval/Authorization and other documents from your dashboard\n3. Hospital Coordination - The assigned hospital will be notified(if accredited) and you can schedule your checkup\n4. Request Completion - Your request status changes to 'Completed'\n\nAll approved documents include download links and can be accessed anytime from your account."
-                },
-                {
-                    question: "How do I download my approved checkup documents?",
-                    answer: "Once your request reaches 'Completed' status:\n\n1. Via Email - Click the download links in your final approval email\n2. Via Dashboard - Go to your dashboard, click on the completed request card, and use the 'Download' buttons for each document\n\nAll documents are securely stored and accessible anytime. Downloaded files include:\n- Letter of Approval/Authorization\n- Hospital assignment details\n- Any additional supporting documents\n\nDocuments are in PDF format and can be presented to the assigned hospital for your checkup."
-                }
-            ]
-        }
-    ];
+            } catch (err) {
+                console.error('Error fetching FAQs:', err);
+                setError('Failed to load FAQs. Please try again later.');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchFAQs();
+    }, []);
 
     const toggleFAQ = (index) => {
         setOpenIndex(openIndex === index ? null : index);
@@ -156,9 +126,36 @@ export const FAQPage = () => {
                         </p>
                     </div>
 
+                    {/* Loading State */}
+                    {loading && (
+                        <div className="flex flex-col items-center justify-center py-16">
+                            <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
+                            <p className="text-muted-foreground">Loading FAQs...</p>
+                        </div>
+                    )}
+
+                    {/* Error State */}
+                    {error && !loading && (
+                        <div className="text-center py-16">
+                            <p className="text-red-500 mb-4">{error}</p>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    )}
+
                     {/* Category-Based FAQ List */}
-                    <div className="space-y-12">
-                        {faqCategories.map((category, categoryIndex) => (
+                    {!loading && !error && (
+                        <div className="space-y-12">
+                            {faqCategories.length === 0 ? (
+                                <div className="text-center py-16">
+                                    <p className="text-muted-foreground">No FAQs available at the moment.</p>
+                                </div>
+                            ) : (
+                                faqCategories.map((category, categoryIndex) => (
                             <div
                                 key={categoryIndex}
                                 className={cn(
@@ -169,7 +166,6 @@ export const FAQPage = () => {
                             >
                                 {/* Category Header */}
                                 <div className="flex items-center gap-3 mb-6">
-                                    <span className="text-4xl">{category.icon}</span>
                                     <h2 className="text-2xl md:text-3xl font-bold text-primary">
                                         {category.category}
                                     </h2>
@@ -226,8 +222,10 @@ export const FAQPage = () => {
                                     })}
                                 </div>
                             </div>
-                        ))}
-                    </div>
+                        ))
+                            )}
+                        </div>
+                    )}
                 </div>
             </main>
 

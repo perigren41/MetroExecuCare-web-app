@@ -9,6 +9,7 @@ import BranchManagementModal from "@/AdminUserPageComponents/BranchManagementMod
 import RequestStatsCards from "@/AdminUserPageComponents/RequestStatsCards";
 import RequestManagementTable from "@/AdminUserPageComponents/RequestManagementTable";
 import RequestDetailsModal from "@/AdminUserPageComponents/RequestDetailsModal";
+import AddFAQModal from "@/Components/AddFAQModal";
 import NavBarMain from "@/Components/NavBarMain";
 import BackSquareIconWhite from "@/assets/BackSquareIconWhite.svg";
 import MetroBankLogo from "@/assets/mainLogo-foreground.svg";
@@ -34,6 +35,7 @@ export default function AdminUsersPage() {
   const [showDepartmentModal, setShowDepartmentModal] = useState(false);
   const [showBranchModal, setShowBranchModal] = useState(false);
   const [showAddDropdown, setShowAddDropdown] = useState(false);
+  const [showAddFAQModal, setShowAddFAQModal] = useState(false);
 
   // Request Management View State
   const [viewMode, setViewMode] = useState("users"); // "users" or "requests"
@@ -447,9 +449,18 @@ export default function AdminUsersPage() {
                           handleAddUser();
                           setShowAddDropdown(false);
                         }}
-                        className="w-full text-left px-3 py-2 hover:bg-blue-50 text-xs sm:text-sm cursor-pointer transition-colors rounded-lg"
+                        className="w-full text-left px-3 py-2 hover:bg-blue-50 text-xs sm:text-sm cursor-pointer transition-colors rounded-t-lg"
                       >
                         Add User
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowAddFAQModal(true);
+                          setShowAddDropdown(false);
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-blue-50 text-xs sm:text-sm cursor-pointer transition-colors rounded-b-lg border-t border-gray-100"
+                      >
+                        Add FAQ
                       </button>
                     </div>
                   )}
@@ -527,9 +538,18 @@ export default function AdminUsersPage() {
                             handleAddUser();
                             setShowAddDropdown(false);
                           }}
-                          className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors rounded-lg"
+                          className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors rounded-t-lg"
                         >
                           Add User
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowAddFAQModal(true);
+                            setShowAddDropdown(false);
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors rounded-b-lg border-t border-gray-100"
+                        >
+                          Add FAQ
                         </button>
                       </div>
                     )}
@@ -682,6 +702,17 @@ export default function AdminUsersPage() {
           <RequestDetailsModal
             request={selectedRequest}
             onClose={() => setSelectedRequest(null)}
+          />
+        )}
+
+        {/* Add FAQ Modal */}
+        {showAddFAQModal && (
+          <AddFAQModal
+            onClose={() => setShowAddFAQModal(false)}
+            onSave={(newFAQ) => {
+              console.log('New FAQ added:', newFAQ);
+              // Optionally show a success message or refresh FAQ list
+            }}
           />
         )}
       </div>
