@@ -1,14 +1,28 @@
 export default function RequestStatsCards({ stats, loading, onFilterClick, activeFilter }) {
   if (loading) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-        {[...Array(12)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg shadow p-4 animate-pulse">
-            <div className="h-4 bg-gray-200 rounded mb-2"></div>
-            <div className="h-8 bg-gray-200 rounded"></div>
+      <>
+        {/* Mobile Loading */}
+        <div className="md:hidden overflow-x-auto scrollbar-hide mb-4">
+          <div className="flex gap-2 pb-2">
+            {[...Array(7)].map((_, i) => (
+              <div key={i} className="bg-white rounded-lg shadow p-3 animate-pulse flex-shrink-0 w-28">
+                <div className="h-3 bg-gray-200 rounded mb-2"></div>
+                <div className="h-6 bg-gray-200 rounded"></div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+        {/* Desktop Loading */}
+        <div className="hidden md:grid grid-cols-3 lg:grid-cols-7 gap-3 mb-6">
+          {[...Array(7)].map((_, i) => (
+            <div key={i} className="bg-white rounded-lg shadow p-4 animate-pulse">
+              <div className="h-4 bg-gray-200 rounded mb-2"></div>
+              <div className="h-8 bg-gray-200 rounded"></div>
+            </div>
+          ))}
+        </div>
+      </>
     );
   }
 
@@ -62,51 +76,102 @@ export default function RequestStatsCards({ stats, loading, onFilterClick, activ
   };
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
-      {cards.map((card, index) => {
-        const isActive = activeFilter === card.filterKey;
+    <>
+      {/* Mobile: Horizontal Scroll */}
+      <div className="md:hidden overflow-x-auto scrollbar-hide mb-4">
+        <div className="flex gap-2 pb-2" style={{ minWidth: 'max-content' }}>
+          {cards.map((card, index) => {
+            const isActive = activeFilter === card.filterKey;
 
-        if (isActive) {
-          // Active card with gradient background
+            if (isActive) {
+              // Active card with gradient background
+              return (
+                <button
+                  key={index}
+                  onClick={() => onFilterClick(card.filterKey)}
+                  className="relative overflow-hidden rounded-lg transition-all duration-200 shadow-lg p-3 text-left cursor-pointer flex-shrink-0 w-28"
+                  style={gradientStyle}
+                >
+                  <div className="text-xs font-semibold bg-white/90 text-blue-700 px-1.5 py-0.5 rounded-full mb-1 inline-block">
+                    Active
+                  </div>
+                  <div className="text-2xl font-bold mb-0.5 text-white">
+                    {card.value}
+                  </div>
+                  <div className="text-xs font-medium text-white/90">
+                    {card.label}
+                  </div>
+                </button>
+              );
+            }
+
+            // Inactive card with gradient border
+            return (
+              <div key={index} className="relative p-[2px] rounded-lg flex-shrink-0 w-28" style={gradientStyle}>
+                <button
+                  onClick={() => onFilterClick(card.filterKey)}
+                  className="w-full h-full bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3 text-left cursor-pointer"
+                >
+                  <div className="text-2xl font-bold mb-0.5 text-gray-900">
+                    {card.value}
+                  </div>
+                  <div className="text-xs font-medium text-gray-600">
+                    {card.label}
+                  </div>
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Desktop: Grid Layout */}
+      <div className="hidden md:grid grid-cols-3 lg:grid-cols-7 gap-3 mb-6">
+        {cards.map((card, index) => {
+          const isActive = activeFilter === card.filterKey;
+
+          if (isActive) {
+            // Active card with gradient background
+            return (
+              <button
+                key={index}
+                onClick={() => onFilterClick(card.filterKey)}
+                className="relative overflow-hidden rounded-lg transition-all duration-200 shadow-lg scale-105 p-4 text-left cursor-pointer"
+                style={gradientStyle}
+              >
+                <div className="flex items-start justify-between mb-2">
+                  <span className="text-xs font-semibold bg-white/90 text-blue-700 px-2 py-0.5 rounded-full">
+                    Active
+                  </span>
+                </div>
+                <div className="text-3xl font-bold mb-1 text-white">
+                  {card.value}
+                </div>
+                <div className="text-xs font-medium text-white/90">
+                  {card.label}
+                </div>
+              </button>
+            );
+          }
+
+          // Inactive card with gradient border
           return (
-            <button
-              key={index}
-              onClick={() => onFilterClick(card.filterKey)}
-              className="relative overflow-hidden rounded-lg transition-all duration-200 shadow-lg scale-105 p-4 text-left cursor-pointer"
-              style={gradientStyle}
-            >
-              <div className="flex items-start justify-between mb-2">
-                <span className="text-xs font-semibold bg-white/90 text-blue-700 px-2 py-0.5 rounded-full">
-                  Active
-                </span>
-              </div>
-              <div className="text-3xl font-bold mb-1 text-white">
-                {card.value}
-              </div>
-              <div className="text-xs font-medium text-white/90">
-                {card.label}
-              </div>
-            </button>
+            <div key={index} className="relative p-[2px] rounded-lg" style={gradientStyle}>
+              <button
+                onClick={() => onFilterClick(card.filterKey)}
+                className="w-full h-full bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-4 text-left cursor-pointer"
+              >
+                <div className="text-3xl font-bold mb-1 text-gray-900">
+                  {card.value}
+                </div>
+                <div className="text-xs font-medium text-gray-600">
+                  {card.label}
+                </div>
+              </button>
+            </div>
           );
-        }
-
-        // Inactive card with gradient border
-        return (
-          <div key={index} className="relative p-[2px] rounded-lg" style={gradientStyle}>
-            <button
-              onClick={() => onFilterClick(card.filterKey)}
-              className="w-full h-full bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-4 text-left cursor-pointer"
-            >
-              <div className="text-3xl font-bold mb-1 text-gray-900">
-                {card.value}
-              </div>
-              <div className="text-xs font-medium text-gray-600">
-                {card.label}
-              </div>
-            </button>
-          </div>
-        );
-      })}
-    </div>
+        })}
+      </div>
+    </>
   );
 }
