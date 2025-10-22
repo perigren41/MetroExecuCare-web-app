@@ -1,4 +1,33 @@
+import { useState, useEffect, useRef } from "react";
+
 export default function RequestStatsCards({ stats, loading, onFilterClick, activeFilter }) {
+  const [showSwipeIndicator, setShowSwipeIndicator] = useState(false);
+  const statsContainerRef = useRef(null);
+
+  useEffect(() => {
+    const checkScroll = () => {
+      if (statsContainerRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = statsContainerRef.current;
+        const hasMoreContent = scrollWidth > clientWidth;
+        const isAtEnd = scrollWidth - scrollLeft - clientWidth < 10;
+        setShowSwipeIndicator(hasMoreContent && !isAtEnd);
+      }
+    };
+
+    checkScroll();
+    const container = statsContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkScroll);
+      window.addEventListener('resize', checkScroll);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', checkScroll);
+      }
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, [stats, loading]);
   if (loading) {
     return (
       <>
@@ -78,9 +107,10 @@ export default function RequestStatsCards({ stats, loading, onFilterClick, activ
   return (
     <>
       {/* Mobile: Horizontal Scroll */}
-      <div className="md:hidden overflow-x-auto scrollbar-hide mb-4">
-        <div className="flex gap-2 pb-2" style={{ minWidth: 'max-content' }}>
-          {cards.map((card, index) => {
+      <div className="md:hidden relative mb-4">
+        <div ref={statsContainerRef} className="overflow-x-auto scrollbar-hide">
+          <div className="flex gap-2 pb-2" style={{ minWidth: 'max-content' }}>
+            {cards.map((card, index) => {
             const isActive = activeFilter === card.filterKey;
 
             if (isActive) {
@@ -122,7 +152,20 @@ export default function RequestStatsCards({ stats, loading, onFilterClick, activ
               </div>
             );
           })}
+          </div>
         </div>
+
+        {/* Swipe Indicator - Mobile */}
+        {showSwipeIndicator && (
+          <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-50 pointer-events-none">
+            <div className="flex items-center animate-pulse bg-white/90 backdrop-blur-sm rounded-lg px-2 py-3 shadow-lg">
+              <span className="text-sm font-medium text-blue-600 mr-1">Swipe</span>
+              <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Desktop: Grid Layout */}

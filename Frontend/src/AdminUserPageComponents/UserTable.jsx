@@ -17,7 +17,9 @@ const getRoleDisplayName = (role) => {
 
 export default function UserTable({ users, onView }) {
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+  const [showMobileScrollIndicator, setShowMobileScrollIndicator] = useState(false);
   const tableContainerRef = useRef(null);
+  const mobileContainerRef = useRef(null);
 
   useEffect(() => {
     const checkScroll = () => {
@@ -41,6 +43,31 @@ export default function UserTable({ users, onView }) {
         container.removeEventListener('scroll', checkScroll);
       }
       window.removeEventListener('resize', checkScroll);
+    };
+  }, [users]);
+
+  useEffect(() => {
+    const checkMobileScroll = () => {
+      if (mobileContainerRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = mobileContainerRef.current;
+        const hasMoreContent = scrollHeight > clientHeight;
+        const isAtBottom = scrollHeight - scrollTop - clientHeight < 10;
+        setShowMobileScrollIndicator(hasMoreContent && !isAtBottom);
+      }
+    };
+
+    checkMobileScroll();
+    const container = mobileContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkMobileScroll);
+      window.addEventListener('resize', checkMobileScroll);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', checkMobileScroll);
+      }
+      window.removeEventListener('resize', checkMobileScroll);
     };
   }, [users]);
   return (
@@ -130,8 +157,8 @@ export default function UserTable({ users, onView }) {
 
         {/* Scroll Indicator - Desktop */}
         {showScrollIndicator && (
-          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20 pointer-events-none">
-            <div className="flex flex-col items-center animate-bounce">
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
+            <div className="flex flex-col items-center animate-bounce bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
               <span className="text-sm font-medium text-blue-600 mb-1">Scroll</span>
               <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
@@ -142,7 +169,8 @@ export default function UserTable({ users, onView }) {
       </div>
 
       {/* Mobile Card View */}
-      <div className="block sm:hidden space-y-3 h-full overflow-y-auto pb-16">
+      <div className="block sm:hidden relative h-full">
+        <div ref={mobileContainerRef} className="space-y-3 h-full overflow-y-auto pb-16">
         {users.length > 0 ? (
           users.map((user) => (
             <div
@@ -186,6 +214,19 @@ export default function UserTable({ users, onView }) {
         ) : (
           <div className="text-center text-gray-500 py-8 bg-white rounded-xl border border-gray-200">
             No users found
+          </div>
+        )}
+        </div>
+
+        {/* Scroll Indicator - Mobile */}
+        {showMobileScrollIndicator && (
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
+            <div className="flex flex-col items-center animate-bounce bg-white/90 backdrop-blur-sm rounded-lg px-3 py-2 shadow-lg">
+              <span className="text-sm font-medium text-blue-600 mb-1">Scroll</span>
+              <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
         )}
       </div>
