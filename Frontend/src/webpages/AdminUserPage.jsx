@@ -352,35 +352,44 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Management Buttons - Full Width */}
-            <div className="flex items-center gap-2 mb-2 overflow-x-auto">
+            <div className="flex items-center gap-1.5 sm:gap-2 mb-2 overflow-x-auto scrollbar-hide">
               {viewMode === "users" && (
                 <>
                   <button
                     onClick={() => setShowDepartmentModal(true)}
                     disabled={loading}
-                    className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs whitespace-nowrap
+                    className="px-2 py-1 sm:px-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-[10px] sm:text-xs whitespace-nowrap
                       rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
-                      disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                   >
-                    Department Management
+                    Department
                   </button>
                   <button
                     onClick={() => setShowBranchModal(true)}
                     disabled={loading}
-                    className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs whitespace-nowrap
+                    className="px-2 py-1 sm:px-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-[10px] sm:text-xs whitespace-nowrap
                       rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
-                      disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                   >
-                    Branch Management
+                    Branch
                   </button>
                   <button
                     onClick={toggleView}
                     disabled={loading}
-                    className="px-3 py-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-xs whitespace-nowrap
+                    className="px-2 py-1 sm:px-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-[10px] sm:text-xs whitespace-nowrap
                       rounded-full hover:from-purple-700 hover:to-purple-800 transition-all cursor-pointer shadow-sm hover:shadow-md
-                      disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                   >
-                    Request Management
+                    Requests
+                  </button>
+                  <button
+                    onClick={() => setShowDeletedUsersModal(true)}
+                    disabled={loading}
+                    className="px-2 py-1 sm:px-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white text-[10px] sm:text-xs whitespace-nowrap
+                      rounded-full hover:from-gray-700 hover:to-gray-800 transition-all cursor-pointer shadow-sm hover:shadow-md
+                      disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+                  >
+                    🗑️ Deleted
                   </button>
                 </>
               )}
@@ -388,76 +397,68 @@ export default function AdminUsersPage() {
                 <button
                   onClick={toggleView}
                   disabled={loading}
-                  className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs whitespace-nowrap
+                  className="px-2 py-1 sm:px-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-[10px] sm:text-xs whitespace-nowrap
                     rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
-                    disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                 >
                   User Management
                 </button>
               )}
             </div>
 
-            {/* Buttons - Side by Side */}
-            <div className="flex items-center justify-between gap-2">
-              <button
-                onClick={() => setShowDeletedUsersModal(true)}
-                disabled={loading}
-                className="px-3 py-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white text-xs
-                  rounded-full hover:from-gray-700 hover:to-gray-800 transition-all cursor-pointer shadow-sm hover:shadow-md
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                🗑️ Deleted Users
-              </button>
-
-              <div className="flex items-center gap-1 relative">
-                <span className="text-xs font-medium text-gray-700">Add</span>
-                <button
-                  onClick={() => setShowAddDropdown(!showAddDropdown)}
-                  disabled={loading}
-                  className="w-8 h-8 bg-blue-700 text-white
-                    rounded-full hover:bg-blue-800 transition cursor-pointer
-                    flex items-center justify-center
-                    disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <span className="text-lg font-bold">+</span>
-                </button>
-                {showAddDropdown && (
-                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[170px]">
-                    <button
-                      onClick={() => {
-                        handleAddUser();
-                        setShowAddDropdown(false);
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
-                    >
-                      Add User
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowDepartmentModal(true);
-                        setShowAddDropdown(false);
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
-                    >
-                      Add New Department
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowBranchModal(true);
-                        setShowAddDropdown(false);
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
-                    >
-                      Add New Branch
-                    </button>
-                  </div>
-                )}
-              </div>
+            {/* Add Button */}
+            <div className="flex items-center justify-end gap-2">
+              {viewMode === "users" && (
+                <div className="flex items-center gap-1 relative">
+                  <span className="text-xs font-medium text-gray-700">Add</span>
+                  <button
+                    onClick={() => setShowAddDropdown(!showAddDropdown)}
+                    disabled={loading}
+                    className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-700 text-white
+                      rounded-full hover:bg-blue-800 transition cursor-pointer
+                      flex items-center justify-center
+                      disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="text-base sm:text-lg font-bold">+</span>
+                  </button>
+                  {showAddDropdown && (
+                    <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[150px] sm:min-w-[170px]">
+                      <button
+                        onClick={() => {
+                          handleAddUser();
+                          setShowAddDropdown(false);
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-blue-50 text-xs sm:text-sm cursor-pointer transition-colors"
+                      >
+                        Add User
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowDepartmentModal(true);
+                          setShowAddDropdown(false);
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-blue-50 text-xs sm:text-sm cursor-pointer transition-colors"
+                      >
+                        Add Department
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowBranchModal(true);
+                          setShowAddDropdown(false);
+                        }}
+                        className="w-full text-left px-3 py-2 hover:bg-blue-50 text-xs sm:text-sm cursor-pointer transition-colors"
+                      >
+                        Add Branch
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
           {/* Desktop Layout */}
-          <div className="hidden sm:flex items-center justify-between gap-2 mb-1">
+          <div className="hidden sm:flex items-center justify-between gap-2 mb-1 flex-wrap">
             {viewMode === "users" && (
               <SearchBar
                 search={searchQuery}
@@ -467,102 +468,102 @@ export default function AdminUsersPage() {
               />
             )}
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3 flex-wrap">
               {viewMode === "users" && (
                 <>
                   <button
                     onClick={() => setShowDepartmentModal(true)}
                     disabled={loading}
-                    className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs
+                    className="px-2.5 py-1 sm:px-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-[11px] sm:text-xs whitespace-nowrap
                       rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
                       disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Department Management
+                    Department
                   </button>
                   <button
                     onClick={() => setShowBranchModal(true)}
                     disabled={loading}
-                    className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs
+                    className="px-2.5 py-1 sm:px-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-[11px] sm:text-xs whitespace-nowrap
                       rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
                       disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Branch Management
+                    Branch
                   </button>
                   <button
                     onClick={toggleView}
                     disabled={loading}
-                    className="px-3 py-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-xs
+                    className="px-2.5 py-1 sm:px-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-[11px] sm:text-xs whitespace-nowrap
                       rounded-full hover:from-purple-700 hover:to-purple-800 transition-all cursor-pointer shadow-sm hover:shadow-md
                       disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Request Management
+                    Requests
                   </button>
+                  <button
+                    onClick={() => setShowDeletedUsersModal(true)}
+                    disabled={loading}
+                    className="px-2.5 py-1 sm:px-3 bg-gradient-to-r from-gray-600 to-gray-700 text-white text-[11px] sm:text-xs whitespace-nowrap
+                      rounded-full hover:from-gray-700 hover:to-gray-800 transition-all cursor-pointer shadow-sm hover:shadow-md
+                      disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    🗑️ Deleted
+                  </button>
+                  <div className="flex items-center gap-1 relative">
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">Add</span>
+                    <button
+                      onClick={() => setShowAddDropdown(!showAddDropdown)}
+                      disabled={loading}
+                      className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-700 text-white
+                        rounded-full hover:bg-blue-800 transition cursor-pointer
+                        flex items-center justify-center
+                        disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="text-base sm:text-lg font-bold">+</span>
+                    </button>
+                    {showAddDropdown && (
+                      <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[160px]">
+                        <button
+                          onClick={() => {
+                            handleAddUser();
+                            setShowAddDropdown(false);
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
+                        >
+                          Add User
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowDepartmentModal(true);
+                            setShowAddDropdown(false);
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
+                        >
+                          Add Department
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowBranchModal(true);
+                            setShowAddDropdown(false);
+                          }}
+                          className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
+                        >
+                          Add Branch
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
               {viewMode === "requests" && (
                 <button
                   onClick={toggleView}
                   disabled={loading}
-                  className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs
+                  className="px-2.5 py-1 sm:px-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-[11px] sm:text-xs whitespace-nowrap
                     rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
                     disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   User Management
                 </button>
               )}
-              <button
-                onClick={() => setShowDeletedUsersModal(true)}
-                disabled={loading}
-                className="px-3 py-1 bg-gradient-to-r from-gray-600 to-gray-700 text-white text-xs
-                  rounded-full hover:from-gray-700 hover:to-gray-800 transition-all cursor-pointer shadow-sm hover:shadow-md
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                🗑️ View Deleted Users
-              </button>
-              <div className="flex items-center gap-1 relative">
-                <span className="text-sm font-medium text-gray-700">Add</span>
-                <button
-                  onClick={() => setShowAddDropdown(!showAddDropdown)}
-                  disabled={loading}
-                  className="w-8 h-8 bg-blue-700 text-white
-                    rounded-full hover:bg-blue-800 transition cursor-pointer
-                    flex items-center justify-center
-                    disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <span className="text-lg font-bold">+</span>
-                </button>
-                {showAddDropdown && (
-                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 min-w-[170px]">
-                    <button
-                      onClick={() => {
-                        handleAddUser();
-                        setShowAddDropdown(false);
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
-                    >
-                      Add User
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowDepartmentModal(true);
-                        setShowAddDropdown(false);
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
-                    >
-                      Add New Department
-                    </button>
-                    <button
-                      onClick={() => {
-                        setShowBranchModal(true);
-                        setShowAddDropdown(false);
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-blue-50 text-sm cursor-pointer transition-colors"
-                    >
-                      Add New Branch
-                    </button>
-                  </div>
-                )}
-              </div>
             </div>
           </div>
         </div>
