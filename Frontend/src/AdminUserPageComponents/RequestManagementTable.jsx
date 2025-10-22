@@ -140,7 +140,7 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
               <tr
                 key={request.id}
                 onClick={() => onViewDetails(request)}
-                className="hover:bg-gray-50 cursor-pointer transition-colors"
+                className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 cursor-pointer transition-all duration-200 hover:shadow-sm"
               >
                 <td className="px-4 py-3 whitespace-nowrap">
                   <div className="text-sm font-medium text-blue-600">
@@ -196,7 +196,7 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
         {requests.map((request) => (
           <div
             key={request.id}
-            className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-lg transition-shadow"
+            className="bg-white rounded-lg shadow p-4 cursor-pointer hover:shadow-lg transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 hover:scale-[1.02]"
             onClick={() => onViewDetails(request)}
           >
             <div className="flex items-start justify-between mb-3">

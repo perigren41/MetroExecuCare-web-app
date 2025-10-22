@@ -44,7 +44,7 @@ export default function RequestDetailsModal({ request, onClose }) {
           <div>
             <h2 className="text-2xl font-bold text-gray-800">{request.request_number}</h2>
             <p className="text-sm text-gray-600 mt-1">
-              {request.employee_first_name} {request.employee_last_name} ({request.employee_id})
+              {request.first_name || request.employee_first_name} {request.last_name || request.employee_last_name} ({request.employee_number || request.employee_id})
             </p>
           </div>
           <button
@@ -83,13 +83,13 @@ export default function RequestDetailsModal({ request, onClose }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <div className="text-xs text-gray-600 mb-1">Hospital</div>
-                <div className="text-sm font-medium text-gray-900">{request.hospital_name || "-"}</div>
+                <div className="text-sm font-medium text-gray-900">{request.selected_hospital_name || request.hospital_name || "-"}</div>
               </div>
               <div>
                 <div className="text-xs text-gray-600 mb-1">Assigned HR Personnel</div>
                 <div className="text-sm font-medium text-gray-900">
-                  {request.hr_first_name && request.hr_last_name
-                    ? `${request.hr_first_name} ${request.hr_last_name}`
+                  {request.assigned_hr_first_name && request.assigned_hr_last_name
+                    ? `${request.assigned_hr_first_name} ${request.assigned_hr_last_name}`
                     : <span className="text-gray-400 italic">Not Assigned</span>
                   }
                 </div>
@@ -140,12 +140,12 @@ export default function RequestDetailsModal({ request, onClose }) {
               <div>
                 <div className="text-xs text-gray-600 mb-1">Full Name</div>
                 <div className="text-sm font-medium text-gray-900">
-                  {request.employee_first_name} {request.employee_last_name}
+                  {request.first_name || request.employee_first_name} {request.last_name || request.employee_last_name}
                 </div>
               </div>
               <div>
                 <div className="text-xs text-gray-600 mb-1">Employee ID</div>
-                <div className="text-sm text-gray-900">{request.employee_id}</div>
+                <div className="text-sm text-gray-900">{request.employee_number || request.employee_id}</div>
               </div>
             </div>
           </div>

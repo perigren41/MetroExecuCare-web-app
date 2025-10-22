@@ -229,7 +229,8 @@ export default function AdminUsersPage() {
       const response = await apiService.getRequestById(request.id);
 
       if (response.success) {
-        setSelectedRequest(response.data);
+        // Backend returns { success: true, data: { request: {...} } }
+        setSelectedRequest(response.data.request || response.data);
       } else {
         setError(response.message || "Failed to fetch request details");
       }
