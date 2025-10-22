@@ -43,6 +43,7 @@ export default function AdminUsersPage() {
   const [requestSearchQuery, setRequestSearchQuery] = useState("");
   const [requestStatusFilter, setRequestStatusFilter] = useState("all");
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [activeStatFilter, setActiveStatFilter] = useState("all");
 
   // Fetch users from API on component mount
   useEffect(() => {
@@ -243,6 +244,28 @@ export default function AdminUsersPage() {
     return isActive && matchesSearch && matchesFilter;
   });
 
+  // Handle stats card filter click
+  const handleStatFilterClick = (filterKey) => {
+    setActiveStatFilter(filterKey);
+
+    // Map filterKey to appropriate status or special filter
+    switch (filterKey) {
+      case "all":
+        setRequestStatusFilter("all");
+        break;
+      case "urgent":
+      case "overdue":
+      case "unassigned":
+        // These are special filters, keep status filter as "all"
+        setRequestStatusFilter("all");
+        break;
+      default:
+        // Direct status filters
+        setRequestStatusFilter(filterKey);
+        break;
+    }
+  };
+
   // Filtered Requests
   const filteredRequests = (Array.isArray(requests) ? requests : []).filter((r) => {
     const matchesSearch =
@@ -251,8 +274,28 @@ export default function AdminUsersPage() {
       r.employee_last_name?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
       r.employee_id?.toLowerCase().includes(requestSearchQuery.toLowerCase());
 
+    // Handle special stat filters
+    if (activeStatFilter === "urgent") {
+      return matchesSearch && r.priority_level === "urgent";
+    }
+
+    if (activeStatFilter === "overdue") {
+      const isOverdue = (dueDate, status) => {
+        if (['completed', 'rejected'].includes(status)) return false;
+        const due = new Date(dueDate);
+        const today = new Date();
+        return due < today;
+      };
+      return matchesSearch && isOverdue(r.due_date, r.current_status);
+    }
+
+    if (activeStatFilter === "unassigned") {
+      return matchesSearch && !r.hr_first_name && !r.hr_last_name;
+    }
+
+    // Handle status-based filters
     const matchesStatusFilter =
-      requestStatusFilter === "all" ? true : r.current_status === requestStatusFilter;
+      activeStatFilter === "all" ? true : r.current_status === activeStatFilter;
 
     return matchesSearch && matchesStatusFilter;
   });
@@ -289,9 +332,9 @@ export default function AdminUsersPage() {
             {viewMode === "requests" && (
               <button
                 onClick={toggleView}
-                className="px-3 py-1 bg-gray-600 text-white text-xs rounded-full hover:bg-gray-700 transition cursor-pointer"
+                className="px-3 py-1 bg-blue-600 text-white text-xs rounded-full hover:bg-blue-700 transition cursor-pointer"
               >
-                ← Back to Users
+                User Management
               </button>
             )}
           </div>
@@ -310,33 +353,48 @@ export default function AdminUsersPage() {
 
             {/* Management Buttons - Full Width */}
             <div className="flex items-center gap-2 mb-2 overflow-x-auto">
-              <button
-                onClick={() => setShowDepartmentModal(true)}
-                disabled={loading}
-                className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs whitespace-nowrap
-                  rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Department Management
-              </button>
-              <button
-                onClick={() => setShowBranchModal(true)}
-                disabled={loading}
-                className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs whitespace-nowrap
-                  rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Branch Management
-              </button>
-              <button
-                onClick={toggleView}
-                disabled={loading}
-                className="px-3 py-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-xs whitespace-nowrap
-                  rounded-full hover:from-purple-700 hover:to-purple-800 transition-all cursor-pointer shadow-sm hover:shadow-md
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Request Management
-              </button>
+              {viewMode === "users" && (
+                <>
+                  <button
+                    onClick={() => setShowDepartmentModal(true)}
+                    disabled={loading}
+                    className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs whitespace-nowrap
+                      rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
+                      disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Department Management
+                  </button>
+                  <button
+                    onClick={() => setShowBranchModal(true)}
+                    disabled={loading}
+                    className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs whitespace-nowrap
+                      rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
+                      disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Branch Management
+                  </button>
+                  <button
+                    onClick={toggleView}
+                    disabled={loading}
+                    className="px-3 py-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-xs whitespace-nowrap
+                      rounded-full hover:from-purple-700 hover:to-purple-800 transition-all cursor-pointer shadow-sm hover:shadow-md
+                      disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Request Management
+                  </button>
+                </>
+              )}
+              {viewMode === "requests" && (
+                <button
+                  onClick={toggleView}
+                  disabled={loading}
+                  className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs whitespace-nowrap
+                    rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
+                    disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  User Management
+                </button>
+              )}
             </div>
 
             {/* Buttons - Side by Side */}
@@ -400,41 +458,58 @@ export default function AdminUsersPage() {
 
           {/* Desktop Layout */}
           <div className="hidden sm:flex items-center justify-between gap-2 mb-1">
-            <SearchBar
-              search={searchQuery}
-              setSearch={setSearchQuery}
-              filter={filter}
-              setFilter={setFilter}
-            />
+            {viewMode === "users" && (
+              <SearchBar
+                search={searchQuery}
+                setSearch={setSearchQuery}
+                filter={filter}
+                setFilter={setFilter}
+              />
+            )}
 
             <div className="flex items-center gap-3">
-              <button
-                onClick={() => setShowDepartmentModal(true)}
-                disabled={loading}
-                className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs
-                  rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Department Management
-              </button>
-              <button
-                onClick={() => setShowBranchModal(true)}
-                disabled={loading}
-                className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs
-                  rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Branch Management
-              </button>
-              <button
-                onClick={toggleView}
-                disabled={loading}
-                className="px-3 py-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-xs
-                  rounded-full hover:from-purple-700 hover:to-purple-800 transition-all cursor-pointer shadow-sm hover:shadow-md
-                  disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Request Management
-              </button>
+              {viewMode === "users" && (
+                <>
+                  <button
+                    onClick={() => setShowDepartmentModal(true)}
+                    disabled={loading}
+                    className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs
+                      rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
+                      disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Department Management
+                  </button>
+                  <button
+                    onClick={() => setShowBranchModal(true)}
+                    disabled={loading}
+                    className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs
+                      rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
+                      disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Branch Management
+                  </button>
+                  <button
+                    onClick={toggleView}
+                    disabled={loading}
+                    className="px-3 py-1 bg-gradient-to-r from-purple-600 to-purple-700 text-white text-xs
+                      rounded-full hover:from-purple-700 hover:to-purple-800 transition-all cursor-pointer shadow-sm hover:shadow-md
+                      disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Request Management
+                  </button>
+                </>
+              )}
+              {viewMode === "requests" && (
+                <button
+                  onClick={toggleView}
+                  disabled={loading}
+                  className="px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs
+                    rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
+                    disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  User Management
+                </button>
+              )}
               <button
                 onClick={() => setShowDeletedUsersModal(true)}
                 disabled={loading}
@@ -523,37 +598,24 @@ export default function AdminUsersPage() {
         ) : (
           <>
             {/* REQUEST MANAGEMENT VIEW */}
-            {/* Search and Filters */}
+            {/* Search Bar */}
             <div className="mb-3 flex-shrink-0">
-              <div className="flex flex-col sm:flex-row gap-3">
-                <input
-                  type="text"
-                  placeholder="Search by request #, employee name, or ID..."
-                  value={requestSearchQuery}
-                  onChange={(e) => setRequestSearchQuery(e.target.value)}
-                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                />
-                <select
-                  value={requestStatusFilter}
-                  onChange={(e) => setRequestStatusFilter(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                >
-                  <option value="all">All Statuses</option>
-                  <option value="pending">Pending</option>
-                  <option value="assigned_to_hr">Assigned to HR</option>
-                  <option value="hr_processing">HR Processing</option>
-                  <option value="benefits_review">Benefits Review</option>
-                  <option value="welfare_review">Welfare Review</option>
-                  <option value="hr_final_verification">HR Final Verification</option>
-                  <option value="approved">Approved</option>
-                  <option value="completed">Completed</option>
-                  <option value="rejected">Rejected</option>
-                </select>
-              </div>
+              <input
+                type="text"
+                placeholder="Search by request #, employee name, or ID..."
+                value={requestSearchQuery}
+                onChange={(e) => setRequestSearchQuery(e.target.value)}
+                className="w-full px-4 py-2 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-sm"
+              />
             </div>
 
             {/* Stats Cards */}
-            <RequestStatsCards stats={requestStats} loading={requestsLoading} />
+            <RequestStatsCards
+              stats={requestStats}
+              loading={requestsLoading}
+              onFilterClick={handleStatFilterClick}
+              activeFilter={activeStatFilter}
+            />
 
             {/* Requests Table */}
             <div className="flex-1 overflow-hidden flex flex-col min-h-0">
@@ -561,6 +623,7 @@ export default function AdminUsersPage() {
                 requests={filteredRequests}
                 onViewDetails={(request) => setSelectedRequest(request)}
                 loading={requestsLoading}
+                activeFilter={activeStatFilter}
               />
             </div>
           </>
