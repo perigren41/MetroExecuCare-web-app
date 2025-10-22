@@ -260,11 +260,12 @@ const getRequests = async (req, res) => {
     let needsApprovalJoin = false;
 
     // Apply role-based filtering
-    if (!['hr_personnel', 'benefits_officer', 'welfare_head'].includes(userRole)) {
-      // Non-HR roles see only their own requests
+    if (!['hr_personnel', 'benefits_officer', 'welfare_head', 'admin'].includes(userRole)) {
+      // Non-HR/Admin roles see only their own requests
       whereConditions.push('cr.employee_id = ?');
       queryParams.push(userId);
     }
+    // Admins see all requests (no filter applied)
 
     // Apply assigned HR filter if provided (for HR dashboard)
     if (assigned_hr_id) {
@@ -342,16 +343,19 @@ const getRequests = async (req, res) => {
         cr.letter_purpose,
         cr.assigned_hr_id,
         cr.assigned_at,
-        u.first_name,
-        u.last_name,
+        u.first_name AS employee_first_name,
+        u.last_name AS employee_last_name,
         u.email,
-        u.employee_id as employee_number,
+        u.employee_id AS employee_id,
         u.department,
         u.position,
-        h.name as selected_hospital_name
+        h.name AS hospital_name,
+        hr.first_name AS hr_first_name,
+        hr.last_name AS hr_last_name
       FROM checkup_requests cr
       JOIN users u ON cr.employee_id = u.id
       LEFT JOIN hospitals h ON cr.hospital_id = h.id
+      LEFT JOIN users hr ON cr.assigned_hr_id = hr.id
       ${joinClause}
       ${whereClause}
       ORDER BY ${validSortField} ${validOrder}

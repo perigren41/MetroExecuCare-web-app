@@ -334,7 +334,7 @@ export default function AdminUsersPage() {
                 onClick={toggleView}
                 className="px-3 py-1 bg-blue-600 text-white text-xs rounded-full hover:bg-blue-700 transition cursor-pointer"
               >
-                User Management
+                ← Back to Users
               </button>
             )}
           </div>
@@ -401,7 +401,7 @@ export default function AdminUsersPage() {
                     rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
                     disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
                 >
-                  User Management
+                  ← Back
                 </button>
               )}
             </div>
@@ -561,7 +561,7 @@ export default function AdminUsersPage() {
                     rounded-full hover:from-blue-700 hover:to-blue-800 transition-all cursor-pointer shadow-sm hover:shadow-md
                     disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  User Management
+                  ← Back to Users
                 </button>
               )}
             </div>
