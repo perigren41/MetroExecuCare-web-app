@@ -151,7 +151,7 @@ export default function DepartmentManagementModal({ onClose, onDepartmentChange 
 
               <button
                 onClick={handleAddDepartment}
-                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all font-medium text-sm shadow-sm hover:shadow-md cursor-pointer"
+                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full hover:from-blue-700 hover:to-blue-800 transition-all font-medium text-sm shadow-sm hover:shadow-md cursor-pointer"
               >
                 + Add Department
               </button>

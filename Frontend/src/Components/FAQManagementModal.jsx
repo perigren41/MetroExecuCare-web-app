@@ -185,78 +185,106 @@ export default function FAQManagementModal({ onClose, onFAQChange }) {
 
               <button
                 onClick={handleAddFAQ}
-                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full hover:from-blue-700 hover:to-purple-700 transition cursor-pointer font-semibold text-sm shadow-md"
+                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full hover:from-blue-700 hover:to-blue-800 transition-all font-medium text-sm shadow-sm hover:shadow-md cursor-pointer"
               >
                 + Add FAQ
               </button>
             </div>
           </div>
 
-          {/* Content Area */}
+          {/* Error Display */}
+          {error && (
+            <div className="mx-6 mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg">
+              {error}
+            </div>
+          )}
+
+          {/* Content Area - Table */}
           <div className="flex-1 overflow-y-auto p-6">
             {loading ? (
               <div className="text-center py-12">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="text-gray-500 mt-4">Loading FAQs...</p>
-              </div>
-            ) : error ? (
-              <div className="text-center py-12">
-                <p className="text-red-500">{error}</p>
-                <button
-                  onClick={fetchFAQs}
-                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition cursor-pointer"
-                >
-                  Retry
-                </button>
-              </div>
-            ) : filteredFAQs.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-gray-500">No FAQs found</p>
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <p className="mt-4 text-gray-600">Loading FAQs...</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {filteredFAQs.map((faq) => (
-                  <div
-                    key={faq.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition bg-white"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
-                            {faq.categoryDisplayName}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            Order: {faq.displayOrder || 0}
-                          </span>
-                        </div>
-                        <h3 className="font-semibold text-gray-900 mb-2">
-                          {faq.question}
-                        </h3>
-                        <p className="text-sm text-gray-600 line-clamp-2">
-                          {faq.answer}
-                        </p>
-                        <div className="mt-2 text-xs text-gray-500">
-                          Views: {faq.viewCount || 0} • Created: {new Date(faq.createdAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEditFAQ(faq)}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition cursor-pointer text-sm font-semibold"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteFAQ(faq.id)}
-                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition cursor-pointer text-sm font-semibold"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <div className="bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                <table className="w-full">
+                  <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Category
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Question
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Answer
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Order
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredFAQs.length === 0 ? (
+                      <tr>
+                        <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                          <div className="flex flex-col items-center">
+                            <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p className="text-lg font-medium">No FAQs found</p>
+                            <p className="text-sm text-gray-400 mt-1">Create your first FAQ to get started</p>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredFAQs.map((faq) => (
+                        <tr key={faq.id} className="hover:bg-blue-50/50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
+                              {faq.categoryDisplayName}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm font-semibold text-gray-900 max-w-xs truncate">
+                              {faq.question}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-gray-600 max-w-md truncate">
+                              {faq.answer}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <span className="text-sm text-gray-700">
+                              {faq.displayOrder || 0}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => handleEditFAQ(faq)}
+                                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm hover:shadow-md cursor-pointer font-medium"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteFAQ(faq.id)}
+                                className="px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-lg hover:from-red-600 hover:to-red-700 transition-all shadow-sm hover:shadow-md cursor-pointer font-medium"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
