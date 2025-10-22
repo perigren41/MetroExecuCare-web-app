@@ -51,17 +51,17 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
 
   const getStatusColor = (status) => {
     const colors = {
-      pending: "bg-gray-100 text-gray-800",
-      assigned_to_hr: "bg-blue-100 text-blue-800",
-      hr_processing: "bg-blue-200 text-blue-900",
-      benefits_review: "bg-yellow-100 text-yellow-800",
-      welfare_review: "bg-orange-100 text-orange-800",
-      hr_final_verification: "bg-purple-100 text-purple-800",
-      approved: "bg-green-100 text-green-800",
-      completed: "bg-green-200 text-green-900",
-      rejected: "bg-red-100 text-red-800",
+      pending: "text-gray-800",
+      assigned_to_hr: "text-blue-800",
+      hr_processing: "text-blue-900",
+      benefits_review: "text-yellow-800",
+      welfare_review: "text-orange-800",
+      hr_final_verification: "text-purple-800",
+      approved: "text-green-800",
+      completed: "text-green-900",
+      rejected: "text-red-800",
     };
-    return colors[status] || "bg-gray-100 text-gray-800";
+    return colors[status] || "text-gray-800";
   };
 
   const getStatusLabel = (status) => {
@@ -157,7 +157,7 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
                   <div className="text-sm text-gray-900">{formatRequestType(request.request_type)}</div>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
-                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(request.current_status)}`}>
+                  <span className={`text-xs leading-5 font-semibold ${getStatusColor(request.current_status)}`}>
                     {getStatusLabel(request.current_status)}
                   </span>
                 </td>
@@ -210,7 +210,7 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
                 <div className="text-xs text-gray-500">{request.employee_id}</div>
               </div>
               <div className="flex flex-col items-end gap-1">
-                <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(request.current_status)}`}>
+                <span className={`text-xs leading-5 font-semibold ${getStatusColor(request.current_status)}`}>
                   {getStatusLabel(request.current_status)}
                 </span>
               </div>

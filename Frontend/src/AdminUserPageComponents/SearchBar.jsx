@@ -6,25 +6,37 @@ export default function SearchBar({ search, setSearch, filter, setFilter, users 
 
   return (
     <div className="relative flex items-center gap-2 w-full">
-      {/* Search Input */}
-      <span className="absolute inset-y-0 left-0 pl-2 flex items-center text-gray-400 z-10">
-        <img src={SearchIcon} alt="Search" className="w-3 h-3 sm:w-4 sm:h-4" />
-      </span>
-      <input
-        type="text"
-        placeholder="Search by Name or Employee ID..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full sm:w-80 md:w-96 lg:w-[400px] h-7 pl-7 pr-2 rounded-gradient
-                   focus:outline-none focus:ring-2 focus:ring-blue-900 text-xs"
-      />
+      {/* Search Input with Gradient Border */}
+      <div className="relative w-full sm:w-80 md:w-96 lg:w-[400px] h-[38px]">
+        <div
+          className="absolute inset-0 rounded-full p-[2px]"
+          style={{
+            background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
+          }}
+        >
+          <div className="w-full h-full bg-white rounded-full flex items-center px-4">
+            <img
+              src={SearchIcon}
+              alt="Search"
+              className="h-5 w-5 text-gray-400 mr-2 flex-shrink-0"
+            />
+            <input
+              type="text"
+              placeholder="Search by Name or Employee ID..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full h-full border-0 bg-transparent focus:outline-none text-gray-700 placeholder-gray-400"
+            />
+          </div>
+        </div>
+      </div>
 
       {/* Filters Button */}
       <button
         type="button"
         onClick={() => setShowFilters(!showFilters)}
         className="h-7 px-2 sm:px-3 text-xs rounded-xl font-medium bg-[linear-gradient(to_right,#3F6EC0_2%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] text-white
-                   focus:outline-none focus:ring-2 focus:ring-blue-900 whitespace-nowrap"
+                   focus:outline-none focus:ring-2 focus:ring-blue-900 whitespace-nowrap cursor-pointer"
       >
         Filters
       </button>

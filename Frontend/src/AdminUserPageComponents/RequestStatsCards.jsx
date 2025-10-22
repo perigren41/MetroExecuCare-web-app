@@ -72,11 +72,11 @@ export default function RequestStatsCards({ stats, loading, onFilterClick, activ
             <button
               key={index}
               onClick={() => onFilterClick(card.filterKey)}
-              className="relative overflow-hidden rounded-lg transition-all duration-200 shadow-lg scale-105 p-4 text-left"
+              className="relative overflow-hidden rounded-lg transition-all duration-200 shadow-lg scale-105 p-4 text-left cursor-pointer"
               style={gradientStyle}
             >
               <div className="flex items-start justify-between mb-2">
-                <span className="text-xs font-semibold bg-white/20 px-2 py-0.5 rounded-full">
+                <span className="text-xs font-semibold bg-white/90 text-blue-700 px-2 py-0.5 rounded-full">
                   Active
                 </span>
               </div>
@@ -95,7 +95,7 @@ export default function RequestStatsCards({ stats, loading, onFilterClick, activ
           <div key={index} className="relative p-[2px] rounded-lg" style={gradientStyle}>
             <button
               onClick={() => onFilterClick(card.filterKey)}
-              className="w-full h-full bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-4 text-left"
+              className="w-full h-full bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-4 text-left cursor-pointer"
             >
               <div className="text-3xl font-bold mb-1 text-gray-900">
                 {card.value}

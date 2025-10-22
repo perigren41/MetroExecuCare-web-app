@@ -581,15 +581,26 @@ export default function AdminUsersPage() {
         ) : (
           <>
             {/* REQUEST MANAGEMENT VIEW */}
-            {/* Search Bar */}
+            {/* Search Bar with Gradient Border */}
             <div className="mb-3 flex-shrink-0">
-              <input
-                type="text"
-                placeholder="Search by request #, employee name, or ID..."
-                value={requestSearchQuery}
-                onChange={(e) => setRequestSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm shadow-sm"
-              />
+              <div className="relative w-full h-[38px]">
+                <div
+                  className="absolute inset-0 rounded-full p-[2px]"
+                  style={{
+                    background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
+                  }}
+                >
+                  <div className="w-full h-full bg-white rounded-full flex items-center px-4">
+                    <input
+                      type="text"
+                      placeholder="Search by request #, employee name, or ID..."
+                      value={requestSearchQuery}
+                      onChange={(e) => setRequestSearchQuery(e.target.value)}
+                      className="w-full h-full border-0 bg-transparent focus:outline-none text-gray-700 placeholder-gray-400"
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Stats Cards */}
