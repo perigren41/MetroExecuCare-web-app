@@ -955,3 +955,13 @@ CREATE TABLE branches (
 **Admin request checker function**
 - I want to have an overall log where: in UserDetailsModal, we can check each user's history of request. In the history of request, we can see each request number, whether approved or rejected, HR_assigned, date of request. And if the Admin click one of the history, they will be routed to history page of that request.
 
+
+
+**Add FAQ**
+- Remove all emojis under FAQ.
+- create a "Add FAQ" inside "Add" + button
+- I want to have an FAQ that can be added by HR and Admin. Basically, when an authorized user(HR or Admin) click "Add FAQ" they can add a question that has categories: "General", "Getting started", "Approval Workflow", "Request Tracking", "After Approval", etc. try to check the faq data table to check for categories. And with "Title" textbox would be the main FAQ and "Answer" textbox would be the HR's answer. And once click submitted, it will then be placed in "FAQ" page.
+- Big headers must be considered as categories that can be identified by the add faq to easily manage where it will be added
+
+**Request Management UI for HR**
+- I want HR to have request management as well. But I want their request management to use its own pending-request table page instead of using admin-user-page table as its request management page. Make sure to use concise theme with its own table and place the request management button close to or near the search bar

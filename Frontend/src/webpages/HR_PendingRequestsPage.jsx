@@ -3,7 +3,8 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import NavBarMain from "@/Components/NavBarMain";
-import HRRequestManagementModal from "@/Components/HRRequestManagementModal";
+import HRRequestStatsCards from "@/Components/HRRequestStatsCards";
+import HRRequestManagementTable from "@/Components/HRRequestManagementTable";
 import apiService from "@/services/api";
 
 // Assets
@@ -53,8 +54,15 @@ export default function HR_PendingRequestsPage() {
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [claiming, setClaiming] = useState(false);
 
-    // Request Management modal state
-    const [showRequestManagementModal, setShowRequestManagementModal] = useState(false);
+    // View mode state - "pending" or "management"
+    const [viewMode, setViewMode] = useState("pending");
+
+    // Request Management states
+    const [allRequests, setAllRequests] = useState([]);
+    const [requestStats, setRequestStats] = useState({});
+    const [managementLoading, setManagementLoading] = useState(false);
+    const [managementSearchQuery, setManagementSearchQuery] = useState("");
+    const [activeStatFilter, setActiveStatFilter] = useState("all");
 
     // Fetch pending requests from API based on HR role
     const fetchPendingRequests = async () => {
@@ -93,12 +101,67 @@ export default function HR_PendingRequestsPage() {
         }
     };
 
-    // Load pending requests on component mount
+    // Fetch all requests for Request Management view
+    const fetchAllRequests = async () => {
+        try {
+            setManagementLoading(true);
+            setError("");
+
+            const response = await apiService.getRequests({ limit: 100 });
+
+            if (response.success) {
+                setAllRequests(response.data?.requests || []);
+                // Calculate stats from the requests
+                calculateStats(response.data?.requests || []);
+            } else {
+                setError(response.message || "Failed to fetch requests");
+                setAllRequests([]);
+            }
+        } catch (err) {
+            console.error("Error fetching requests:", err);
+            setError("Failed to load requests");
+            setAllRequests([]);
+        } finally {
+            setManagementLoading(false);
+        }
+    };
+
+    // Calculate stats from requests
+    const calculateStats = (requests) => {
+        const stats = {
+            total: requests.length,
+            pending: 0,
+            hr_processing: 0,
+            benefits_review: 0,
+            welfare_review: 0,
+            hr_final_verification: 0,
+            approved: 0,
+            rejected: 0,
+        };
+
+        requests.forEach(req => {
+            if (stats.hasOwnProperty(req.current_status)) {
+                stats[req.current_status]++;
+            }
+            // Count completed as approved
+            if (req.current_status === 'completed') {
+                stats.approved++;
+            }
+        });
+
+        setRequestStats(stats);
+    };
+
+    // Load data based on view mode
     useEffect(() => {
         if (user) {
-            fetchPendingRequests();
+            if (viewMode === "pending") {
+                fetchPendingRequests();
+            } else {
+                fetchAllRequests();
+            }
         }
-    }, [user]);
+    }, [user, viewMode]);
 
     // Close popup when clicking outside
     useEffect(() => {
@@ -290,6 +353,30 @@ export default function HR_PendingRequestsPage() {
         navigate("/login", { replace: true });
     };
 
+    // Handle stat filter click for Request Management view
+    const handleStatFilterClick = (filterKey) => {
+        setActiveStatFilter(filterKey);
+    };
+
+    // Toggle between Pending Requests and Request Management views
+    const toggleView = () => {
+        setViewMode(viewMode === "pending" ? "management" : "pending");
+        setError(""); // Clear any existing errors
+    };
+
+    // Filtered requests for Request Management view
+    const managementFilteredRequests = allRequests.filter((req) => {
+        const matchesSearch =
+            req.request_number?.toLowerCase().includes(managementSearchQuery.toLowerCase()) ||
+            req.employee_first_name?.toLowerCase().includes(managementSearchQuery.toLowerCase()) ||
+            req.employee_last_name?.toLowerCase().includes(managementSearchQuery.toLowerCase()) ||
+            `${req.employee_first_name} ${req.employee_last_name}`.toLowerCase().includes(managementSearchQuery.toLowerCase());
+
+        const matchesFilter = activeStatFilter === "all" || req.current_status === activeStatFilter;
+
+        return matchesSearch && matchesFilter;
+    });
+
     // Role-based filtering: show requests that need current user's action
     const roleFilteredRequests = pendingRequests.filter((req) => {
         if (!user) return false;
@@ -379,12 +466,11 @@ export default function HR_PendingRequestsPage() {
             {/* Title */}
             <div className="flex justify-center mt-6 md:mt-[43px] px-4">
                 <h1 className="text-[#023184] text-xl md:text-[28px] font-bold text-center">
-                    Pending Requests
+                    {viewMode === "pending" ? "Pending Requests" : "Request Management"}
                 </h1>
             </div>
 
-            {/* Rest of the component remains the same... */}
-            {/* Search + Filter + Request Management Buttons */}
+            {/* Search + Filter + View Toggle Buttons */}
             <div className="px-4 md:px-8 lg:px-[200px] mt-2 flex flex-col sm:flex-row items-center gap-3 relative">
                 {/* Search Input */}
                 <div className="relative w-full sm:flex-shrink-0 sm:w-[400px] lg:w-[500px] h-[38px]">
@@ -403,39 +489,40 @@ export default function HR_PendingRequestsPage() {
                             />
                             <input
                                 type="text"
-                                placeholder="Search by name..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder={viewMode === "pending" ? "Search by name..." : "Search by request number or name..."}
+                                value={viewMode === "pending" ? searchTerm : managementSearchQuery}
+                                onChange={(e) => viewMode === "pending" ? setSearchTerm(e.target.value) : setManagementSearchQuery(e.target.value)}
                                 className="w-full h-full border-0 bg-transparent focus:outline-none text-gray-700 placeholder-gray-400"
                             />
                         </div>
                     </div>
                 </div>
 
-                {/* Request Management Button */}
+                {/* Request Management Toggle Button */}
                 <button
-                    onClick={() => setShowRequestManagementModal(true)}
+                    onClick={toggleView}
                     className="w-full sm:w-auto px-5 py-2 rounded-full text-base font-bold hover:opacity-80 transition-all text-white cursor-pointer whitespace-nowrap"
                     style={{
                         background:
                             "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
                     }}
                 >
-                    Request Management
+                    {viewMode === "pending" ? "Request Management" : "Pending Requests"}
                 </button>
 
-                {/* Filter Button Container */}
-                <div className="relative w-full sm:w-auto">
-                    <button
-                        onClick={handleFilterClick}
-                        className="w-full sm:w-auto px-5 py-2 rounded-full text-base font-bold hover:opacity-80 transition-all text-white cursor-pointer"
-                        style={{
-                            background:
-                                "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
-                        }}
-                    >
-                        Filter
-                    </button>
+                {/* Filter Button Container - Only show for Pending view */}
+                {viewMode === "pending" && (
+                    <div className="relative w-full sm:w-auto">
+                        <button
+                            onClick={handleFilterClick}
+                            className="w-full sm:w-auto px-5 py-2 rounded-full text-base font-bold hover:opacity-80 transition-all text-white cursor-pointer"
+                            style={{
+                                background:
+                                    "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
+                            }}
+                        >
+                            Filter
+                        </button>
 
                     {/* Filter Popup - keeping the existing implementation */}
                     {showFilterPopup && (
@@ -650,8 +737,27 @@ export default function HR_PendingRequestsPage() {
                 </div>
             </div>
 
-            {/* Table Container */}
-            <div className="mt-2 px-4 md:px-8 lg:px-[200px]">
+            {/* Conditional View Rendering */}
+            {viewMode === "management" ? (
+                /* REQUEST MANAGEMENT VIEW */
+                <div className="mt-4 px-4 md:px-8 lg:px-[200px]">
+                    {/* Stats Cards */}
+                    <HRRequestStatsCards
+                        stats={requestStats}
+                        onFilterClick={handleStatFilterClick}
+                        activeFilter={activeStatFilter}
+                    />
+
+                    {/* Request Management Table */}
+                    <HRRequestManagementTable
+                        requests={managementFilteredRequests}
+                        loading={managementLoading}
+                        activeFilter={activeStatFilter}
+                    />
+                </div>
+            ) : (
+                /* PENDING REQUESTS VIEW */
+                <div className="mt-2 px-4 md:px-8 lg:px-[200px]">
                 {/* Mobile Card View */}
                 <div className="block lg:hidden">
                     <div className="space-y-4">
@@ -874,7 +980,8 @@ export default function HR_PendingRequestsPage() {
                         </div>
                     </div>
                 </div>
-            </div>
+                </div>
+            )}
 
             {/* Claim Request Modal */}
             {showClaimModal && selectedRequest && (
@@ -951,13 +1058,6 @@ export default function HR_PendingRequestsPage() {
                 </div>
             )}
 
-            {/* Request Management Modal */}
-            {showRequestManagementModal && (
-                <HRRequestManagementModal
-                    onClose={() => setShowRequestManagementModal(false)}
-                    user={user}
-                />
-            )}
         </div>
     );
 }
