@@ -165,28 +165,28 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
             <table className="min-w-full">
               <thead className="sticky top-0 z-10">
                 <tr className="bg-[linear-gradient(to_right,#3F6EC0_10%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] text-white">
-                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-center font-semibold">
                     Request #
                   </th>
-                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-center font-semibold">
                     Employee
                   </th>
-                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-center font-semibold">
                     Type
                   </th>
-                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-center font-semibold">
                     Status
                   </th>
-                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-center font-semibold">
                     Assigned HR
                   </th>
-                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-center font-semibold">
                     Hospital
                   </th>
-                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-center font-semibold">
                     Created
                   </th>
-                  <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">
+                  <th className="px-4 py-3.5 text-center font-semibold">
                     Due Date
                   </th>
                 </tr>
@@ -198,48 +198,47 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
                     onClick={() => onViewDetails(request)}
                     className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 cursor-pointer transition-all duration-200 hover:shadow-sm"
                   >
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm font-medium text-blue-600">
+                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                      <span className="text-sm font-medium text-gray-800">
                         {request.request_number}
-                      </div>
+                      </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                    <td className="px-4 py-3 text-center">
+                      <span className="font-medium text-gray-900">
                         {request.employee_first_name} {request.employee_last_name}
-                      </div>
-                      <div className="text-xs text-gray-500">{request.employee_id}</div>
+                      </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{formatRequestType(request.request_type)}</div>
+                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                      <span className="text-gray-700 text-base">{formatRequestType(request.request_type)}</span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <span className={`text-xs leading-5 font-semibold ${getStatusColor(request.current_status)}`}>
+                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                      <span className={`text-sm font-medium ${getStatusColor(request.current_status)}`}>
                         {getStatusLabel(request.current_status)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
+                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                      <span className="text-gray-900">
                         {request.hr_first_name && request.hr_last_name
                           ? `${request.hr_first_name} ${request.hr_last_name}`
                           : <span className="text-gray-400 italic">Unassigned</span>
                         }
-                      </div>
+                      </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="text-sm text-gray-900 max-w-xs truncate">
+                    <td className="px-4 py-3 text-center">
+                      <span className="text-gray-900 max-w-xs truncate inline-block">
                         {request.hospital_name || "-"}
-                      </div>
+                      </span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className="text-sm text-gray-500">{formatDate(request.created_at)}</div>
+                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                      <span className="text-gray-600 text-base">{formatDate(request.created_at)}</span>
                     </td>
-                    <td className="px-4 py-3 whitespace-nowrap">
-                      <div className={`text-sm ${isOverdue(request.due_date, request.current_status) ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
+                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                      <span className={`text-base ${isOverdue(request.due_date, request.current_status) ? 'text-red-600 font-semibold' : 'text-gray-600'}`}>
                         {formatDate(request.due_date)}
                         {isOverdue(request.due_date, request.current_status) && (
                           <span className="ml-1 text-xs">(Overdue)</span>
                         )}
-                      </div>
+                      </span>
                     </td>
                   </tr>
                 ))}

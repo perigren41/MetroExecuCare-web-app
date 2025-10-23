@@ -78,11 +78,11 @@ export default function UserTable({ users, onView }) {
           <table className="min-w-full">
           <thead className="sticky top-0 z-10">
             <tr className="bg-[linear-gradient(to_right,#3F6EC0_10%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] text-white">
-              <th className="px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider">Name</th>
-              <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase tracking-wider">Employee ID</th>
-              <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase tracking-wider">Role</th>
-              <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase tracking-wider">Date Added</th>
-              <th className="px-6 py-3.5 text-center text-xs font-semibold uppercase tracking-wider">Action</th>
+              <th className="px-6 py-3.5 text-center font-semibold">Name</th>
+              <th className="px-6 py-3.5 text-center font-semibold">Employee ID</th>
+              <th className="px-6 py-3.5 text-center font-semibold">Role</th>
+              <th className="px-6 py-3.5 text-center font-semibold">Date Added</th>
+              <th className="px-6 py-3.5 text-center font-semibold">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -96,28 +96,28 @@ export default function UserTable({ users, onView }) {
                     ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}
                   `}
                 >
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
+                  <td className="px-6 py-4 text-center">
+                    <div className="flex items-center justify-center gap-3">
                       <img
                         src={user.profile_picture_url || NoProfilePicture}
                         alt={`${user.first_name} ${user.last_name}`}
                         className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
                       />
-                      <span className="text-sm font-medium text-gray-900">
+                      <span className="font-medium text-gray-900">
                         {`${user.first_name || ""} ${user.last_name || ""}`.trim()}
                       </span>
                     </div>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="text-sm text-gray-700 font-mono">{user.employee_id}</span>
+                    <span className="font-medium text-gray-800 text-sm">{user.employee_id}</span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="text-sm text-gray-700">
+                    <span className="text-gray-700 text-base">
                       {getRoleDisplayName(user.role)}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="text-sm text-gray-600">
+                    <span className="text-gray-600 text-base">
                       {new Date(user.created_at).toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
