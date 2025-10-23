@@ -168,8 +168,8 @@ export default function RequestStatsCards({ stats, loading, onFilterClick, activ
         )}
       </div>
 
-      {/* Desktop: Grid Layout */}
-      <div className="hidden md:grid grid-cols-3 lg:grid-cols-7 gap-3 mb-6">
+      {/* Desktop: Grid Layout - Optimized for smaller screens */}
+      <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-2 md:gap-3 mb-4 md:mb-6">
         {cards.map((card, index) => {
           const isActive = activeFilter === card.filterKey;
 
@@ -179,15 +179,15 @@ export default function RequestStatsCards({ stats, loading, onFilterClick, activ
               <button
                 key={index}
                 onClick={() => onFilterClick(card.filterKey)}
-                className="relative overflow-hidden rounded-lg transition-all duration-200 shadow-lg scale-105 p-4 text-left cursor-pointer"
+                className="relative overflow-hidden rounded-lg transition-all duration-200 shadow-lg scale-105 p-2 md:p-3 lg:p-4 text-left cursor-pointer"
                 style={gradientStyle}
               >
-                <div className="flex items-start justify-between mb-2">
+                <div className="flex items-start justify-between mb-1 md:mb-2">
                   <span className="text-xs font-semibold bg-white/90 text-blue-700 px-2 py-0.5 rounded-full">
                     Active
                   </span>
                 </div>
-                <div className="text-3xl font-bold mb-1 text-white">
+                <div className="text-2xl md:text-3xl font-bold mb-0.5 md:mb-1 text-white">
                   {String(card.value).replace(/^0+/, '') || '0'}
                 </div>
                 <div className="text-xs font-medium text-white/90">
@@ -202,9 +202,9 @@ export default function RequestStatsCards({ stats, loading, onFilterClick, activ
             <div key={index} className="relative p-[2px] rounded-lg" style={gradientStyle}>
               <button
                 onClick={() => onFilterClick(card.filterKey)}
-                className="w-full h-full bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-4 text-left cursor-pointer"
+                className="w-full h-full bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-2 md:p-3 lg:p-4 text-left cursor-pointer"
               >
-                <div className="text-3xl font-bold mb-1 text-gray-900">
+                <div className="text-2xl md:text-3xl font-bold mb-0.5 md:mb-1 text-gray-900">
                   {String(card.value).replace(/^0+/, '') || '0'}
                 </div>
                 <div className="text-xs font-medium text-gray-600">

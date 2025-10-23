@@ -78,7 +78,7 @@ export default function UserTable({ users, onView }) {
           <table className="min-w-full">
           <thead className="sticky top-0 z-10">
             <tr className="bg-[linear-gradient(to_right,#3F6EC0_10%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] text-white">
-              <th className="px-6 py-3.5 text-center font-semibold">Name</th>
+              <th className="px-6 py-3.5 text-left font-semibold">Name</th>
               <th className="px-6 py-3.5 text-center font-semibold">Employee ID</th>
               <th className="px-6 py-3.5 text-center font-semibold">Role</th>
               <th className="px-6 py-3.5 text-center font-semibold">Date Added</th>
@@ -96,8 +96,8 @@ export default function UserTable({ users, onView }) {
                     ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}
                   `}
                 >
-                  <td className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-3">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
                       <img
                         src={user.profile_picture_url || NoProfilePicture}
                         alt={`${user.first_name} ${user.last_name}`}
