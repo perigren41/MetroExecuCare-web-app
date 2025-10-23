@@ -172,40 +172,37 @@ export default function DepartmentManagementModal({ onClose, onDepartmentChange 
                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                 <p className="mt-4 text-gray-600">Loading departments...</p>
               </div>
+            ) : filteredDepartments.length === 0 ? (
+              <div className="flex flex-col items-center py-12 text-gray-500">
+                <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                <p className="text-lg font-medium">No departments found</p>
+                <p className="text-sm text-gray-400 mt-1">Create your first department to get started</p>
+              </div>
             ) : (
-              <div className="bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm">
-                <table className="w-full">
-                  <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Department Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Description
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Users
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredDepartments.length === 0 ? (
+              <>
+                {/* Desktop Table View - Hidden on mobile */}
+                <div className="hidden md:block bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                  <table className="w-full">
+                    <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
                       <tr>
-                        <td colSpan="4" className="px-6 py-12 text-center text-gray-500">
-                          <div className="flex flex-col items-center">
-                            <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
-                            <p className="text-lg font-medium">No departments found</p>
-                            <p className="text-sm text-gray-400 mt-1">Create your first department to get started</p>
-                          </div>
-                        </td>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          Department Name
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          Description
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          Users
+                        </th>
+                        <th className="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
-                    ) : (
-                      filteredDepartments.map((dept) => (
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredDepartments.map((dept) => (
                         <tr key={dept.id} className="hover:bg-blue-50/50 transition-colors">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-semibold text-gray-900">{dept.name}</div>
@@ -239,11 +236,50 @@ export default function DepartmentManagementModal({ onClose, onDepartmentChange 
                             </div>
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Card View - Visible only on mobile */}
+                <div className="md:hidden space-y-4">
+                  {filteredDepartments.map((dept) => (
+                    <div
+                      key={dept.id}
+                      className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <h3 className="text-sm font-bold text-gray-900 mb-1">{dept.name}</h3>
+                          <p className="text-xs text-gray-600 line-clamp-2">
+                            {dept.description || "No description"}
+                          </p>
+                        </div>
+                        <div className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded whitespace-nowrap ml-2">
+                          {dept.user_count || 0} {dept.user_count === 1 ? 'user' : 'users'}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 mt-3 pt-3 border-t border-gray-200">
+                        <button
+                          onClick={() => handleEditDepartment(dept)}
+                          className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm cursor-pointer font-medium"
+                        >
+                          Edit
+                        </button>
+                        {dept.user_count === 0 && (
+                          <button
+                            onClick={() => handleDeleteDepartment(dept.id)}
+                            className="flex-1 px-4 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-lg hover:from-red-600 hover:to-red-700 transition-all shadow-sm cursor-pointer font-medium"
+                          >
+                            Delete
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
 

@@ -126,7 +126,7 @@ export default function RequestStatsCards({ stats, loading, onFilterClick, activ
                     Active
                   </div>
                   <div className="text-2xl font-bold mb-0.5 text-white">
-                    {card.value}
+                    {String(card.value).replace(/^0+/, '') || '0'}
                   </div>
                   <div className="text-xs font-medium text-white/90">
                     {card.label}
@@ -143,7 +143,7 @@ export default function RequestStatsCards({ stats, loading, onFilterClick, activ
                   className="w-full h-full bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3 text-left cursor-pointer"
                 >
                   <div className="text-2xl font-bold mb-0.5 text-gray-900">
-                    {card.value}
+                    {String(card.value).replace(/^0+/, '') || '0'}
                   </div>
                   <div className="text-xs font-medium text-gray-600">
                     {card.label}
@@ -188,7 +188,7 @@ export default function RequestStatsCards({ stats, loading, onFilterClick, activ
                   </span>
                 </div>
                 <div className="text-3xl font-bold mb-1 text-white">
-                  {card.value}
+                  {String(card.value).replace(/^0+/, '') || '0'}
                 </div>
                 <div className="text-xs font-medium text-white/90">
                   {card.label}
@@ -205,7 +205,7 @@ export default function RequestStatsCards({ stats, loading, onFilterClick, activ
                 className="w-full h-full bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-4 text-left cursor-pointer"
               >
                 <div className="text-3xl font-bold mb-1 text-gray-900">
-                  {card.value}
+                  {String(card.value).replace(/^0+/, '') || '0'}
                 </div>
                 <div className="text-xs font-medium text-gray-600">
                   {card.label}
