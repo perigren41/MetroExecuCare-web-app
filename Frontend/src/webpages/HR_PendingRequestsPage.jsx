@@ -733,8 +733,9 @@ export default function HR_PendingRequestsPage() {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
+            )}
             </div>
 
             {/* Conditional View Rendering */}
