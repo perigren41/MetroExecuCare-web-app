@@ -207,84 +207,86 @@ export default function FAQManagementModal({ onClose, onFAQChange }) {
                 <p className="mt-4 text-gray-600">Loading FAQs...</p>
               </div>
             ) : (
-              <div className="bg-white rounded-lg overflow-x-auto border border-gray-200 shadow-sm">
-                <table className="w-full min-w-max">
-                  <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-36">
-                        Category
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider min-w-[200px]">
-                        Question
-                      </th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider min-w-[250px]">
-                        Answer
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-20">
-                        Order
-                      </th>
-                      <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-48">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredFAQs.length === 0 ? (
+              <div className="bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                <div className="overflow-x-auto">
+                  <table className="w-full table-fixed">
+                    <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
                       <tr>
-                        <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
-                          <div className="flex flex-col items-center">
-                            <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <p className="text-lg font-medium">No FAQs found</p>
-                            <p className="text-sm text-gray-400 mt-1">Create your first FAQ to get started</p>
-                          </div>
-                        </td>
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-[15%]">
+                          Category
+                        </th>
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-[25%]">
+                          Question
+                        </th>
+                        <th className="px-3 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider w-[35%]">
+                          Answer
+                        </th>
+                        <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-[10%]">
+                          Order
+                        </th>
+                        <th className="px-3 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider w-[15%]">
+                          Actions
+                        </th>
                       </tr>
-                    ) : (
-                      filteredFAQs.map((faq) => (
-                        <tr key={faq.id} className="hover:bg-blue-50/50 transition-colors">
-                          <td className="px-4 py-4 whitespace-nowrap">
-                            <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">
-                              {faq.categoryDisplayName}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4">
-                            <div className="text-sm font-semibold text-gray-900 max-w-[300px] break-words">
-                              {faq.question}
-                            </div>
-                          </td>
-                          <td className="px-4 py-4">
-                            <div className="text-sm text-gray-600 max-w-[350px] line-clamp-2">
-                              {faq.answer}
-                            </div>
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-center">
-                            <span className="text-sm text-gray-700">
-                              {faq.displayOrder || 0}
-                            </span>
-                          </td>
-                          <td className="px-4 py-4 whitespace-nowrap text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <button
-                                onClick={() => handleEditFAQ(faq)}
-                                className="px-3 py-1.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm hover:shadow-md cursor-pointer font-medium"
-                              >
-                                Edit
-                              </button>
-                              <button
-                                onClick={() => handleDeleteFAQ(faq.id)}
-                                className="px-3 py-1.5 bg-gradient-to-r from-red-500 to-red-600 text-white text-xs rounded-lg hover:from-red-600 hover:to-red-700 transition-all shadow-sm hover:shadow-md cursor-pointer font-medium"
-                              >
-                                Delete
-                              </button>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredFAQs.length === 0 ? (
+                        <tr>
+                          <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                            <div className="flex flex-col items-center">
+                              <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              <p className="text-lg font-medium">No FAQs found</p>
+                              <p className="text-sm text-gray-400 mt-1">Create your first FAQ to get started</p>
                             </div>
                           </td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
+                      ) : (
+                        filteredFAQs.map((faq) => (
+                          <tr key={faq.id} className="hover:bg-blue-50/50 transition-colors">
+                            <td className="px-3 py-3">
+                              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-[10px] font-semibold inline-block">
+                                {faq.categoryDisplayName}
+                              </span>
+                            </td>
+                            <td className="px-3 py-3">
+                              <div className="text-xs font-semibold text-gray-900 line-clamp-2">
+                                {faq.question}
+                              </div>
+                            </td>
+                            <td className="px-3 py-3">
+                              <div className="text-xs text-gray-600 line-clamp-2">
+                                {faq.answer}
+                              </div>
+                            </td>
+                            <td className="px-3 py-3 text-center">
+                              <span className="text-xs text-gray-700">
+                                {faq.displayOrder || 0}
+                              </span>
+                            </td>
+                            <td className="px-3 py-3">
+                              <div className="flex items-center justify-center gap-1">
+                                <button
+                                  onClick={() => handleEditFAQ(faq)}
+                                  className="px-2 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-[10px] rounded hover:from-blue-600 hover:to-blue-700 transition-all cursor-pointer font-medium"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteFAQ(faq.id)}
+                                  className="px-2 py-1 bg-gradient-to-r from-red-500 to-red-600 text-white text-[10px] rounded hover:from-red-600 hover:to-red-700 transition-all cursor-pointer font-medium"
+                                >
+                                  Del
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>
