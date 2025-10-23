@@ -293,6 +293,11 @@ export default function AdminUsersPage() {
 
   // Filtered Requests
   const filteredRequests = (Array.isArray(requests) ? requests : []).filter((r) => {
+    // IMPORTANT: Exclude deleted and cancelled requests
+    if (r.current_status === 'deleted' || r.current_status === 'cancelled') {
+      return false;
+    }
+
     const matchesSearch =
       r.request_number?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
       r.employee_first_name?.toLowerCase().includes(requestSearchQuery.toLowerCase()) ||
@@ -613,9 +618,9 @@ export default function AdminUsersPage() {
         ) : (
           <>
             {/* REQUEST MANAGEMENT VIEW */}
-            {/* Search Bar with Gradient Border */}
+            {/* Search Bar with Gradient Border - Same width as Users page */}
             <div className="mb-3 flex-shrink-0">
-              <div className="relative w-full h-[38px]">
+              <div className="relative w-full sm:w-80 md:w-96 lg:w-[400px] h-[38px]">
                 <div
                   className="absolute inset-0 rounded-full p-[2px]"
                   style={{

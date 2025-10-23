@@ -388,6 +388,11 @@ export default function HR_PendingRequestsPage() {
 
     // Filtered requests for Request Management view
     const managementFilteredRequests = allRequests.filter((req) => {
+        // IMPORTANT: Exclude deleted and cancelled requests
+        if (req.current_status === 'deleted' || req.current_status === 'cancelled') {
+            return false;
+        }
+
         const matchesSearch =
             req.request_number?.toLowerCase().includes(managementSearchQuery.toLowerCase()) ||
             req.employee_first_name?.toLowerCase().includes(managementSearchQuery.toLowerCase()) ||
