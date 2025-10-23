@@ -246,7 +246,7 @@ export default function FAQManagementModal({ onClose, onFAQChange }) {
                         filteredFAQs.map((faq) => (
                           <tr key={faq.id} className="hover:bg-blue-50/50 transition-colors">
                             <td className="px-3 py-3">
-                              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-[10px] font-semibold inline-block">
+                              <span className="text-xs text-gray-700">
                                 {faq.categoryDisplayName}
                               </span>
                             </td>
