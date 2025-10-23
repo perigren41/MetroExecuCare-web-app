@@ -185,7 +185,7 @@ export default function BranchManagementModal({ onClose, onBranchChange }) {
             ) : (
               <>
                 {/* Desktop Table View - Hidden on mobile */}
-                <div className="hidden md:block bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm">
+                <div className="hidden lg:block bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm">
                   <table className="w-full">
                     <thead className="bg-gradient-to-r from-gray-50 to-gray-100 border-b-2 border-gray-200">
                       <tr>
@@ -248,7 +248,7 @@ export default function BranchManagementModal({ onClose, onBranchChange }) {
                 </div>
 
                 {/* Mobile Card View - Visible only on mobile */}
-                <div className="md:hidden space-y-4">
+                <div className="lg:hidden space-y-4">
                   {filteredBranches.map((branch) => (
                     <div
                       key={branch.id}
