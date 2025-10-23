@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import RoundArrowRightWhiteArrow from "@/assets/RoundArrowRightWhiteArrow.svg";
 
-export default function HRRequestManagementTable({ requests, loading, activeFilter }) {
+export default function HRRequestManagementTable({ requests, loading, activeFilter, onViewDetails }) {
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
   const tableContainerRef = useRef(null);
 
@@ -125,15 +125,9 @@ export default function HRRequestManagementTable({ requests, loading, activeFilt
                             index % 2 === 0 ? "bg-white" : "bg-gray-50"
                           }`}
                           style={{ height: "72px" }}
+                          onClick={() => onViewDetails && onViewDetails(req)}
                         >
-                          <td className="text-center">
-                            <div className="flex justify-center">
-                              <div className="w-9 h-9 rounded-full bg-gradient-to-r from-[#3F6EC0] to-[#7940A8] flex items-center justify-center text-white font-semibold text-base">
-                                {req.employee_first_name?.[0] || 'U'}
-                                {req.employee_last_name?.[0] || 'U'}
-                              </div>
-                            </div>
-                          </td>
+                          <td className="text-center"></td>
                           <td className="text-center px-2">
                             <span className="font-medium text-gray-900">
                               {req.employee_first_name || 'Unknown'} {req.employee_last_name || 'User'}
@@ -198,11 +192,13 @@ export default function HRRequestManagementTable({ requests, loading, activeFilt
 
               {/* Scroll Indicator */}
               {showScrollIndicator && (
-                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg flex items-center gap-2 animate-bounce z-20 pointer-events-none">
-                  <span className="text-sm font-medium">Scroll for more</span>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
+                  <div className="flex flex-col items-center animate-bounce">
+                    <span className="text-sm font-medium text-blue-600 mb-1">Scroll</span>
+                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
               )}
             </div>
@@ -230,17 +226,13 @@ export default function HRRequestManagementTable({ requests, loading, activeFilt
               <div
                 key={req.id}
                 className="bg-white rounded-lg shadow-md border border-gray-200 p-4 hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => onViewDetails && onViewDetails(req)}
               >
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#3F6EC0] to-[#7940A8] flex items-center justify-center text-white font-semibold text-sm">
-                      {req.employee_first_name?.[0] || 'U'}{req.employee_last_name?.[0] || 'U'}
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900 text-sm">
-                        {req.employee_first_name || 'Unknown'} {req.employee_last_name || 'User'}
-                      </h3>
-                    </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900 text-sm">
+                      {req.employee_first_name || 'Unknown'} {req.employee_last_name || 'User'}
+                    </h3>
                   </div>
                   <img
                     src={RoundArrowRightWhiteArrow}

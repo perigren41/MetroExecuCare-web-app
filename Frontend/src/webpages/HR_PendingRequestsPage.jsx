@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import NavBarMain from "@/Components/NavBarMain";
 import HRRequestStatsCards from "@/Components/HRRequestStatsCards";
 import HRRequestManagementTable from "@/Components/HRRequestManagementTable";
+import RequestDetailsModal from "@/AdminUserPageComponents/RequestDetailsModal";
 import apiService from "@/services/api";
 
 // Assets
@@ -63,6 +64,8 @@ export default function HR_PendingRequestsPage() {
     const [managementLoading, setManagementLoading] = useState(false);
     const [managementSearchQuery, setManagementSearchQuery] = useState("");
     const [activeStatFilter, setActiveStatFilter] = useState("all");
+    const [selectedRequestDetails, setSelectedRequestDetails] = useState(null);
+    const [requestDetailsLoading, setRequestDetailsLoading] = useState(false);
 
     // Fetch pending requests from API based on HR role
     const fetchPendingRequests = async () => {
@@ -364,6 +367,25 @@ export default function HR_PendingRequestsPage() {
         setError(""); // Clear any existing errors
     };
 
+    // Handle view request details
+    const handleViewRequestDetails = async (request) => {
+        try {
+            setRequestDetailsLoading(true);
+            const response = await apiService.getRequestById(request.id);
+
+            if (response.success) {
+                setSelectedRequestDetails(response.data.request || response.data);
+            } else {
+                setError(response.message || "Failed to fetch request details");
+            }
+        } catch (error) {
+            console.error("Error fetching request details:", error);
+            setError(error.message || "Failed to load request details");
+        } finally {
+            setRequestDetailsLoading(false);
+        }
+    };
+
     // Filtered requests for Request Management view
     const managementFilteredRequests = allRequests.filter((req) => {
         const matchesSearch =
@@ -372,7 +394,15 @@ export default function HR_PendingRequestsPage() {
             req.employee_last_name?.toLowerCase().includes(managementSearchQuery.toLowerCase()) ||
             `${req.employee_first_name} ${req.employee_last_name}`.toLowerCase().includes(managementSearchQuery.toLowerCase());
 
-        const matchesFilter = activeStatFilter === "all" || req.current_status === activeStatFilter;
+        // Fix: "approved" filter should include both "approved" and "completed" statuses
+        let matchesFilter;
+        if (activeStatFilter === "all") {
+            matchesFilter = true;
+        } else if (activeStatFilter === "approved") {
+            matchesFilter = req.current_status === "approved" || req.current_status === "completed";
+        } else {
+            matchesFilter = req.current_status === activeStatFilter;
+        }
 
         return matchesSearch && matchesFilter;
     });
@@ -753,6 +783,7 @@ export default function HR_PendingRequestsPage() {
                         requests={managementFilteredRequests}
                         loading={managementLoading}
                         activeFilter={activeStatFilter}
+                        onViewDetails={handleViewRequestDetails}
                     />
                 </div>
             ) : (
@@ -782,15 +813,10 @@ export default function HR_PendingRequestsPage() {
                                 onClick={() => handleRecordClick(req.id)}
                             >
                                 <div className="flex items-center justify-between mb-3">
-                                    <div className="flex items-center space-x-3">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#3F6EC0] to-[#7940A8] flex items-center justify-center text-white font-semibold text-sm">
-                                            {req.employee?.first_name?.[0] || 'U'}{req.employee?.last_name?.[0] || 'U'}
-                                        </div>
-                                        <div>
-                                            <h3 className="font-medium text-gray-900 text-sm">
-                                                {req.employee?.first_name || 'Unknown'} {req.employee?.last_name || 'User'}
-                                            </h3>
-                                        </div>
+                                    <div>
+                                        <h3 className="font-medium text-gray-900 text-sm">
+                                            {req.employee?.first_name || 'Unknown'} {req.employee?.last_name || 'User'}
+                                        </h3>
                                     </div>
                                     <img
                                         src={RoundArrowRightWhiteArrow}
@@ -908,14 +934,7 @@ export default function HR_PendingRequestsPage() {
                                                 style={{ height: "72px" }}
                                                 onClick={() => handleRecordClick(req.id)}
                                             >
-                                                <td className="text-center">
-                                                    <div className="flex justify-center">
-                                                        <div className="w-9 h-9 rounded-full bg-gradient-to-r from-[#3F6EC0] to-[#7940A8] flex items-center justify-center text-white font-semibold text-base">
-                                                            {req.employee?.first_name?.[0] || 'U'}
-                                                            {req.employee?.last_name?.[0] || 'U'}
-                                                        </div>
-                                                    </div>
-                                                </td>
+                                                <td className="text-center"></td>
                                                 <td className="text-center px-2">
                                                     <span className="font-medium text-gray-900">
                                                         {req.employee?.first_name || 'Unknown'} {req.employee?.last_name || 'User'}
@@ -1057,6 +1076,13 @@ export default function HR_PendingRequestsPage() {
                 </div>
             )}
 
+            {/* Request Details Modal */}
+            {selectedRequestDetails && (
+                <RequestDetailsModal
+                    request={selectedRequestDetails}
+                    onClose={() => setSelectedRequestDetails(null)}
+                />
+            )}
         </div>
     );
 }
