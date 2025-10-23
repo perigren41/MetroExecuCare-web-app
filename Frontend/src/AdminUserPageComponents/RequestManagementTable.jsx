@@ -244,19 +244,19 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
                 ))}
               </tbody>
             </table>
-          </div>
 
-          {/* Scroll Indicator - Desktop */}
-          {showScrollIndicator && (
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
-              <div className="flex flex-col items-center animate-bounce">
-                <span className="text-sm font-medium text-blue-600 mb-1">Scroll</span>
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
-                </svg>
+            {/* Scroll Indicator - Desktop */}
+            {showScrollIndicator && (
+              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
+                <div className="flex flex-col items-center animate-bounce">
+                  <span className="text-sm font-medium text-blue-600 mb-1">Scroll</span>
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 
@@ -324,19 +324,19 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
               )}
             </div>
           ))}
-          </div>
 
-          {/* Scroll Indicator - Mobile */}
-          {showMobileScrollIndicator && (
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
-              <div className="flex flex-col items-center animate-bounce">
-                <span className="text-sm font-medium text-blue-600 mb-1">Scroll</span>
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
-                </svg>
+            {/* Scroll Indicator - Mobile */}
+            {showMobileScrollIndicator && (
+              <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
+                <div className="flex flex-col items-center animate-bounce">
+                  <span className="text-sm font-medium text-blue-600 mb-1">Scroll</span>
+                  <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </>
