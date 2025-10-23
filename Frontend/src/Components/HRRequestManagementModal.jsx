@@ -47,7 +47,8 @@ export default function HRRequestManagementModal({ onClose, user }) {
       setError("");
 
       // Fetch all requests (including completed, approved, rejected)
-      const response = await apiService.getRequests({ limit: 500 });
+      // API limit is max 100, so we'll fetch with that limit
+      const response = await apiService.getRequests({ limit: 100 });
 
       if (response.success) {
         setRequests(response.data?.requests || []);
