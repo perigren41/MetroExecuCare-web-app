@@ -199,7 +199,15 @@ export default function AdminUsersPage() {
       const response = await apiService.getRequests({ limit: 100 });
 
       if (response.success) {
-        setRequests(response.data?.requests || []);
+        const allRequests = response.data?.requests || [];
+        setRequests(allRequests);
+
+        // Calculate stats from filtered requests (excluding deleted/cancelled)
+        const activeRequests = allRequests.filter(r =>
+          r.current_status !== 'deleted' && r.current_status !== 'cancelled'
+        );
+
+        calculateRequestStats(activeRequests);
       } else {
         setError(response.message || "Failed to fetch requests");
         setRequests([]);
@@ -213,17 +221,62 @@ export default function AdminUsersPage() {
     }
   };
 
-  // Fetch dashboard stats for Request Management view
-  const fetchRequestStats = async () => {
-    try {
-      const response = await apiService.getDashboardStats();
+  // Calculate dashboard stats from active requests
+  const calculateRequestStats = (activeRequests) => {
+    const stats = {
+      total_requests: activeRequests.length,
+      pending: 0,
+      hr_stage: 0,
+      benefits_stage: 0,
+      welfare_stage: 0,
+      approved: 0,
+      completed: 0,
+      rejected: 0,
+      overdue: 0,
+      unassigned_requests: 0
+    };
 
-      if (response.success) {
-        setRequestStats(response.data?.stats || {});
+    const today = new Date();
+
+    activeRequests.forEach(req => {
+      // Count by status
+      if (req.current_status === 'pending') {
+        stats.pending++;
+      } else if (req.current_status === 'assigned_to_hr' || req.current_status === 'hr_processing') {
+        stats.hr_stage++;
+      } else if (req.current_status === 'benefits_review') {
+        stats.benefits_stage++;
+      } else if (req.current_status === 'welfare_review' || req.current_status === 'hr_final_verification') {
+        stats.welfare_stage++;
+      } else if (req.current_status === 'approved') {
+        stats.approved++;
+      } else if (req.current_status === 'completed') {
+        stats.completed++;
+      } else if (req.current_status === 'rejected') {
+        stats.rejected++;
       }
-    } catch (error) {
-      console.error("Error fetching request stats:", error);
-    }
+
+      // Count unassigned
+      if (req.current_status === 'pending' && !req.hr_first_name && !req.hr_last_name) {
+        stats.unassigned_requests++;
+      }
+
+      // Count overdue
+      if (req.due_date && !['approved', 'completed', 'rejected'].includes(req.current_status)) {
+        const dueDate = new Date(req.due_date);
+        if (dueDate < today) {
+          stats.overdue++;
+        }
+      }
+    });
+
+    setRequestStats(stats);
+  };
+
+  // Fetch dashboard stats for Request Management view (deprecated - now calculated locally)
+  const fetchRequestStats = async () => {
+    // This function is no longer used - stats are calculated from filtered requests
+    // Kept for backward compatibility
   };
 
   // Fetch full request details including BO and WH assignments
@@ -369,15 +422,17 @@ export default function AdminUsersPage() {
 
           {/* Mobile Layout */}
           <div className="block sm:hidden mb-1">
-            {/* Search Bar - Full Width */}
-            <div className="mb-2">
-              <SearchBar
-                search={searchQuery}
-                setSearch={setSearchQuery}
-                filter={filter}
-                setFilter={setFilter}
-              />
-            </div>
+            {/* Search Bar - Full Width - Only show in Users view */}
+            {viewMode === "users" && (
+              <div className="mb-2">
+                <SearchBar
+                  search={searchQuery}
+                  setSearch={setSearchQuery}
+                  filter={filter}
+                  setFilter={setFilter}
+                />
+              </div>
+            )}
 
             {/* Management Buttons - Full Width */}
             <div className="flex items-center gap-1.5 sm:gap-2 mb-2 overflow-x-auto scrollbar-hide">
