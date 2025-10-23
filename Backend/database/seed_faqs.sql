@@ -1,12 +1,13 @@
 -- Seed FAQs with original static data from FAQPage.jsx
 -- This restores the comprehensive process flow documentation
+-- Updated to match database ENUM categories
 
--- Getting Started Category
+-- Application Process Category (Getting Started)
 INSERT INTO faqs (question, answer, category, display_order, created_by, is_active) VALUES
 (
     'How do I submit an executive checkup request?',
     'To submit a request, log in to your account and navigate to your dashboard. Click on ''Submit New Request'' button, fill out the required information including request type (Letter of Approval or Letter of Authorization), hospital preference, and upload any necessary supporting documents. Once completed, click ''Submit Request'' to send it for Human Resource review.',
-    'getting_started',
+    'application_process',
     1,
     1,
     1
@@ -19,7 +20,7 @@ INSERT INTO faqs (question, answer, category, display_order, created_by, is_acti
 2. Letter of Authorization - For specific medical procedures requiring special authorization
 
 Both types follow the same 5-stage approval workflow and require proper documentation and hospital assignment.',
-    'getting_started',
+    'application_process',
     2,
     1,
     1
@@ -43,13 +44,13 @@ Upload Guidelines:
 - Each upload adds one file to your submission
 
 Important: Ensure all necessary documents are complete and uploaded before submitting your request. Reviewers will evaluate based solely on the initially submitted materials. Incomplete documentation may result in rejection.',
-    'getting_started',
-    3,
+    'file_uploads',
+    1,
     1,
     1
 );
 
--- Approval Workflow Category
+-- Timeline Category (Approval Workflow)
 INSERT INTO faqs (question, answer, category, display_order, created_by, is_active) VALUES
 (
     'What are the different stages of the approval process?',
@@ -62,7 +63,7 @@ INSERT INTO faqs (question, answer, category, display_order, created_by, is_acti
 5. Final Human Resource Verification - HR performs final document verification before sending to you
 
 Each stage ensures thorough review and proper authorization of your request.',
-    'approval_workflow',
+    'timeline',
     1,
     1,
     1
@@ -77,7 +78,7 @@ Each stage ensures thorough review and proper authorization of your request.',
 - Final HR verification: 1 business day
 
 Total processing time is usually 4-7 business days. You''ll receive email notifications at each stage, and you can track your request''s progress in real-time through the Request Status Tracker.',
-    'approval_workflow',
+    'timeline',
     2,
     1,
     1
@@ -94,13 +95,13 @@ Important Notes:
 - After rejection, you can submit a new request with corrected information and complete documentation
 
 Best Practice: Ensure all information and documents are complete and accurate before submitting your request to avoid rejection.',
-    'approval_workflow',
+    'application_process',
     3,
     1,
     1
 );
 
--- Request Tracking Category
+-- General Category (Request Tracking)
 INSERT INTO faqs (question, answer, category, display_order, created_by, is_active) VALUES
 (
     'How do I track the status of my request?',
@@ -111,7 +112,7 @@ INSERT INTO faqs (question, answer, category, display_order, created_by, is_acti
 3. Email Notifications - You''ll receive automatic email updates whenever your request moves to a new stage
 
 The status tracker shows you exactly which stage your request is in and what action is being taken.',
-    'request_tracking',
+    'general',
     1,
     1,
     1
@@ -133,13 +134,13 @@ What to Do:
 4. Submit a new request with corrected information and proper documentation
 
 You''ll receive guidance from Human Resource if you need clarification on the rejection.',
-    'request_tracking',
+    'general',
     2,
     1,
     1
 );
 
--- After Approval Category
+-- Letter Requests Category (After Approval)
 INSERT INTO faqs (question, answer, category, display_order, created_by, is_active) VALUES
 (
     'What happens after my request is approved?',
@@ -151,7 +152,7 @@ INSERT INTO faqs (question, answer, category, display_order, created_by, is_acti
 4. Request Completion - Your request status changes to ''Completed''
 
 All approved documents include download links and can be accessed anytime from your account.',
-    'after_approval',
+    'letter_requests',
     1,
     1,
     1
@@ -169,7 +170,7 @@ All documents are securely stored and accessible anytime. Downloaded files inclu
 - Any additional supporting documents
 
 Documents are in PDF format and can be presented to the assigned hospital for your checkup.',
-    'after_approval',
+    'letter_requests',
     2,
     1,
     1
@@ -184,9 +185,13 @@ FROM faqs
 GROUP BY category
 ORDER BY
     CASE category
-        WHEN 'getting_started' THEN 1
-        WHEN 'approval_workflow' THEN 2
-        WHEN 'request_tracking' THEN 3
-        WHEN 'after_approval' THEN 4
-        ELSE 5
+        WHEN 'general' THEN 1
+        WHEN 'application_process' THEN 2
+        WHEN 'timeline' THEN 3
+        WHEN 'letter_requests' THEN 4
+        WHEN 'file_uploads' THEN 5
+        WHEN 'special_requests' THEN 6
+        WHEN 'medical_tests' THEN 7
+        WHEN 'hospitals' THEN 8
+        ELSE 9
     END;
