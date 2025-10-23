@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import NavBarMain from "@/Components/NavBarMain";
+import HRRequestManagementModal from "@/Components/HRRequestManagementModal";
 import apiService from "@/services/api";
 
 // Assets
@@ -51,6 +52,9 @@ export default function HR_PendingRequestsPage() {
     const [showClaimModal, setShowClaimModal] = useState(false);
     const [selectedRequest, setSelectedRequest] = useState(null);
     const [claiming, setClaiming] = useState(false);
+
+    // Request Management modal state
+    const [showRequestManagementModal, setShowRequestManagementModal] = useState(false);
 
     // Fetch pending requests from API based on HR role
     const fetchPendingRequests = async () => {
@@ -380,7 +384,7 @@ export default function HR_PendingRequestsPage() {
             </div>
 
             {/* Rest of the component remains the same... */}
-            {/* Search + Filter Button */}
+            {/* Search + Filter + Request Management Buttons */}
             <div className="px-4 md:px-8 lg:px-[200px] mt-2 flex flex-col sm:flex-row items-center gap-3 relative">
                 {/* Search Input */}
                 <div className="relative w-full sm:flex-shrink-0 sm:w-[400px] lg:w-[500px] h-[38px]">
@@ -407,6 +411,18 @@ export default function HR_PendingRequestsPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Request Management Button */}
+                <button
+                    onClick={() => setShowRequestManagementModal(true)}
+                    className="w-full sm:w-auto px-5 py-2 rounded-full text-base font-bold hover:opacity-80 transition-all text-white cursor-pointer whitespace-nowrap"
+                    style={{
+                        background:
+                            "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
+                    }}
+                >
+                    Request Management
+                </button>
 
                 {/* Filter Button Container */}
                 <div className="relative w-full sm:w-auto">
@@ -933,6 +949,14 @@ export default function HR_PendingRequestsPage() {
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* Request Management Modal */}
+            {showRequestManagementModal && (
+                <HRRequestManagementModal
+                    onClose={() => setShowRequestManagementModal(false)}
+                    user={user}
+                />
             )}
         </div>
     );
