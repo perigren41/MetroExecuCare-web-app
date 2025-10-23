@@ -152,6 +152,7 @@ export default function ExecutiveEmployeeDashboard() {
   // Loading and error states
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [hasReachedAnnualLimit, setHasReachedAnnualLimit] = useState(false);
 
   // Current request status based on checkup_requests table schema
   const [currentRequest, setCurrentRequest] = useState({
@@ -184,17 +185,33 @@ export default function ExecutiveEmployeeDashboard() {
       const response = await apiService.getRequests();
 
       if (response.success && response.data && response.data.requests && response.data.requests.length > 0) {
+        const requests = response.data.requests;
+
         // Get the most recent request
-        const latestRequest = response.data.requests[0];
+        const latestRequest = requests[0];
         setCurrentRequest(latestRequest);
+
+        // Check if user has reached annual limit (1 completed request this year)
+        const currentYear = new Date().getFullYear();
+        const completedThisYear = requests.filter(req => {
+          if (req.current_status === 'completed' && req.completed_at) {
+            const completedYear = new Date(req.completed_at).getFullYear();
+            return completedYear === currentYear;
+          }
+          return false;
+        });
+
+        setHasReachedAnnualLimit(completedThisYear.length >= 1);
       } else {
         // No requests found
         setCurrentRequest(prev => ({ ...prev, current_status: "no_request" }));
+        setHasReachedAnnualLimit(false);
       }
     } catch (error) {
       console.error("Error fetching user requests:", error);
       setError("Failed to load request data");
       setCurrentRequest(prev => ({ ...prev, current_status: "no_request" }));
+      setHasReachedAnnualLimit(false);
     } finally {
       setLoading(false);
     }
@@ -320,13 +337,35 @@ export default function ExecutiveEmployeeDashboard() {
     return statusConfig[status] || statusConfig.no_request;
   };
 
+  // Demo account emails that bypass annual limit
+  const DEMO_ACCOUNTS = [
+    'executive@metroexecucare.com',
+    'hr@metroexecucare.com',
+    'benefits@metroexecucare.com',
+    'divisionhead@metroexecucare.com',
+    'admintest@metroexecucare.com'
+  ];
+
+  // Check if user is a demo account
+  const isDemoAccount = user?.email && DEMO_ACCOUNTS.includes(user.email);
+
   // Handle new approval request letter - Navigate to approval page
   const handleapprovalrequest = () => {
+    // Check annual limit for non-demo accounts
+    if (!isDemoAccount && hasReachedAnnualLimit) {
+      alert('Annual Limit Reached\n\nYou have already completed 1 request this year. You can only have 1 completed request per calendar year.\n\nYou may submit new requests:\n• After pending/rejected requests are resolved, or\n• Starting next calendar year (January 1st)');
+      return;
+    }
     navigate('/executive-employee-submit-loapproval');
   };
 
   // Handle request authorization letter - Navigate to authorization page
   const handlerequestauthorization = () => {
+    // Check annual limit for non-demo accounts
+    if (!isDemoAccount && hasReachedAnnualLimit) {
+      alert('Annual Limit Reached\n\nYou have already completed 1 request this year. You can only have 1 completed request per calendar year.\n\nYou may submit new requests:\n• After pending/rejected requests are resolved, or\n• Starting next calendar year (January 1st)');
+      return;
+    }
     navigate('/executive-employee-submit-loauthorization');
   };
 
