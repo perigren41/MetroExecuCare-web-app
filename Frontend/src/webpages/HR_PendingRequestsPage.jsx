@@ -739,7 +739,6 @@ export default function HR_PendingRequestsPage() {
 
             {/* Conditional View Rendering */}
             {viewMode === "management" ? (
-                /* REQUEST MANAGEMENT VIEW */
                 <div className="mt-4 px-4 md:px-8 lg:px-[200px]">
                     {/* Stats Cards */}
                     <HRRequestStatsCards
@@ -756,7 +755,6 @@ export default function HR_PendingRequestsPage() {
                     />
                 </div>
             ) : (
-                /* PENDING REQUESTS VIEW */
                 <div className="mt-2 px-4 md:px-8 lg:px-[200px]">
                 {/* Mobile Card View */}
                 <div className="block lg:hidden">
