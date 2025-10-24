@@ -78,8 +78,8 @@ export default function HRRequestStatsCards({ stats, onFilterClick, activeFilter
 
   return (
     <>
-      {/* Mobile: Horizontal Scroll */}
-      <div className="md:hidden relative mb-4">
+      {/* Mobile and Tablet: Horizontal Scroll */}
+      <div className="lg:hidden relative mb-4">
         <div ref={statsContainerRef} className="overflow-x-auto scrollbar-hide">
           <div className="flex gap-2 pb-2" style={{ minWidth: 'max-content' }}>
             {cards.map((card, index) => {
@@ -91,13 +91,13 @@ export default function HRRequestStatsCards({ stats, onFilterClick, activeFilter
                   <button
                     key={index}
                     onClick={() => onFilterClick(card.filterKey)}
-                    className="relative overflow-hidden rounded-lg transition-all duration-200 shadow-lg p-3 text-left cursor-pointer flex-shrink-0 w-28"
+                    className="relative overflow-hidden rounded-lg transition-all duration-200 shadow-lg p-3 text-left cursor-pointer flex-shrink-0 w-32 md:w-36"
                     style={gradientStyle}
                   >
                     <div className="text-xs font-semibold bg-white/90 text-blue-700 px-1.5 py-0.5 rounded-full mb-1 inline-block">
                       Active
                     </div>
-                    <div className="text-2xl font-bold mb-0.5 text-white">
+                    <div className="text-2xl md:text-3xl font-bold mb-0.5 text-white">
                       {String(card.value).replace(/^0+/, '') || '0'}
                     </div>
                     <div className="text-xs font-medium text-white/90">
@@ -109,12 +109,12 @@ export default function HRRequestStatsCards({ stats, onFilterClick, activeFilter
 
               // Inactive card with gradient border
               return (
-                <div key={index} className="relative p-[2px] rounded-lg flex-shrink-0 w-28" style={gradientStyle}>
+                <div key={index} className="relative p-[2px] rounded-lg flex-shrink-0 w-32 md:w-36" style={gradientStyle}>
                   <button
                     onClick={() => onFilterClick(card.filterKey)}
                     className="w-full h-full bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3 text-left cursor-pointer"
                   >
-                    <div className="text-2xl font-bold mb-0.5 text-gray-900">
+                    <div className="text-2xl md:text-3xl font-bold mb-0.5 text-gray-900">
                       {String(card.value).replace(/^0+/, '') || '0'}
                     </div>
                     <div className="text-xs font-medium text-gray-600">
@@ -127,10 +127,10 @@ export default function HRRequestStatsCards({ stats, onFilterClick, activeFilter
           </div>
         </div>
 
-        {/* Swipe Indicator - Mobile */}
+        {/* Swipe Indicator - Mobile and Tablet */}
         {showSwipeIndicator && (
-          <div className="absolute right-2 top-1/2 transform -translate-y-1/2 z-50 pointer-events-none">
-            <div className="flex items-center animate-pulse">
+          <div className="fixed right-4 top-1/2 transform -translate-y-1/2 z-50 pointer-events-none">
+            <div className="flex items-center animate-pulse bg-white/90 px-2 py-1 rounded-full shadow-lg">
               <span className="text-sm font-medium text-blue-600 mr-1">Swipe</span>
               <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
@@ -141,7 +141,7 @@ export default function HRRequestStatsCards({ stats, onFilterClick, activeFilter
       </div>
 
       {/* Desktop: Grid Layout */}
-      <div className="hidden md:grid grid-cols-4 lg:grid-cols-8 gap-3 mb-6">
+      <div className="hidden lg:grid grid-cols-4 xl:grid-cols-8 gap-3 mb-6">
         {cards.map((card, index) => {
           const isActive = activeFilter === card.filterKey;
 

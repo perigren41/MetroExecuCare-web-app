@@ -887,8 +887,8 @@ export default function HR_PendingRequestsPage() {
                                 boxShadow: "0px 4px 28px 0px rgba(0, 0, 0, 0.25)",
                             }}
                         >
-                            <div className="max-h-[900px] overflow-y-auto overflow-x-auto rounded-t-[68px]">
-                                <table className="w-full border-collapse min-w-[800px]">
+                            <div className="max-h-[900px] overflow-y-auto rounded-t-[68px]">
+                                <table className="w-full border-collapse">
                                     <thead className="sticky top-0 z-10">
                                         <tr
                                             style={{

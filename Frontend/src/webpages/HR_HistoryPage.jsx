@@ -351,8 +351,8 @@ export default function HR_HistoryPage() {
                             }}
                         >
                             {/* Scrollable table wrapper */}
-                            <div className="max-h-[900px] overflow-y-auto overflow-x-auto">
-                                <table className="w-full table-auto border-collapse min-w-[800px]">
+                            <div className="max-h-[900px] overflow-y-auto">
+                                <table className="w-full table-auto border-collapse">
                                     <thead className="sticky top-0 z-10">
                                         <tr
                                             style={{
@@ -360,18 +360,17 @@ export default function HR_HistoryPage() {
                                                 background: "linear-gradient(90deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)",
                                             }}
                                         >
-                                            <th className="w-16 lg:w-20 text-center px-2"></th>
-                                            <th className="w-32 lg:w-48 text-white font-semibold text-center px-2">Name</th>
-                                            <th className="w-40 lg:w-48 text-white font-semibold text-center px-2">Request Number</th>
-                                            <th className="w-40 lg:w-56 text-white font-semibold text-center px-2">Type of Request</th>
-                                            <th className="w-28 lg:w-36 text-white font-semibold text-center px-2">Submitted</th>
-                                            <th className="w-28 lg:w-36 text-white font-semibold text-center px-2">Status</th>
+                                            <th className="text-white font-semibold text-center px-4">Name</th>
+                                            <th className="text-white font-semibold text-center px-4">Request Number</th>
+                                            <th className="text-white font-semibold text-center px-4">Type of Request</th>
+                                            <th className="text-white font-semibold text-center px-4">Submitted</th>
+                                            <th className="text-white font-semibold text-center px-4">Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {loading ? (
                                             <tr style={{ height: "72px" }}>
-                                                <td colSpan="6" className="text-center">
+                                                <td colSpan="5" className="text-center">
                                                     <div className="flex items-center justify-center py-8">
                                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#023184] mr-3"></div>
                                                         <span className="text-gray-500">Loading requests...</span>
@@ -380,7 +379,7 @@ export default function HR_HistoryPage() {
                                             </tr>
                                         ) : error ? (
                                             <tr style={{ height: "72px" }}>
-                                                <td colSpan="6" className="text-center text-red-500">
+                                                <td colSpan="5" className="text-center text-red-500">
                                                     <div className="py-4">
                                                         <p>{error}</p>
                                                         <button
@@ -401,46 +400,36 @@ export default function HR_HistoryPage() {
                                                 style={{ height: "72px" }}
                                                 onClick={() => handleRecordClick(req.id)}
                                             >
-                                                {/* Profile/Avatar */}
-                                                <td className="text-center">
-                                                    <div className="flex justify-center">
-                                                        <div className="w-9 h-9 rounded-full bg-gradient-to-r from-[#3F6EC0] to-[#7940A8] flex items-center justify-center text-white font-semibold text-base">
-                                                            {req.employee?.first_name?.[0] || 'U'}
-                                                            {req.employee?.last_name?.[0] || 'U'}
-                                                        </div>
-                                                    </div>
-                                                </td>
-
                                                 {/* Name */}
-                                                <td className="text-center px-2">
+                                                <td className="text-center px-4">
                                                     <span className="font-medium text-gray-900">
                                                         {req.employee?.first_name || 'Unknown'} {req.employee?.last_name || 'User'}
                                                     </span>
                                                 </td>
 
                                                 {/* Request Number */}
-                                                <td className="text-center px-2">
+                                                <td className="text-center px-4">
                                                     <span className="text-gray-700 text-base font-medium">
                                                         {req.request_number || 'N/A'}
                                                     </span>
                                                 </td>
 
                                                 {/* Type of Request */}
-                                                <td className="text-center px-2">
+                                                <td className="text-center px-4">
                                                     <span className="text-gray-700 text-base">
                                                         {formatRequestType(req.request_type)}
                                                     </span>
                                                 </td>
 
                                                 {/* Submitted */}
-                                                <td className="text-center px-2">
+                                                <td className="text-center px-4">
                                                     <span className="text-gray-600 text-base">
                                                         {new Date(req.created_at).toLocaleDateString()}
                                                     </span>
                                                 </td>
 
                                                 {/* Status */}
-                                                <td className="text-center px-2">
+                                                <td className="text-center px-4">
                                                     <span className={getStatusStyling(req.current_status)}>
                                                         {formatStatus(req.current_status)}
                                                     </span>
@@ -461,7 +450,6 @@ export default function HR_HistoryPage() {
                                                 }`}
                                                 style={{ height: "72px" }}
                                             >
-                                                <td></td>
                                                 <td></td>
                                                 <td></td>
                                                 <td></td>

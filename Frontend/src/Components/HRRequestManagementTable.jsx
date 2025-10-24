@@ -100,9 +100,9 @@ export default function HRRequestManagementTable({ requests, loading, activeFilt
           >
             <div
               ref={tableContainerRef}
-              className="max-h-[900px] overflow-y-auto overflow-x-auto rounded-t-[68px] relative"
+              className="max-h-[900px] overflow-y-auto rounded-t-[68px] relative"
             >
-              <table className="w-full border-collapse min-w-[800px]">
+              <table className="w-full border-collapse">
                 <thead className="sticky top-0 z-10">
                   <tr
                     style={{
