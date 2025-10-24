@@ -49,6 +49,9 @@
       // Railway deployment URLs - frontend and backend
       'https://metroexecucare.up.railway.app',
       'https://metroexecucare-backend.up.railway.app',
+      // Custom domain
+      'https://www.metroexecucare.xyz',
+      'https://metroexecucare.xyz',
       // Allow IP address for mobile/external device testing
       'http://192.168.1.3:3000',
       'http://192.168.1.3:3001',
