@@ -103,13 +103,13 @@ export default function HRRequestManagementTable({ requests, loading, activeFilt
               className="max-h-[900px] overflow-y-auto rounded-t-[68px] relative"
             >
               <table className="w-full border-collapse">
-                <thead className="sticky top-0 z-10">
-                  <tr
-                    style={{
-                      height: "56px",
-                      background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
-                    }}
-                  >
+                <thead
+                  className="sticky top-0 z-10"
+                  style={{
+                    background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
+                  }}
+                >
+                  <tr style={{ height: "56px" }}>
                     <th className="w-[8%] text-center px-2"></th>
                     <th className="w-[20%] text-white font-semibold text-center px-2">Name</th>
                     <th className="w-[15%] text-white font-semibold text-center px-2">Request Number</th>

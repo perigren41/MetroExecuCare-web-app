@@ -163,8 +163,11 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
         <div className="bg-white rounded-lg shadow border border-gray-200 h-full relative">
           <div ref={tableContainerRef} className="overflow-auto h-full">
             <table className="min-w-full">
-              <thead className="sticky top-0 z-10">
-                <tr className="text-white" style={{ background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }}>
+              <thead
+                className="sticky top-0 z-10"
+                style={{ background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }}
+              >
+                <tr className="text-white">
                   <th className="px-4 py-3.5 text-center font-semibold">
                     Request #
                   </th>

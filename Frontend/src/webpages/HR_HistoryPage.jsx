@@ -353,13 +353,13 @@ export default function HR_HistoryPage() {
                             {/* Scrollable table wrapper */}
                             <div className="max-h-[900px] overflow-y-auto">
                                 <table className="w-full table-auto border-collapse">
-                                    <thead className="sticky top-0 z-10">
-                                        <tr
-                                            style={{
-                                                height: "56px",
-                                                background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
-                                            }}
-                                        >
+                                    <thead
+                                        className="sticky top-0 z-10"
+                                        style={{
+                                            background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
+                                        }}
+                                    >
+                                        <tr style={{ height: "56px" }}>
                                             <th className="text-white font-semibold text-center px-4">Name</th>
                                             <th className="text-white font-semibold text-center px-4">Request Number</th>
                                             <th className="text-white font-semibold text-center px-4">Type of Request</th>
