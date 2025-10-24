@@ -158,13 +158,13 @@ export default function RequestManagementTable({ requests, onViewDetails, loadin
 
   return (
     <>
-      {/* Desktop Table View - Hidden on mobile */}
+      {/* Desktop and iPad Table View - Hidden on mobile */}
       <div className="hidden md:block h-full">
         <div className="bg-white rounded-lg shadow border border-gray-200 h-full relative">
           <div ref={tableContainerRef} className="overflow-auto h-full">
             <table className="min-w-full">
               <thead className="sticky top-0 z-10">
-                <tr className="bg-[linear-gradient(to_right,#3F6EC0_10%,#00539F_30%,#5D3EA4_50%,#7940A8_75%)] text-white">
+                <tr className="text-white" style={{ background: "linear-gradient(90deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)" }}>
                   <th className="px-4 py-3.5 text-center font-semibold">
                     Request #
                   </th>

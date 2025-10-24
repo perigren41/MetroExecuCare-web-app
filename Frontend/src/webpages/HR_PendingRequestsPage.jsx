@@ -794,7 +794,7 @@ export default function HR_PendingRequestsPage() {
             ) : (
                 <div className="mt-2 px-4 md:px-8 lg:px-[200px]">
                 {/* Mobile Card View */}
-                <div className="block lg:hidden">
+                <div className="block md:hidden">
                     <div className="space-y-4">
                         {loading ? (
                             <div className="text-center py-8">
@@ -872,13 +872,13 @@ export default function HR_PendingRequestsPage() {
                     </div>
                 </div>
 
-                {/* Desktop Table View */}
-                <div className="hidden lg:block">
+                {/* Desktop and iPad Table View */}
+                <div className="hidden md:block">
                     <div
                         className="p-[2px] rounded-t-[68px] overflow-hidden"
                         style={{
                             background:
-                                "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
+                                "linear-gradient(90deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)",
                         }}
                     >
                         <div
@@ -888,13 +888,13 @@ export default function HR_PendingRequestsPage() {
                             }}
                         >
                             <div className="max-h-[900px] overflow-y-auto overflow-x-auto rounded-t-[68px]">
-                                <table className="w-full border-collapse">
+                                <table className="w-full border-collapse min-w-[800px]">
                                     <thead className="sticky top-0 z-10">
                                         <tr
                                             style={{
                                                 height: "56px",
                                                 background:
-                                                    "linear-gradient(90deg, #3F6EC0 0%, #00539F 33%, #5D3EA4 66%, #7940A8 100%)",
+                                                    "linear-gradient(90deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)",
                                             }}
                                         >
                                             <th className="w-[8%] text-center px-2"></th>

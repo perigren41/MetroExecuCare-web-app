@@ -84,12 +84,12 @@ export default function HRRequestManagementTable({ requests, loading, activeFilt
 
   return (
     <div className="relative">
-      {/* Desktop Table View */}
-      <div className="hidden lg:block">
+      {/* Desktop and iPad Table View */}
+      <div className="hidden md:block">
         <div
           className="p-[2px] rounded-t-[68px] overflow-hidden"
           style={{
-            background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
+            background: "linear-gradient(90deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)",
           }}
         >
           <div
@@ -102,12 +102,12 @@ export default function HRRequestManagementTable({ requests, loading, activeFilt
               ref={tableContainerRef}
               className="max-h-[900px] overflow-y-auto overflow-x-auto rounded-t-[68px] relative"
             >
-              <table className="w-full border-collapse">
+              <table className="w-full border-collapse min-w-[800px]">
                 <thead className="sticky top-0 z-10">
                   <tr
                     style={{
                       height: "56px",
-                      background: "linear-gradient(90deg, #3F6EC0 0%, #00539F 33%, #5D3EA4 66%, #7940A8 100%)",
+                      background: "linear-gradient(90deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)",
                     }}
                   >
                     <th className="w-[8%] text-center px-2"></th>
@@ -234,7 +234,7 @@ export default function HRRequestManagementTable({ requests, loading, activeFilt
       </div>
 
       {/* Mobile Card View */}
-      <div className="block lg:hidden relative">
+      <div className="block md:hidden relative">
         <div ref={mobileContainerRef} className="space-y-4 overflow-y-auto max-h-[600px] pb-16">
           {loading ? (
             <div className="text-center py-8">
