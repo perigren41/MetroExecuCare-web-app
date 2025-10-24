@@ -3,7 +3,9 @@ import RoundArrowRightWhiteArrow from "@/assets/RoundArrowRightWhiteArrow.svg";
 
 export default function HRRequestManagementTable({ requests, loading, activeFilter, onViewDetails }) {
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+  const [showMobileSwipeIndicator, setShowMobileSwipeIndicator] = useState(false);
   const tableContainerRef = useRef(null);
+  const mobileContainerRef = useRef(null);
 
   useEffect(() => {
     const checkScroll = () => {
@@ -27,6 +29,31 @@ export default function HRRequestManagementTable({ requests, loading, activeFilt
         container.removeEventListener('scroll', checkScroll);
       }
       window.removeEventListener('resize', checkScroll);
+    };
+  }, [requests]);
+
+  useEffect(() => {
+    const checkMobileScroll = () => {
+      if (mobileContainerRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = mobileContainerRef.current;
+        const hasMoreContent = scrollHeight > clientHeight;
+        const isAtBottom = scrollHeight - scrollTop - clientHeight < 10;
+        setShowMobileSwipeIndicator(hasMoreContent && !isAtBottom);
+      }
+    };
+
+    checkMobileScroll();
+    const container = mobileContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', checkMobileScroll);
+      window.addEventListener('resize', checkMobileScroll);
+    }
+
+    return () => {
+      if (container) {
+        container.removeEventListener('scroll', checkMobileScroll);
+      }
+      window.removeEventListener('resize', checkMobileScroll);
     };
   }, [requests]);
 
@@ -207,8 +234,8 @@ export default function HRRequestManagementTable({ requests, loading, activeFilt
       </div>
 
       {/* Mobile Card View */}
-      <div className="block lg:hidden">
-        <div className="space-y-4">
+      <div className="block lg:hidden relative h-full">
+        <div ref={mobileContainerRef} className="space-y-4 overflow-y-auto h-full pb-16">
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#023184] mx-auto mb-4"></div>
@@ -263,6 +290,18 @@ export default function HRRequestManagementTable({ requests, loading, activeFilt
                 </div>
               </div>
             ))
+          )}
+
+          {/* Swipe Indicator - Mobile */}
+          {showMobileSwipeIndicator && (
+            <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 z-50 pointer-events-none">
+              <div className="flex flex-col items-center animate-bounce">
+                <span className="text-sm font-medium text-blue-600 mb-1">Swipe</span>
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           )}
         </div>
       </div>
