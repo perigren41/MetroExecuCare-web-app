@@ -36,6 +36,9 @@ export default defineConfig({
     allowedHosts: [
       'metroexecucare.up.railway.app',
       '.railway.app', // Allow all Railway subdomains
+      'www.metroexecucare.xyz', // Custom domain
+      'metroexecucare.xyz', // Root domain
+      '.metroexecucare.xyz', // All subdomains
       'localhost',
       '127.0.0.1'
     ]
