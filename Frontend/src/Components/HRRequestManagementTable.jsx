@@ -234,8 +234,8 @@ export default function HRRequestManagementTable({ requests, loading, activeFilt
       </div>
 
       {/* Mobile Card View */}
-      <div className="block lg:hidden relative h-full">
-        <div ref={mobileContainerRef} className="space-y-4 overflow-y-auto h-full pb-16">
+      <div className="block lg:hidden relative">
+        <div ref={mobileContainerRef} className="space-y-4 overflow-y-auto max-h-[600px] pb-16">
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#023184] mx-auto mb-4"></div>
