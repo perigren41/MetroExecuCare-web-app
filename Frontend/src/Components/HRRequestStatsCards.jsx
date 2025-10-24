@@ -78,10 +78,10 @@ export default function HRRequestStatsCards({ stats, onFilterClick, activeFilter
 
   return (
     <>
-      {/* Mobile and Tablet: Horizontal Scroll */}
-      <div className="lg:hidden relative mb-4">
+      {/* All Screens: Always use horizontal scroll for single row */}
+      <div className="relative mb-4">
         <div ref={statsContainerRef} className="overflow-x-auto scrollbar-hide">
-          <div className="flex gap-2 pb-2" style={{ minWidth: 'max-content' }}>
+          <div className="flex gap-2 lg:gap-3 pb-2" style={{ minWidth: 'max-content' }}>
             {cards.map((card, index) => {
               const isActive = activeFilter === card.filterKey;
 
@@ -91,13 +91,13 @@ export default function HRRequestStatsCards({ stats, onFilterClick, activeFilter
                   <button
                     key={index}
                     onClick={() => onFilterClick(card.filterKey)}
-                    className="relative overflow-hidden rounded-lg transition-all duration-200 shadow-lg p-3 text-left cursor-pointer flex-shrink-0 w-32 md:w-36"
+                    className="relative overflow-hidden rounded-lg transition-all duration-200 shadow-lg p-3 lg:p-4 text-left cursor-pointer flex-shrink-0 w-32 md:w-36 lg:w-40"
                     style={gradientStyle}
                   >
                     <div className="text-xs font-semibold bg-white/90 text-blue-700 px-1.5 py-0.5 rounded-full mb-1 inline-block">
                       Active
                     </div>
-                    <div className="text-2xl md:text-3xl font-bold mb-0.5 text-white">
+                    <div className="text-2xl md:text-3xl font-bold mb-0.5 lg:mb-1 text-white">
                       {String(card.value).replace(/^0+/, '') || '0'}
                     </div>
                     <div className="text-xs font-medium text-white/90">
@@ -109,12 +109,12 @@ export default function HRRequestStatsCards({ stats, onFilterClick, activeFilter
 
               // Inactive card with gradient border
               return (
-                <div key={index} className="relative p-[2px] rounded-lg flex-shrink-0 w-32 md:w-36" style={gradientStyle}>
+                <div key={index} className="relative p-[2px] rounded-lg flex-shrink-0 w-32 md:w-36 lg:w-40" style={gradientStyle}>
                   <button
                     onClick={() => onFilterClick(card.filterKey)}
-                    className="w-full h-full bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3 text-left cursor-pointer"
+                    className="w-full h-full bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3 lg:p-4 text-left cursor-pointer"
                   >
-                    <div className="text-2xl md:text-3xl font-bold mb-0.5 text-gray-900">
+                    <div className="text-2xl md:text-3xl font-bold mb-0.5 lg:mb-1 text-gray-900">
                       {String(card.value).replace(/^0+/, '') || '0'}
                     </div>
                     <div className="text-xs font-medium text-gray-600">
@@ -127,10 +127,10 @@ export default function HRRequestStatsCards({ stats, onFilterClick, activeFilter
           </div>
         </div>
 
-        {/* Swipe Indicator - Mobile and Tablet */}
+        {/* Swipe Indicator - Positioned relative to stats cards on the right */}
         {showSwipeIndicator && (
-          <div className="fixed right-4 top-1/2 transform -translate-y-1/2 z-50 pointer-events-none">
-            <div className="flex items-center animate-pulse bg-white/90 px-2 py-1 rounded-full shadow-lg">
+          <div className="absolute right-0 top-1/2 transform -translate-y-1/2 pointer-events-none pr-2">
+            <div className="flex items-center animate-pulse bg-white/95 px-2 py-1 rounded-full shadow-lg border border-blue-200">
               <span className="text-sm font-medium text-blue-600 mr-1">Swipe</span>
               <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
@@ -138,54 +138,6 @@ export default function HRRequestStatsCards({ stats, onFilterClick, activeFilter
             </div>
           </div>
         )}
-      </div>
-
-      {/* Desktop: Grid Layout */}
-      <div className="hidden lg:grid grid-cols-4 xl:grid-cols-8 gap-3 mb-6">
-        {cards.map((card, index) => {
-          const isActive = activeFilter === card.filterKey;
-
-          if (isActive) {
-            // Active card with gradient background
-            return (
-              <button
-                key={index}
-                onClick={() => onFilterClick(card.filterKey)}
-                className="relative overflow-hidden rounded-lg transition-all duration-200 shadow-lg scale-105 p-4 text-left cursor-pointer"
-                style={gradientStyle}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <span className="text-xs font-semibold bg-white/90 text-blue-700 px-2 py-0.5 rounded-full">
-                    Active
-                  </span>
-                </div>
-                <div className="text-3xl font-bold mb-1 text-white">
-                  {String(card.value).replace(/^0+/, '') || '0'}
-                </div>
-                <div className="text-xs font-medium text-white/90">
-                  {card.label}
-                </div>
-              </button>
-            );
-          }
-
-          // Inactive card with gradient border
-          return (
-            <div key={index} className="relative p-[2px] rounded-lg" style={gradientStyle}>
-              <button
-                onClick={() => onFilterClick(card.filterKey)}
-                className="w-full h-full bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-4 text-left cursor-pointer"
-              >
-                <div className="text-3xl font-bold mb-1 text-gray-900">
-                  {String(card.value).replace(/^0+/, '') || '0'}
-                </div>
-                <div className="text-xs font-medium text-gray-600">
-                  {card.label}
-                </div>
-              </button>
-            </div>
-          );
-        })}
       </div>
     </>
   );

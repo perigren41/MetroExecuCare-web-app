@@ -77,7 +77,7 @@ export default function UserTable({ users, onView }) {
         <div ref={tableContainerRef} className="overflow-auto rounded-lg bg-white h-full shadow-sm border border-gray-200">
           <table className="min-w-full">
           <thead className="sticky top-0 z-10">
-            <tr className="text-white" style={{ background: "linear-gradient(90deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)" }}>
+            <tr className="text-white" style={{ background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }}>
               <th className="px-6 py-3.5 text-left font-semibold">Name</th>
               <th className="px-6 py-3.5 text-center font-semibold">Employee ID</th>
               <th className="px-6 py-3.5 text-center font-semibold">Role</th>

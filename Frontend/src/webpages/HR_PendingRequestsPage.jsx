@@ -878,7 +878,7 @@ export default function HR_PendingRequestsPage() {
                         className="p-[2px] rounded-t-[68px] overflow-hidden"
                         style={{
                             background:
-                                "linear-gradient(90deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)",
+                                "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
                         }}
                     >
                         <div
@@ -894,7 +894,7 @@ export default function HR_PendingRequestsPage() {
                                             style={{
                                                 height: "56px",
                                                 background:
-                                                    "linear-gradient(90deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)",
+                                                    "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
                                             }}
                                         >
                                             <th className="w-[8%] text-center px-2"></th>

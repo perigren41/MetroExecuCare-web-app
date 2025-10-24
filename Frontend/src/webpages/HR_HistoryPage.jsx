@@ -341,7 +341,7 @@ export default function HR_HistoryPage() {
                     <div
                         className="p-[2px] rounded-t-[68px]"
                         style={{
-                            background: "linear-gradient(90deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)",
+                            background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
                         }}
                     >
                         <div
@@ -357,7 +357,7 @@ export default function HR_HistoryPage() {
                                         <tr
                                             style={{
                                                 height: "56px",
-                                                background: "linear-gradient(90deg, #3F6EC0 0%, #00539F 29%, #5D3EA4 57%, #7940A8 79%)",
+                                                background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
                                             }}
                                         >
                                             <th className="text-white font-semibold text-center px-4">Name</th>
