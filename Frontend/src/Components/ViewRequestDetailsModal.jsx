@@ -457,7 +457,12 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
                 <div className="space-y-4">
                   {/* Initial Submission Files */}
                   {(() => {
-                    const initialFiles = uploadedFiles.filter(file => file.submission_type === 'initial_submission');
+                    // Filter to only show executive files in Initial Submission section
+                    // Exclude files uploaded by approvers (HR, BO, WH roles)
+                    const initialFiles = uploadedFiles.filter(file =>
+                      file.submission_type === 'initial_submission' &&
+                      file.uploader_role === 'executive'
+                    );
                     if (initialFiles.length > 0) {
                       return (
                         <div className="border border-gray-200 rounded-lg p-3">
