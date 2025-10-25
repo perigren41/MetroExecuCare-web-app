@@ -102,7 +102,7 @@ export default function HRRequestManagementTable({ requests, loading, activeFilt
               ref={tableContainerRef}
               className="max-h-[900px] overflow-y-auto rounded-t-[68px] relative"
             >
-              <table className="w-full border-collapse">
+              <table className="w-full" style={{ borderCollapse: "collapse", borderSpacing: 0 }}>
                 <thead
                   className="sticky top-0 z-10"
                   style={{
@@ -110,13 +110,13 @@ export default function HRRequestManagementTable({ requests, loading, activeFilt
                   }}
                 >
                   <tr style={{ height: "56px" }}>
-                    <th className="w-[8%] text-center px-2"></th>
-                    <th className="w-[20%] text-white font-semibold text-center px-2">Name</th>
-                    <th className="w-[15%] text-white font-semibold text-center px-2">Request Number</th>
-                    <th className="w-[20%] text-white font-semibold text-center px-2">Type of Request</th>
-                    <th className="w-[15%] text-white font-semibold text-center px-2">Submitted</th>
-                    <th className="w-[17%] text-white font-semibold text-center px-2">Status</th>
-                    <th className="w-[5%] text-center px-2"></th>
+                    <th className="text-center px-2 py-3" style={{ border: 0, width: "8%" }}></th>
+                    <th className="text-white font-semibold text-center px-2 py-3" style={{ border: 0, width: "20%" }}>Name</th>
+                    <th className="text-white font-semibold text-center px-2 py-3" style={{ border: 0, width: "15%" }}>Request Number</th>
+                    <th className="text-white font-semibold text-center px-2 py-3" style={{ border: 0, width: "20%" }}>Type of Request</th>
+                    <th className="text-white font-semibold text-center px-2 py-3" style={{ border: 0, width: "15%" }}>Submitted</th>
+                    <th className="text-white font-semibold text-center px-2 py-3" style={{ border: 0, width: "17%" }}>Status</th>
+                    <th className="text-center px-2 py-3" style={{ border: 0, width: "5%" }}></th>
                   </tr>
                 </thead>
                 <tbody>

@@ -75,17 +75,17 @@ export default function UserTable({ users, onView }) {
       {/* Desktop and iPad Table */}
       <div className="hidden sm:block relative h-full">
         <div ref={tableContainerRef} className="overflow-auto rounded-lg bg-white h-full shadow-sm border border-gray-200">
-          <table className="min-w-full">
+          <table className="min-w-full" style={{ borderCollapse: "collapse", borderSpacing: 0 }}>
           <thead
             className="sticky top-0 z-10"
             style={{ background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }}
           >
             <tr className="text-white">
-              <th className="px-6 py-3.5 text-left font-semibold">Name</th>
-              <th className="px-6 py-3.5 text-center font-semibold">Employee ID</th>
-              <th className="px-6 py-3.5 text-center font-semibold">Role</th>
-              <th className="px-6 py-3.5 text-center font-semibold">Date Added</th>
-              <th className="px-6 py-3.5 text-center font-semibold">Action</th>
+              <th className="px-6 py-3.5 text-left font-semibold" style={{ border: 0 }}>Name</th>
+              <th className="px-6 py-3.5 text-center font-semibold" style={{ border: 0 }}>Employee ID</th>
+              <th className="px-6 py-3.5 text-center font-semibold" style={{ border: 0 }}>Role</th>
+              <th className="px-6 py-3.5 text-center font-semibold" style={{ border: 0 }}>Date Added</th>
+              <th className="px-6 py-3.5 text-center font-semibold" style={{ border: 0 }}>Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">

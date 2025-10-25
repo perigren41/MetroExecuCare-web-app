@@ -352,7 +352,7 @@ export default function HR_HistoryPage() {
                         >
                             {/* Scrollable table wrapper */}
                             <div className="max-h-[900px] overflow-y-auto">
-                                <table className="w-full table-auto border-collapse">
+                                <table className="w-full table-auto" style={{ borderCollapse: "collapse", borderSpacing: 0 }}>
                                     <thead
                                         className="sticky top-0 z-10"
                                         style={{
@@ -360,11 +360,11 @@ export default function HR_HistoryPage() {
                                         }}
                                     >
                                         <tr style={{ height: "56px" }}>
-                                            <th className="text-white font-semibold text-center px-4">Name</th>
-                                            <th className="text-white font-semibold text-center px-4">Request Number</th>
-                                            <th className="text-white font-semibold text-center px-4">Type of Request</th>
-                                            <th className="text-white font-semibold text-center px-4">Submitted</th>
-                                            <th className="text-white font-semibold text-center px-4">Status</th>
+                                            <th className="text-white font-semibold text-center px-3 py-3" style={{ border: 0 }}>Name</th>
+                                            <th className="text-white font-semibold text-center px-3 py-3" style={{ border: 0 }}>Request Number</th>
+                                            <th className="text-white font-semibold text-center px-3 py-3" style={{ border: 0 }}>Type of Request</th>
+                                            <th className="text-white font-semibold text-center px-3 py-3" style={{ border: 0 }}>Submitted</th>
+                                            <th className="text-white font-semibold text-center px-3 py-3" style={{ border: 0 }}>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>
