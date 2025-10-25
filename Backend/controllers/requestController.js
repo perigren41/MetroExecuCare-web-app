@@ -523,10 +523,11 @@ const getRequestById = async (req, res) => {
 
     // Get files
     const [files] = await pool.execute(`
-      SELECT 
+      SELECT
         rf.*,
         uploader.first_name as uploader_first_name,
         uploader.last_name as uploader_last_name,
+        uploader.role as uploader_role,
         generator.first_name as generator_first_name,
         generator.last_name as generator_last_name
       FROM request_files rf
