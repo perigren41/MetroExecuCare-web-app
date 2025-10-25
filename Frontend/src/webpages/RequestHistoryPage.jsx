@@ -19,9 +19,7 @@ export default function RequestHistoryPage() {
 
   // Filter states
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortOrder, setSortOrder] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
-  const [typeFilter, setTypeFilter] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all"); // Default to "all"
 
   // Fetch user's own request history
   const fetchRequestHistory = async () => {
@@ -120,6 +118,11 @@ export default function RequestHistoryPage() {
     navigate("/login", { replace: true });
   };
 
+  // Handle stats card click
+  const handleFilterClick = (filterKey) => {
+    setActiveFilter(activeFilter === filterKey ? "all" : filterKey);
+  };
+
   // Get role-specific labels
   const getRoleSpecificLabels = () => {
     if (userRole === "executive") {
@@ -156,6 +159,22 @@ export default function RequestHistoryPage() {
 
   const labels = getRoleSpecificLabels();
 
+  // Stats cards configuration
+  const statsCards = [
+    { label: "Total", value: stats.total_requests || 0, filterKey: "all" },
+    { label: "Pending", value: stats.pending || 0, filterKey: "pending" },
+    { label: "Under Review", value: stats.under_review || 0, filterKey: "under_review" },
+    { label: "Approved", value: stats.approved || 0, filterKey: "approved" },
+    { label: "Completed", value: stats.completed || 0, filterKey: "completed" },
+    { label: "Rejected", value: stats.rejected || 0, filterKey: "rejected" },
+    { label: "Urgent", value: stats.urgent || 0, filterKey: "urgent" },
+    { label: "Overdue", value: stats.overdue || 0, filterKey: "overdue" },
+  ];
+
+  const gradientStyle = {
+    background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
+  };
+
   // Filter and sort requests
   const filteredRequests = requests
     .filter((req) => {
@@ -172,33 +191,34 @@ export default function RequestHistoryPage() {
         }
       }
 
-      // Status filter
-      const matchesStatus = statusFilter === "" || req.current_status === statusFilter;
-
-      // Type filter
-      const matchesType = typeFilter === "" || req.request_type === typeFilter;
-
-      return searchMatch && matchesStatus && matchesType;
-    })
-    .sort((a, b) => {
-      if (sortOrder === "A-Z") {
-        if (userRole === "executive") {
-          return (a.hospital_name || "").localeCompare(b.hospital_name || "");
-        } else {
-          const nameA = `${a.employee_first_name || ""} ${a.employee_last_name || ""}`;
-          const nameB = `${b.employee_first_name || ""} ${b.employee_last_name || ""}`;
-          return nameA.localeCompare(nameB);
-        }
-      } else if (sortOrder === "Z-A") {
-        if (userRole === "executive") {
-          return (b.hospital_name || "").localeCompare(a.hospital_name || "");
-        } else {
-          const nameA = `${a.employee_first_name || ""} ${a.employee_last_name || ""}`;
-          const nameB = `${b.employee_first_name || ""} ${b.employee_last_name || ""}`;
-          return nameB.localeCompare(nameA);
-        }
+      // Active filter from stats cards
+      if (activeFilter === "all") return searchMatch;
+      if (activeFilter === "pending") {
+        return searchMatch && ["pending", "assigned_to_hr", "hr_processing"].includes(req.current_status);
       }
-      return 0;
+      if (activeFilter === "under_review") {
+        return searchMatch && ["benefits_review", "welfare_review", "hr_final_verification"].includes(req.current_status);
+      }
+      if (activeFilter === "approved") {
+        return searchMatch && req.current_status === "approved";
+      }
+      if (activeFilter === "completed") {
+        return searchMatch && req.current_status === "completed";
+      }
+      if (activeFilter === "rejected") {
+        return searchMatch && req.current_status === "rejected";
+      }
+      if (activeFilter === "urgent") {
+        return searchMatch && req.priority_level === "urgent";
+      }
+      if (activeFilter === "overdue") {
+        if (["completed", "rejected"].includes(req.current_status)) return false;
+        const dueDate = new Date(req.due_date);
+        const today = new Date();
+        return searchMatch && dueDate < today;
+      }
+
+      return searchMatch;
     });
 
   return (
@@ -222,105 +242,60 @@ export default function RequestHistoryPage() {
         <p className="text-gray-600 text-sm md:text-base mt-1">{labels.subtitle}</p>
       </div>
 
-      {/* Stats Summary */}
+      {/* Stats Summary - Clickable Cards */}
       {!loading && (
         <div className="px-4 md:px-8 lg:px-[200px] mt-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-            <div
-              className="relative p-[2px] rounded-lg"
-              style={{
-                background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
-              }}
-            >
-              <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
-                <div className="text-2xl font-bold text-gray-900">{stats.total_requests || 0}</div>
-                <div className="text-xs font-medium text-gray-600">Total</div>
-              </div>
-            </div>
-            <div
-              className="relative p-[2px] rounded-lg"
-              style={{
-                background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
-              }}
-            >
-              <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
-                <div className="text-2xl font-bold text-gray-900">{stats.pending || 0}</div>
-                <div className="text-xs font-medium text-gray-600">Pending</div>
-              </div>
-            </div>
-            <div
-              className="relative p-[2px] rounded-lg"
-              style={{
-                background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
-              }}
-            >
-              <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
-                <div className="text-2xl font-bold text-gray-900">{stats.under_review || 0}</div>
-                <div className="text-xs font-medium text-gray-600">Under Review</div>
-              </div>
-            </div>
-            <div
-              className="relative p-[2px] rounded-lg"
-              style={{
-                background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
-              }}
-            >
-              <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
-                <div className="text-2xl font-bold text-gray-900">{stats.approved || 0}</div>
-                <div className="text-xs font-medium text-gray-600">Approved</div>
-              </div>
-            </div>
-            <div
-              className="relative p-[2px] rounded-lg"
-              style={{
-                background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
-              }}
-            >
-              <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
-                <div className="text-2xl font-bold text-gray-900">{stats.completed || 0}</div>
-                <div className="text-xs font-medium text-gray-600">Completed</div>
-              </div>
-            </div>
-            <div
-              className="relative p-[2px] rounded-lg"
-              style={{
-                background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
-              }}
-            >
-              <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
-                <div className="text-2xl font-bold text-gray-900">{stats.rejected || 0}</div>
-                <div className="text-xs font-medium text-gray-600">Rejected</div>
-              </div>
-            </div>
-            <div
-              className="relative p-[2px] rounded-lg"
-              style={{
-                background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
-              }}
-            >
-              <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
-                <div className="text-2xl font-bold text-gray-900">{stats.urgent || 0}</div>
-                <div className="text-xs font-medium text-gray-600">Urgent</div>
-              </div>
-            </div>
-            <div
-              className="relative p-[2px] rounded-lg"
-              style={{
-                background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)",
-              }}
-            >
-              <div className="bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3">
-                <div className="text-2xl font-bold text-gray-900">{stats.overdue || 0}</div>
-                <div className="text-xs font-medium text-gray-600">Overdue</div>
-              </div>
+          <div className="overflow-x-auto scrollbar-hide">
+            <div className="flex gap-2 lg:gap-3 pb-2" style={{ minWidth: 'max-content' }}>
+              {statsCards.map((card, index) => {
+                const isActive = activeFilter === card.filterKey;
+
+                if (isActive) {
+                  // Active card with gradient background
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => handleFilterClick(card.filterKey)}
+                      className="relative overflow-hidden rounded-lg transition-all duration-200 shadow-lg p-3 lg:p-4 text-left cursor-pointer flex-shrink-0 w-32 md:w-36"
+                      style={gradientStyle}
+                    >
+                      <div className="text-xs font-semibold bg-white/90 text-blue-700 px-1.5 py-0.5 rounded-full mb-1 inline-block">
+                        Active
+                      </div>
+                      <div className="text-2xl md:text-3xl font-bold mb-0.5 lg:mb-1 text-white">
+                        {card.value}
+                      </div>
+                      <div className="text-xs font-medium text-white/90">
+                        {card.label}
+                      </div>
+                    </button>
+                  );
+                }
+
+                // Inactive card with gradient border
+                return (
+                  <div key={index} className="relative p-[2px] rounded-lg flex-shrink-0 w-32 md:w-36" style={gradientStyle}>
+                    <button
+                      onClick={() => handleFilterClick(card.filterKey)}
+                      className="w-full h-full bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3 lg:p-4 text-left cursor-pointer"
+                    >
+                      <div className="text-2xl md:text-3xl font-bold mb-0.5 lg:mb-1 text-gray-900">
+                        {card.value}
+                      </div>
+                      <div className="text-xs font-medium text-gray-600">
+                        {card.label}
+                      </div>
+                    </button>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
       )}
 
-      {/* Search + Filter Buttons */}
-      <div className="px-4 md:px-8 lg:px-[200px] mt-6 flex flex-col gap-4">
-        {/* Search Input */}
+      {/* Search Only (Removed Filter Buttons) */}
+      <div className="px-4 md:px-8 lg:px-[200px] mt-6">
         <div className="flex justify-center lg:justify-start">
           <div className="relative w-full max-w-md lg:max-w-none lg:w-[500px]">
             <div className="w-full bg-white rounded-full flex items-center px-4 py-2 shadow-lg border-2 border-gray-200 hover:border-[#023184] transition-all duration-200">
@@ -338,107 +313,6 @@ export default function RequestHistoryPage() {
               />
             </div>
           </div>
-        </div>
-
-        {/* Filter Buttons */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex gap-2 lg:gap-3 justify-center lg:justify-start">
-          <button
-            onClick={() => setSortOrder(sortOrder === "A-Z" ? "" : "A-Z")}
-            className={`px-3 md:px-5 py-2 rounded-full text-sm md:text-base font-bold hover:opacity-80 transition-all ${
-              sortOrder === "A-Z" ? "text-white" : "text-gray-700 bg-gray-200"
-            }`}
-            style={
-              sortOrder === "A-Z"
-                ? { background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }
-                : {}
-            }
-          >
-            A-Z
-          </button>
-          <button
-            onClick={() => setSortOrder(sortOrder === "Z-A" ? "" : "Z-A")}
-            className={`px-3 md:px-5 py-2 rounded-full text-sm md:text-base font-bold hover:opacity-80 transition-all ${
-              sortOrder === "Z-A" ? "text-white" : "text-gray-700 bg-gray-200"
-            }`}
-            style={
-              sortOrder === "Z-A"
-                ? { background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }
-                : {}
-            }
-          >
-            Z-A
-          </button>
-          <button
-            onClick={() => setStatusFilter(statusFilter === "approved" ? "" : "approved")}
-            className={`px-3 md:px-5 py-2 rounded-full text-sm md:text-base font-bold hover:opacity-80 transition-all ${
-              statusFilter === "approved" ? "text-white" : "text-gray-700 bg-gray-200"
-            }`}
-            style={
-              statusFilter === "approved"
-                ? { background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }
-                : {}
-            }
-          >
-            Approved
-          </button>
-          <button
-            onClick={() => setStatusFilter(statusFilter === "completed" ? "" : "completed")}
-            className={`px-3 md:px-5 py-2 rounded-full text-sm md:text-base font-bold hover:opacity-80 transition-all ${
-              statusFilter === "completed" ? "text-white" : "text-gray-700 bg-gray-200"
-            }`}
-            style={
-              statusFilter === "completed"
-                ? { background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }
-                : {}
-            }
-          >
-            Completed
-          </button>
-          <button
-            onClick={() => setStatusFilter(statusFilter === "rejected" ? "" : "rejected")}
-            className={`px-3 md:px-5 py-2 rounded-full text-sm md:text-base font-bold hover:opacity-80 transition-all ${
-              statusFilter === "rejected" ? "text-white" : "text-gray-700 bg-gray-200"
-            }`}
-            style={
-              statusFilter === "rejected"
-                ? { background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }
-                : {}
-            }
-          >
-            Rejected
-          </button>
-          <button
-            onClick={() =>
-              setTypeFilter(typeFilter === "letter_of_approval" ? "" : "letter_of_approval")
-            }
-            className={`px-3 md:px-5 py-2 rounded-full text-sm md:text-base font-bold hover:opacity-80 transition-all ${
-              typeFilter === "letter_of_approval" ? "text-white" : "text-gray-700 bg-gray-200"
-            } col-span-2 sm:col-span-1`}
-            style={
-              typeFilter === "letter_of_approval"
-                ? { background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }
-                : {}
-            }
-          >
-            Approval
-          </button>
-          <button
-            onClick={() =>
-              setTypeFilter(
-                typeFilter === "letter_of_authorization" ? "" : "letter_of_authorization"
-              )
-            }
-            className={`px-3 md:px-5 py-2 rounded-full text-sm md:text-base font-bold hover:opacity-80 transition-all ${
-              typeFilter === "letter_of_authorization" ? "text-white" : "text-gray-700 bg-gray-200"
-            } col-span-2 sm:col-span-1`}
-            style={
-              typeFilter === "letter_of_authorization"
-                ? { background: "linear-gradient(to right, #3F6EC0, #00539F, #5D3EA4, #7940A8)" }
-                : {}
-            }
-          >
-            Authorization
-          </button>
         </div>
       </div>
 
@@ -463,7 +337,7 @@ export default function RequestHistoryPage() {
           <div className="text-center py-16 bg-gradient-to-br from-gray-100 to-blue-50 rounded-xl shadow-inner">
             <p className="text-gray-600 font-medium text-lg">No requests found</p>
             <p className="text-gray-500 text-sm mt-2">
-              {searchTerm || statusFilter || typeFilter
+              {searchTerm || activeFilter !== "all"
                 ? "Try adjusting your filters"
                 : "You have no request history yet"}
             </p>

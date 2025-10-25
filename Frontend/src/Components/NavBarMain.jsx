@@ -10,7 +10,7 @@ import LogoutIcon from '../assets/LogoutIcon.svg';
 import AlertIcon from '../assets/AlertIcon.svg';
 import HomeIcon from '../assets/HomeIconWhite.svg';
 import ProfileGray from '../assets/profilegray.svg';
-import ClockIcon from '../assets/clockicon.svg';
+import ClockIcon from '../assets/ClockIconBlue.svg';
 
 const Navbar = ({
   user,
