@@ -847,19 +847,6 @@ export default function LOA_Submit() {
             return;
         }
 
-        // Check if file upload is required for Benefits Officers and Welfare Heads before rejection
-        if (['benefits_officer', 'welfare_head'].includes(user?.role)) {
-            const currentUserFiles = (request?.files || []).filter(file =>
-                file.uploaded_by === user?.id &&
-                file.request_id === request?.id
-            );
-
-            if (!currentUserFiles || currentUserFiles.length === 0) {
-                showError(`Must sign the file first before rejection`, "validation");
-                return;
-            }
-        }
-
         if (isSubmitting) return;
         setIsSubmitting(true);
 
@@ -2303,7 +2290,7 @@ export default function LOA_Submit() {
                     <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden animate-fadeIn">
                         {/* Modal Header - Dynamic based on error type */}
                         <div className={`px-6 py-4 ${
-                            errorType === 'validation' ? 'bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600' :
+                            errorType === 'validation' ? 'bg-gradient-to-r from-red-500 via-red-600 to-red-700' :
                             errorType === 'permission' ? 'bg-gradient-to-r from-purple-500 via-purple-600 to-indigo-600' :
                             errorType === 'network' ? 'bg-gradient-to-r from-blue-500 via-blue-600 to-cyan-600' :
                             'bg-gradient-to-r from-red-500 via-red-600 to-red-700'
@@ -2330,13 +2317,13 @@ export default function LOA_Submit() {
                                 </div>
                                 <div>
                                     <div className="text-xl">
-                                        {errorType === 'validation' ? 'Validation Error' :
+                                        {errorType === 'validation' ? 'Please Fill In The Required Fields' :
                                          errorType === 'permission' ? 'Permission Denied' :
                                          errorType === 'network' ? 'Connection Error' :
                                          'Action Failed'}
                                     </div>
                                     <div className="text-xs font-normal opacity-90 mt-0.5">
-                                        {errorType === 'validation' ? 'Please check your input' :
+                                        {errorType === 'validation' ? 'Complete all required information to proceed' :
                                          errorType === 'permission' ? 'You don\'t have access' :
                                          errorType === 'network' ? 'Check your connection' :
                                          'Something went wrong'}
@@ -2349,14 +2336,14 @@ export default function LOA_Submit() {
                         <div className="p-6 max-h-[70vh] overflow-y-auto">
                             {/* Error Message */}
                             <div className={`border-l-4 p-4 mb-4 rounded-r-lg ${
-                                errorType === 'validation' ? 'bg-amber-50 border-amber-500' :
+                                errorType === 'validation' ? 'bg-red-50 border-red-500' :
                                 errorType === 'permission' ? 'bg-purple-50 border-purple-500' :
                                 errorType === 'network' ? 'bg-blue-50 border-blue-500' :
                                 'bg-red-50 border-red-500'
                             }`}>
                                 <div className="flex items-start gap-3">
                                     <div className={`text-base font-semibold flex-1 ${
-                                        errorType === 'validation' ? 'text-amber-900' :
+                                        errorType === 'validation' ? 'text-red-900' :
                                         errorType === 'permission' ? 'text-purple-900' :
                                         errorType === 'network' ? 'text-blue-900' :
                                         'text-red-900'

@@ -80,33 +80,6 @@ const createRequest = async (req, res) => {
       });
     }
 
-    // Check annual request limit (1 completed request per year) - Skip for demo accounts
-    const userEmail = req.user.email;
-    const isDemoAccount = DEMO_ACCOUNT_EMAILS.includes(userEmail);
-
-    if (!isDemoAccount) {
-      const currentYear = new Date().getFullYear();
-
-      // Count completed requests in current year
-      const [completedRequests] = await pool.execute(
-        `SELECT COUNT(*) as count
-         FROM checkup_requests
-         WHERE employee_id = ?
-         AND current_status = 'completed'
-         AND YEAR(completed_at) = ?`,
-        [employee_id, currentYear]
-      );
-
-      const completedCount = completedRequests[0].count;
-
-      if (completedCount >= 1) {
-        return res.status(400).json({
-          success: false,
-          error: 'Annual limit reached: You can only have 1 completed request per year. You may submit new requests after pending/rejected requests are resolved or in the next calendar year.'
-        });
-      }
-    }
-
     // Generate unique request number
     const request_number = generateRequestNumber();
     
