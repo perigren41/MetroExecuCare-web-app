@@ -382,10 +382,10 @@ const getRequests = async (req, res) => {
       ...request,
       employee: {
         id: request.employee_id,
-        first_name: request.first_name,
-        last_name: request.last_name,
+        first_name: request.employee_first_name,
+        last_name: request.employee_last_name,
         email: request.email,
-        employee_number: request.employee_number,
+        employee_number: request.employee_id,
         department: request.department,
         position: request.position
       },
