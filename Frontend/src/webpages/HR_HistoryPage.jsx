@@ -360,11 +360,11 @@ export default function HR_HistoryPage() {
                                         }}
                                     >
                                         <tr style={{ height: "56px" }}>
-                                            <th className="text-white font-semibold text-center px-3 py-3" style={{ border: 0 }}>Name</th>
-                                            <th className="text-white font-semibold text-center px-3 py-3" style={{ border: 0 }}>Request Number</th>
-                                            <th className="text-white font-semibold text-center px-3 py-3" style={{ border: 0 }}>Type of Request</th>
-                                            <th className="text-white font-semibold text-center px-3 py-3" style={{ border: 0 }}>Submitted</th>
-                                            <th className="text-white font-semibold text-center px-3 py-3" style={{ border: 0 }}>Status</th>
+                                            <th className="text-white font-semibold text-center px-2 md:px-3 py-3 text-xs md:text-sm" style={{ border: 0 }}>Name</th>
+                                            <th className="text-white font-semibold text-center px-2 md:px-3 py-3 text-xs md:text-sm" style={{ border: 0 }}>Request Number</th>
+                                            <th className="text-white font-semibold text-center px-2 md:px-3 py-3 text-xs md:text-sm" style={{ border: 0 }}>Type of Request</th>
+                                            <th className="text-white font-semibold text-center px-2 md:px-3 py-3 text-xs md:text-sm" style={{ border: 0 }}>Submitted</th>
+                                            <th className="text-white font-semibold text-center px-2 md:px-3 py-3 text-xs md:text-sm" style={{ border: 0 }}>Status</th>
                                         </tr>
                                     </thead>
                                     <tbody>

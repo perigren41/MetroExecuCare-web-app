@@ -965,3 +965,6 @@ CREATE TABLE branches (
 
 **Request Management UI for HR**
 - I want HR to have request management as well. But I want their request management to use its own pending-request table page instead of using admin-user-page table as its request management page. Make sure to use concise theme with its own table and place the request management button close to or near the search bar
+
+**ADD History page**
+- I want each individual users to see their own history page. It looks like that's what we're missing. Add a "History" in the dropdown of profile navbar. And after clicking History, each user will see their own history page similar to othet history pages. It must be the same UI/UX design.

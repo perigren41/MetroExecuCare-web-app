@@ -110,13 +110,13 @@ export default function HRRequestManagementTable({ requests, loading, activeFilt
                   }}
                 >
                   <tr style={{ height: "56px" }}>
-                    <th className="text-center px-2 py-3" style={{ border: 0, width: "8%" }}></th>
-                    <th className="text-white font-semibold text-center px-2 py-3" style={{ border: 0, width: "20%" }}>Name</th>
-                    <th className="text-white font-semibold text-center px-2 py-3" style={{ border: 0, width: "15%" }}>Request Number</th>
-                    <th className="text-white font-semibold text-center px-2 py-3" style={{ border: 0, width: "20%" }}>Type of Request</th>
-                    <th className="text-white font-semibold text-center px-2 py-3" style={{ border: 0, width: "15%" }}>Submitted</th>
-                    <th className="text-white font-semibold text-center px-2 py-3" style={{ border: 0, width: "17%" }}>Status</th>
-                    <th className="text-center px-2 py-3" style={{ border: 0, width: "5%" }}></th>
+                    <th className="text-center px-1 md:px-2 py-3 text-xs md:text-sm" style={{ border: 0 }}></th>
+                    <th className="text-white font-semibold text-center px-1 md:px-2 py-3 text-xs md:text-sm" style={{ border: 0 }}>Name</th>
+                    <th className="text-white font-semibold text-center px-1 md:px-2 py-3 text-xs md:text-sm" style={{ border: 0 }}>Request Number</th>
+                    <th className="text-white font-semibold text-center px-1 md:px-2 py-3 text-xs md:text-sm" style={{ border: 0 }}>Type of Request</th>
+                    <th className="text-white font-semibold text-center px-1 md:px-2 py-3 text-xs md:text-sm" style={{ border: 0 }}>Submitted</th>
+                    <th className="text-white font-semibold text-center px-1 md:px-2 py-3 text-xs md:text-sm" style={{ border: 0 }}>Status</th>
+                    <th className="text-center px-1 md:px-2 py-3" style={{ border: 0 }}></th>
                   </tr>
                 </thead>
                 <tbody>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Copy, CheckCircle, LogIn } from 'lucide-react';
+import { Copy, CheckCircle, LogIn, Home } from 'lucide-react';
 import MetroBankLogo from '@/assets/mainLogo-foreground.svg';
 
 export default function TestAccountsPage() {
@@ -13,7 +13,7 @@ export default function TestAccountsPage() {
       description: 'Can submit LOA/Authorization requests and track status',
       email: 'executive@metroexecucare.com',
       password: 'Executive@123',
-      borderColor: 'border-blue-500',
+      gradient: 'bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700',
       bgColor: 'bg-blue-500',
       hoverBgColor: 'hover:bg-blue-600'
     },
@@ -22,7 +22,7 @@ export default function TestAccountsPage() {
       description: 'Can claim and process incoming requests',
       email: 'hr@metroexecucare.com',
       password: 'HR@12345',
-      borderColor: 'border-purple-500',
+      gradient: 'bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700',
       bgColor: 'bg-purple-500',
       hoverBgColor: 'hover:bg-purple-600'
     },
@@ -31,7 +31,7 @@ export default function TestAccountsPage() {
       description: 'Reviews and approves/rejects requests after HR processing',
       email: 'benefits@metroexecucare.com',
       password: 'Benefits@123',
-      borderColor: 'border-green-500',
+      gradient: 'bg-gradient-to-r from-green-500 via-green-600 to-green-700',
       bgColor: 'bg-green-500',
       hoverBgColor: 'hover:bg-green-600'
     },
@@ -40,7 +40,7 @@ export default function TestAccountsPage() {
       description: 'Final approval authority for requests',
       email: 'divisionhead@metroexecucare.com',
       password: 'divhead@123',
-      borderColor: 'border-orange-500',
+      gradient: 'bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700',
       bgColor: 'bg-orange-500',
       hoverBgColor: 'hover:bg-orange-600'
     },
@@ -49,7 +49,7 @@ export default function TestAccountsPage() {
       description: 'Manages users and system settings (view only for testing)',
       email: 'admintest@metroexecucare.com',
       password: 'Admin@123',
-      borderColor: 'border-red-500',
+      gradient: 'bg-gradient-to-r from-red-500 via-red-600 to-red-700',
       bgColor: 'bg-red-500',
       hoverBgColor: 'hover:bg-red-600'
     }
@@ -78,12 +78,21 @@ export default function TestAccountsPage() {
                 <p className="text-xs text-gray-500">Test Accounts Demo</p>
               </div>
             </div>
-            <button
-              onClick={() => navigate('/loginpage')}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-            >
-              Go to Login
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate('/')}
+                className="px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all text-sm font-medium flex items-center gap-2 shadow-md hover:shadow-lg"
+              >
+                <Home className="w-4 h-4" />
+                Go Back to Home
+              </button>
+              <button
+                onClick={() => navigate('/loginpage')}
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all text-sm font-medium shadow-md hover:shadow-lg"
+              >
+                Go to Login
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -130,11 +139,11 @@ export default function TestAccountsPage() {
           {testAccounts.map((account, index) => (
             <div
               key={index}
-              className={`bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow border-t-4 ${account.borderColor}`}
+              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
             >
-              <div className={`${account.bgColor} px-6 py-4`}>
-                <h3 className="text-lg font-bold text-white">{account.role}</h3>
-                <p className="text-xs text-white/90 mt-1">{account.description}</p>
+              <div className={`${account.gradient} px-6 py-4 text-white`}>
+                <h3 className="text-lg font-bold">{account.role}</h3>
+                <p className="text-xs opacity-90 mt-1">{account.description}</p>
               </div>
 
               <div className="p-6 space-y-4">
