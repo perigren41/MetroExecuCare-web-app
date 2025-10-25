@@ -22,6 +22,7 @@ import LOA_Submit from "@/webpages/LOA_Submit.jsx";
 import AboutUsPage from "@/webpages/AboutUsPage.jsx";
 import FAQPage from "@/webpages/FAQPage.jsx";
 import TestAccountsPage from "@/webpages/TestAccountsPage.jsx";
+import RequestHistoryPage from "@/webpages/RequestHistoryPage.jsx";
 
 
 function App() {
@@ -212,6 +213,16 @@ function App() {
             element={
               <ProtectedRoute allowedRoles={["hr_personnel", "benefits_officer", "welfare_head"]}>
                 <LOA_Submit />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Shared Routes - All Authenticated Users */}
+          <Route
+            path="/history"
+            element={
+              <ProtectedRoute allowedRoles={["executive", "hr_personnel", "benefits_officer", "welfare_head", "admin"]}>
+                <RequestHistoryPage />
               </ProtectedRoute>
             }
           />

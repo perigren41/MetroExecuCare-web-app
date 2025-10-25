@@ -10,6 +10,7 @@ import LogoutIcon from '../assets/LogoutIcon.svg';
 import AlertIcon from '../assets/AlertIcon.svg';
 import HomeIcon from '../assets/HomeIconWhite.svg';
 import ProfileGray from '../assets/profilegray.svg';
+import ClockIcon from '../assets/clockicon.svg';
 
 const Navbar = ({
   user,
@@ -92,6 +93,11 @@ const Navbar = ({
       // For executive employees
       navigate("/executive-employee-profile", { state: { user } });
     }
+    setShowDropdown(false);
+  };
+
+  const handleHistoryClick = () => {
+    navigate("/history", { state: { user } });
     setShowDropdown(false);
   };
 
@@ -231,6 +237,14 @@ const Navbar = ({
                     <span>Profile</span>
                   </button>
                 )}
+                {/* History option */}
+                <button
+                  onClick={handleHistoryClick}
+                  className="w-full px-4 py-2 text-left text-sm text-[#023184] hover:bg-gray-200 hover:rounded-2xl transition flex items-center gap-2"
+                >
+                  <img src={ClockIcon} alt="History" className="w-4 h-4" />
+                  <span>History</span>
+                </button>
                 {/* Logout option */}
                 <button
                   onClick={handleLogoutClick}
