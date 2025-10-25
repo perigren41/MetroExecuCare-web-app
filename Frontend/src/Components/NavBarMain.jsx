@@ -1,6 +1,7 @@
 // components/NavBarMain.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { HelpCircle } from 'lucide-react';
 import mainLogo from '../assets/mainLogo-foreground.svg';
 import BackSquareIconWhite from '../assets/BackSquareIconWhite.svg';
 
@@ -98,6 +99,11 @@ const Navbar = ({
 
   const handleHistoryClick = () => {
     navigate("/history", { state: { user } });
+    setShowDropdown(false);
+  };
+
+  const handleFAQClick = () => {
+    navigate("/faq");
     setShowDropdown(false);
   };
 
@@ -244,6 +250,14 @@ const Navbar = ({
                 >
                   <img src={ClockIcon} alt="History" className="w-4 h-4" />
                   <span>History</span>
+                </button>
+                {/* FAQ option */}
+                <button
+                  onClick={handleFAQClick}
+                  className="w-full px-4 py-2 text-left text-sm text-[#023184] hover:bg-gray-200 hover:rounded-2xl transition flex items-center gap-2"
+                >
+                  <HelpCircle className="w-4 h-4 text-[#023184]" />
+                  <span>FAQ</span>
                 </button>
                 {/* Logout option */}
                 <button

@@ -12,6 +12,8 @@ import LogoutRed from "@/assets/logoutred.svg";
 import ProfileIcon from '@/assets/ProfileIcon.svg';
 import LogoutIcon from '@/assets/LogoutIcon.svg';
 import ProfileGray from '@/assets/profilegray.svg';
+import ClockIcon from '@/assets/ClockIconBlue.svg';
+import { HelpCircle as FAQIcon } from "lucide-react";
 import ApprovalBg from "@/assets/approvalbg.svg";
 import AuthorizationBg from "@/assets/authorizationbg.svg";
 import ChevronRight from "@/assets/chevronright.svg";
@@ -445,6 +447,16 @@ export default function ExecutiveEmployeeDashboard() {
     navigate('/executive-employee-profile');
   };
 
+  const handleHistoryClick = () => {
+    setShowDropdownMenu(false);
+    navigate('/history');
+  };
+
+  const handleFAQClick = () => {
+    setShowDropdownMenu(false);
+    navigate('/faq');
+  };
+
   const handleLogoutDropdownClick = () => {
     setShowDropdownMenu(false);
     logout();
@@ -529,6 +541,20 @@ export default function ExecutiveEmployeeDashboard() {
                     >
                       <img src={ProfileIcon} alt="" className="w-4 h-4 sm:w-5 sm:h-5" />
                       <span>Profile</span>
+                    </button>
+                    <button
+                      onClick={handleHistoryClick}
+                      className="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-[#023184] hover:bg-gray-100 hover:rounded-2xl transition flex items-center gap-2 sm:gap-3 cursor-pointer"
+                    >
+                      <img src={ClockIcon} alt="" className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span>History</span>
+                    </button>
+                    <button
+                      onClick={handleFAQClick}
+                      className="w-full px-3 sm:px-4 py-2 text-left text-xs sm:text-sm text-[#023184] hover:bg-gray-100 hover:rounded-2xl transition flex items-center gap-2 sm:gap-3 cursor-pointer"
+                    >
+                      <FAQIcon className="w-4 h-4 sm:w-5 sm:h-5 text-[#023184]" />
+                      <span>FAQ</span>
                     </button>
                     <button
                       onClick={handleLogoutDropdownClick}
