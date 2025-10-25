@@ -34,10 +34,10 @@ const COLORS = {
 function ActionButton({ label, color, onClick, backgroundImage, hoverText }) {
   return (
     <button
-      className="text-white font-semibold rounded-4xl 
-      w-full max-w-xs sm:max-w-sm md:max-w-md lg:w-110 
-      h-24 sm:h-28 md:h-36 lg:h-42 
-      shadow-md flex items-center justify-center 
+      className="cursor-pointer text-white font-semibold rounded-4xl
+      w-full max-w-xs sm:max-w-sm md:max-w-md lg:w-110
+      h-24 sm:h-28 md:h-36 lg:h-42
+      shadow-md flex items-center justify-center
       transition transform active:scale-[.98] hover:brightness-105
       mb-3 sm:mb-4 mx-auto p-3 sm:p-4 md:p-6 group relative overflow-hidden"
       style={{ 

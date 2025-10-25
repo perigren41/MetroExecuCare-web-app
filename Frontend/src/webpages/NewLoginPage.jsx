@@ -206,7 +206,7 @@ export function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="text-gray-500 dark:text-gray-400 justify-center"
+                className="cursor-pointer text-gray-500 dark:text-gray-400 justify-center"
               >
                 {showPassword ? (
                   <img src={EyeOpen} alt="Hide password" className="size-5 dark:filter dark:invert" />
@@ -239,7 +239,7 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-32 sm:w-36 md:w-40 lg:w-44 bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300
+            className="cursor-pointer w-32 sm:w-36 md:w-40 lg:w-44 bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300
                       font-semibold py-2 sm:py-2.5 md:py-3 rounded-full text-sm sm:text-base
                       hover:bg-green-300 dark:hover:bg-green-600
                       transition-all duration-300 mt-4 sm:mt-6

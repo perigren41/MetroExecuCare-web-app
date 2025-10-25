@@ -831,7 +831,7 @@ export default function HRDashboard() {
                                 {/* Fourth row: Review Now button */}
                                 <button
                                     onClick={() => navigate(getPendingRequestsRoute(), { state: { user } })}
-                                    className="bg-blue-700 text-white px-6 py-2 rounded-full hover:bg-blue-800
+                                    className="cursor-pointer bg-blue-700 text-white px-6 py-2 rounded-full hover:bg-blue-800
                                     transition-colors duration-200 flex items-center justify-center gap-2 font-medium"
                                 >
                                     Review Now
