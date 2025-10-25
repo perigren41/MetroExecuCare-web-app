@@ -35,7 +35,7 @@ export function LoginPage() {
       // Force hard redirect to clear all previous user's component state
       window.location.href = from;
     }
-  }, [isAuthenticated, user, location]);
+  }, [isAuthenticated, user]);
 
   const validateForm = () => {
     let isValid = true;
