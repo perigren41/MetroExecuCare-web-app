@@ -91,7 +91,7 @@ export default function HRRequestStatsCards({ stats, onFilterClick, activeFilter
                   <button
                     key={index}
                     onClick={() => onFilterClick(card.filterKey)}
-                    className="relative overflow-hidden rounded-lg transition-all duration-200 shadow-lg p-3 lg:p-4 text-left cursor-pointer flex-shrink-0 w-32 md:w-36 lg:w-40"
+                    className="relative overflow-hidden rounded-lg transition-all duration-200 shadow-lg p-3 lg:p-4 text-left cursor-pointer flex-shrink-0 w-32 md:w-36 lg:w-36 xl:w-40"
                     style={gradientStyle}
                   >
                     <div className="text-xs font-semibold bg-white/90 text-blue-700 px-1.5 py-0.5 rounded-full mb-1 inline-block">
@@ -109,7 +109,7 @@ export default function HRRequestStatsCards({ stats, onFilterClick, activeFilter
 
               // Inactive card with gradient border
               return (
-                <div key={index} className="relative p-[2px] rounded-lg flex-shrink-0 w-32 md:w-36 lg:w-40" style={gradientStyle}>
+                <div key={index} className="relative p-[2px] rounded-lg flex-shrink-0 w-32 md:w-36 lg:w-36 xl:w-40" style={gradientStyle}>
                   <button
                     onClick={() => onFilterClick(card.filterKey)}
                     className="w-full h-full bg-white rounded-lg shadow hover:shadow-md transition-all duration-200 p-3 lg:p-4 text-left cursor-pointer"
