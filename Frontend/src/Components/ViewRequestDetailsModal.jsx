@@ -468,7 +468,7 @@ export default function ViewRequestDetailsModal({ isOpen, onClose, requestId }) 
                         <div className="border border-gray-200 rounded-lg p-3">
                           <h4 className="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            Initial Submission
+                            Executive Files Submitted
                           </h4>
                           <div className="space-y-2">
                             {initialFiles.map((file) => (
