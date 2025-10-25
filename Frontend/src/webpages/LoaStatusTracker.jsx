@@ -400,7 +400,7 @@ export default function LOAStatusTracker() {
             localStorage.removeItem('authToken');
             navigate("/login", { replace: true });
           }}
-          showHomeButton={true}
+          showHomeButton={false}
           backButtonIcon={BackSquareIconWhite}
           logo={MetroBankLogo}
         />
@@ -443,7 +443,7 @@ export default function LOAStatusTracker() {
           localStorage.removeItem('authToken');
           navigate("/login", { replace: true });
         }}
-        showHomeButton={true}
+        showHomeButton={false}
         backButtonIcon={BackSquareIconWhite}
         logo={MetroBankLogo}
       />

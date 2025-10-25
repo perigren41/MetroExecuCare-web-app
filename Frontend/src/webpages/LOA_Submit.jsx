@@ -1227,7 +1227,7 @@ export default function LOA_Submit() {
                     name: getUserDisplayName(user)
                 }}
                 onLogout={handleLogout}
-                showHomeButton={true}
+                showHomeButton={false}
                 backButtonIcon={BackSquareIconWhite}
                 customBackHandler={() => {
                     // Navigate to appropriate dashboard based on role

@@ -167,8 +167,6 @@ export default function RequestHistoryPage() {
     { label: "Approved", value: stats.approved || 0, filterKey: "approved" },
     { label: "Completed", value: stats.completed || 0, filterKey: "completed" },
     { label: "Rejected", value: stats.rejected || 0, filterKey: "rejected" },
-    { label: "Urgent", value: stats.urgent || 0, filterKey: "urgent" },
-    { label: "Overdue", value: stats.overdue || 0, filterKey: "overdue" },
   ];
 
   const gradientStyle = {

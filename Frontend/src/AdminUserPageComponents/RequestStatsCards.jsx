@@ -34,7 +34,7 @@ export default function RequestStatsCards({ stats, loading, onFilterClick, activ
         {/* Mobile Loading */}
         <div className="md:hidden overflow-x-auto scrollbar-hide mb-4">
           <div className="flex gap-2 pb-2">
-            {[...Array(7)].map((_, i) => (
+            {[...Array(6)].map((_, i) => (
               <div key={i} className="bg-white rounded-lg shadow p-3 animate-pulse flex-shrink-0 w-28">
                 <div className="h-3 bg-gray-200 rounded mb-2"></div>
                 <div className="h-6 bg-gray-200 rounded"></div>
@@ -43,8 +43,8 @@ export default function RequestStatsCards({ stats, loading, onFilterClick, activ
           </div>
         </div>
         {/* Desktop Loading */}
-        <div className="hidden md:grid grid-cols-3 lg:grid-cols-7 gap-3 mb-6">
-          {[...Array(7)].map((_, i) => (
+        <div className="hidden md:grid grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+          {[...Array(6)].map((_, i) => (
             <div key={i} className="bg-white rounded-lg shadow p-4 animate-pulse">
               <div className="h-4 bg-gray-200 rounded mb-2"></div>
               <div className="h-8 bg-gray-200 rounded"></div>
@@ -85,12 +85,6 @@ export default function RequestStatsCards({ stats, loading, onFilterClick, activ
       value: stats.rejected || 0,
       filterKey: "rejected",
       variant: "danger"
-    },
-    {
-      label: "Overdue",
-      value: stats.overdue || 0,
-      filterKey: "overdue",
-      variant: "warning"
     },
     {
       label: "Unassigned",
