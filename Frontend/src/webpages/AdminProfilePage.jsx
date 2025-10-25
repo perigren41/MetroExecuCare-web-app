@@ -542,8 +542,11 @@ function PasswordChangeCard() {
               placeholder="Current Password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
+              autoComplete="current-password"
               className="h-10 sm:h-12 w-full border border-gray-300 rounded-lg px-4 pr-12
-              focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm
+              [&::-ms-reveal]:hidden [&::-ms-clear]:hidden"
+              style={{ WebkitTextSecurity: showCurrent ? 'none' : 'disc' }}
             />
             <button
             type="button"
@@ -565,8 +568,11 @@ function PasswordChangeCard() {
               placeholder="New Password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
+              autoComplete="new-password"
               className="h-10 sm:h-12 w-full border border-gray-300 rounded-lg px-4 pr-12
-              focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm
+              [&::-ms-reveal]:hidden [&::-ms-clear]:hidden"
+              style={{ WebkitTextSecurity: showNew ? 'none' : 'disc' }}
             />
             <button
             type="button"
@@ -588,8 +594,11 @@ function PasswordChangeCard() {
               placeholder="Confirm New Password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              autoComplete="new-password"
               className="h-10 sm:h-12 w-full border border-gray-300 rounded-lg px-4 pr-12
-              focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm
+              [&::-ms-reveal]:hidden [&::-ms-clear]:hidden"
+              style={{ WebkitTextSecurity: showConfirm ? 'none' : 'disc' }}
             />
             <button
             type="button"
