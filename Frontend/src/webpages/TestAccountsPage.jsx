@@ -14,6 +14,7 @@ export default function TestAccountsPage() {
       email: 'executive@metroexecucare.com',
       password: 'Executive@123',
       gradient: 'bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700',
+      borderGradient: 'from-blue-500 via-blue-600 to-blue-700',
       bgColor: 'bg-blue-500',
       hoverBgColor: 'hover:bg-blue-600'
     },
@@ -23,6 +24,7 @@ export default function TestAccountsPage() {
       email: 'hr@metroexecucare.com',
       password: 'HR@12345',
       gradient: 'bg-gradient-to-r from-purple-500 via-purple-600 to-purple-700',
+      borderGradient: 'from-purple-500 via-purple-600 to-purple-700',
       bgColor: 'bg-purple-500',
       hoverBgColor: 'hover:bg-purple-600'
     },
@@ -32,6 +34,7 @@ export default function TestAccountsPage() {
       email: 'benefits@metroexecucare.com',
       password: 'Benefits@123',
       gradient: 'bg-gradient-to-r from-green-500 via-green-600 to-green-700',
+      borderGradient: 'from-green-500 via-green-600 to-green-700',
       bgColor: 'bg-green-500',
       hoverBgColor: 'hover:bg-green-600'
     },
@@ -41,6 +44,7 @@ export default function TestAccountsPage() {
       email: 'divisionhead@metroexecucare.com',
       password: 'divhead@123',
       gradient: 'bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700',
+      borderGradient: 'from-orange-500 via-orange-600 to-orange-700',
       bgColor: 'bg-orange-500',
       hoverBgColor: 'hover:bg-orange-600'
     },
@@ -50,6 +54,7 @@ export default function TestAccountsPage() {
       email: 'admintest@metroexecucare.com',
       password: 'Admin@123',
       gradient: 'bg-gradient-to-r from-red-500 via-red-600 to-red-700',
+      borderGradient: 'from-red-500 via-red-600 to-red-700',
       bgColor: 'bg-red-500',
       hoverBgColor: 'hover:bg-red-600'
     }
@@ -81,14 +86,14 @@ export default function TestAccountsPage() {
             <div className="flex items-center gap-3">
               <button
                 onClick={() => navigate('/')}
-                className="px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all text-sm font-medium flex items-center gap-2 shadow-md hover:shadow-lg"
+                className="cursor-pointer px-4 py-2 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-lg hover:from-gray-700 hover:to-gray-800 transition-all text-sm font-medium flex items-center gap-2 shadow-md hover:shadow-lg"
               >
                 <Home className="w-4 h-4" />
                 Go Back to Home
               </button>
               <button
                 onClick={() => navigate('/loginpage')}
-                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all text-sm font-medium shadow-md hover:shadow-lg"
+                className="cursor-pointer px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all text-sm font-medium shadow-md hover:shadow-lg"
               >
                 Go to Login
               </button>
@@ -139,7 +144,11 @@ export default function TestAccountsPage() {
           {testAccounts.map((account, index) => (
             <div
               key={index}
-              className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+              className="relative bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow"
+              style={{
+                background: `linear-gradient(white, white) padding-box, linear-gradient(to right, ${account.borderGradient.includes('blue') ? 'rgb(59, 130, 246), rgb(37, 99, 235), rgb(29, 78, 216)' : account.borderGradient.includes('purple') ? 'rgb(168, 85, 247), rgb(147, 51, 234), rgb(126, 34, 206)' : account.borderGradient.includes('green') ? 'rgb(34, 197, 94), rgb(22, 163, 74), rgb(21, 128, 61)' : account.borderGradient.includes('orange') ? 'rgb(249, 115, 22), rgb(234, 88, 12), rgb(194, 65, 12)' : 'rgb(239, 68, 68), rgb(220, 38, 38), rgb(185, 28, 28)'}) border-box`,
+                border: '3px solid transparent'
+              }}
             >
               <div className={`${account.gradient} px-6 py-4 text-white`}>
                 <h3 className="text-lg font-bold">{account.role}</h3>
@@ -159,7 +168,7 @@ export default function TestAccountsPage() {
                     />
                     <button
                       onClick={() => copyToClipboard(account.email, `email-${index}`)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors"
                       title="Copy email"
                     >
                       {copiedIndex === `email-${index}` ? (
@@ -183,7 +192,7 @@ export default function TestAccountsPage() {
                     />
                     <button
                       onClick={() => copyToClipboard(account.password, `password-${index}`)}
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      className="cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors"
                       title="Copy password"
                     >
                       {copiedIndex === `password-${index}` ? (
@@ -198,7 +207,7 @@ export default function TestAccountsPage() {
                 {/* Quick Login Button */}
                 <button
                   onClick={() => handleQuickLogin(account.email, account.password)}
-                  className={`w-full py-3 ${account.bgColor} ${account.hoverBgColor} text-white rounded-lg transition-colors text-sm font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2`}
+                  className={`cursor-pointer w-full py-3 ${account.bgColor} ${account.hoverBgColor} text-white rounded-lg transition-colors text-sm font-semibold shadow-md hover:shadow-lg flex items-center justify-center gap-2`}
                 >
                   <LogIn className="w-4 h-4" />
                   Quick Login as {account.role}
