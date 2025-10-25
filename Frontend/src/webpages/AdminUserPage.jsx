@@ -407,13 +407,13 @@ export default function AdminUsersPage() {
         logo={MetroBankLogo}
       />
 
-      <h1 className="text-center text-base font-bold mb-2 pt-6 text-blue-900 flex-shrink-0">
+      <h1 className="text-center text-base font-bold mb-1 pt-3 text-blue-900 flex-shrink-0">
         {viewMode === "users" ? "MetroExecuCare Users" : "Request Management"}
       </h1>
 
-      <div className="flex-1 flex flex-col px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pb-4 overflow-hidden">
+      <div className="flex-1 flex flex-col px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 pb-2 overflow-hidden">
         {/* View Header */}
-        <div className="flex flex-col mb-3 flex-shrink-0">
+        <div className="flex flex-col mb-2 flex-shrink-0">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-left text-xs">
               <span className="font-bold">Branch:</span> {currentUser?.branch || "All Branches"}
@@ -696,7 +696,7 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Stats Cards */}
-            <div className="flex-shrink-0 mb-3">
+            <div className="flex-shrink-0 mb-1">
               <RequestStatsCards
                 stats={requestStats}
                 loading={requestsLoading}
@@ -706,7 +706,7 @@ export default function AdminUsersPage() {
             </div>
 
             {/* Requests Table */}
-            <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+            <div className="flex-1 overflow-hidden flex flex-col min-h-0" style={{ minHeight: "400px" }}>
               <RequestManagementTable
                 requests={filteredRequests}
                 onViewDetails={handleViewRequestDetails}
