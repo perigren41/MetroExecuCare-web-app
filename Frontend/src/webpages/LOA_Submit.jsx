@@ -1231,13 +1231,8 @@ export default function LOA_Submit() {
                 backButtonIcon={BackSquareIconWhite}
                 customBackHandler={() => {
                     // Navigate to appropriate dashboard based on role
-                    if (user?.role === "hr_personnel") {
-                        navigate("/hr-pending-requests", { state: { user } });
-                    } else if (user?.role === "benefits_officer" || user?.role === "welfare_head") {
-                        navigate("/hr-dashboard", { state: { user } });
-                    } else {
-                        navigate(-1); // Fallback to browser back
-                    }
+                    const dashboardRoute = getDashboardRoute();
+                    navigate(dashboardRoute, { state: { user } });
                 }}
             />
 
