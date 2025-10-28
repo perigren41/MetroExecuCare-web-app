@@ -197,6 +197,37 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
       }
     }
 
+    // Validate Philippine phone number format
+    if (formData.contact_number) {
+      const phoneNumber = formData.contact_number.trim();
+
+      // Philippine mobile number patterns:
+      // +639XXXXXXXXX (13 chars) - with country code
+      // 09XXXXXXXXX (11 chars) - standard format
+      // 639XXXXXXXXX (12 chars) - without + prefix
+      // Philippine landline patterns:
+      // (0XX) XXX-XXXX - area code format
+      // 0XXXXXXXXX (10 chars) - landline without area code separator
+
+      const mobilePattern = /^(\+63|0)9\d{9}$/; // +639XXXXXXXXX or 09XXXXXXXXX
+      const mobile63Pattern = /^639\d{9}$/; // 639XXXXXXXXX (without +)
+      const landlinePattern = /^(0[2-9]\d{8}|\(0[2-9]\d\)\s?\d{3}-?\d{4})$/; // Landline formats
+
+      const isValidMobile = mobilePattern.test(phoneNumber) || mobile63Pattern.test(phoneNumber);
+      const isValidLandline = landlinePattern.test(phoneNumber);
+
+      if (!isValidMobile && !isValidLandline) {
+        setErrorMessage("Invalid Philippine phone number");
+        setErrorDetails([
+          "Please use one of the following formats:",
+          "Mobile: +639XXXXXXXXX, 09XXXXXXXXX, or 639XXXXXXXXX",
+          "Landline: (0XX) XXX-XXXX or 0XXXXXXXXX",
+          "Example: +639171234567 or (02) 123-4567"
+        ]);
+        return;
+      }
+    }
+
     setMissingFields([]);
     setShowConfirm(true); // show confirm modal
   };

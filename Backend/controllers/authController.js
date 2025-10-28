@@ -98,26 +98,30 @@ const register = async (req, res) => {
       branch: finalBranch
     });
 
-    // Insert new user - ensure no undefined values
+    // Insert new user - ensure no undefined values (convert all undefined to null)
+    const insertParams = [
+      employee_id,
+      email,
+      hashedPassword,
+      first_name,
+      last_name,
+      middle_name,
+      role,
+      finalDepartment,
+      position,
+      contact_number,
+      mysqlBirthDate,
+      finalBranch
+    ].map(val => val === undefined ? null : val);
+
+    console.log('=== FINAL INSERT PARAMS (after undefined->null conversion) ===', insertParams);
+
     const [result] = await pool.execute(
       `INSERT INTO users
        (employee_id, email, password_hash, first_name, last_name, middle_name,
         role, department, position, contact_number, birth_date, branch)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        employee_id || null,
-        email || null,
-        hashedPassword || null,
-        first_name || null,
-        last_name || null,
-        middle_name || null,
-        role || null,
-        finalDepartment,
-        position || null,
-        contact_number || null,
-        mysqlBirthDate,
-        finalBranch
-      ]
+      insertParams
     );
 
     // Get the created user
