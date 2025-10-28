@@ -176,10 +176,29 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
     if (missing.length > 0) {
       setMissingFields(missing);
       setShowMissingFields(true); // show warning modal
-    } else {
-      setMissingFields([]);
-      setShowConfirm(true); // show confirm modal
+      return;
     }
+
+    // Validate age (must be 18+)
+    if (formData.birthDate) {
+      const birthDate = new Date(formData.birthDate);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      const dayDiff = today.getDate() - birthDate.getDate();
+
+      // Adjust age if birthday hasn't occurred this year
+      const actualAge = (monthDiff < 0 || (monthDiff === 0 && dayDiff < 0)) ? age - 1 : age;
+
+      if (actualAge < 18) {
+        setErrorMessage("User must be at least 18 years old");
+        setErrorDetails(["The birth date indicates the user is under 18 years old. Please verify the date of birth."]);
+        return;
+      }
+    }
+
+    setMissingFields([]);
+    setShowConfirm(true); // show confirm modal
   };
 
   // Confirm Save - Updated to use the existing employeeid

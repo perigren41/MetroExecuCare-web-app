@@ -26,7 +26,7 @@ const register = async (req, res) => {
     // Sanitize input data
     const sanitizedData = sanitizeObject(req.body, [
       'employee_id', 'email', 'first_name', 'last_name', 'middle_name',
-      'department', 'position', 'contact_number', 'birth_date', 'branch'
+      'department', 'department_id', 'position', 'contact_number', 'birth_date', 'branch', 'branch_id', 'password', 'role'
     ]);
 
     console.log('Sanitized data:', sanitizedData);
@@ -51,11 +51,17 @@ const register = async (req, res) => {
       middle_name,
       role,
       department,
+      department_id,
       position,
       contact_number,
       birth_date,
-      branch
+      branch,
+      branch_id
     } = sanitizedData;
+
+    // Use department_id or department (handle both cases)
+    const finalDepartment = department_id || department || null;
+    const finalBranch = branch_id || branch || null;
 
     // Check if user already exists
     const [existingUsers] = await pool.execute(
@@ -84,23 +90,34 @@ const register = async (req, res) => {
       last_name,
       middle_name,
       role,
-      department,
+      department: finalDepartment,
       position,
       contact_number,
       birth_date,
       mysqlBirthDate,
-      branch
+      branch: finalBranch
     });
 
-    // Insert new user
+    // Insert new user - ensure no undefined values
     const [result] = await pool.execute(
       `INSERT INTO users
        (employee_id, email, password_hash, first_name, last_name, middle_name,
         role, department, position, contact_number, birth_date, branch)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [employee_id, email, hashedPassword, first_name, last_name, middle_name || null,
-       role, department || null, position || null, contact_number || null,
-       mysqlBirthDate, branch || null]
+      [
+        employee_id || null,
+        email || null,
+        hashedPassword || null,
+        first_name || null,
+        last_name || null,
+        middle_name || null,
+        role || null,
+        finalDepartment,
+        position || null,
+        contact_number || null,
+        mysqlBirthDate,
+        finalBranch
+      ]
     );
 
     // Get the created user
