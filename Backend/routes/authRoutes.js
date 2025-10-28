@@ -40,11 +40,17 @@ router.post('/register', authenticateToken, validateRegister, async (req, res) =
       middle_name,
       role,
       department,
+      department_id,
       position,
       branch,
+      branch_id,
       contact_number,
       birth_date
     } = req.body;
+
+    // Handle both department_id/branch_id and department/branch (frontend sends _id versions)
+    const finalDepartment = department_id || department || null;
+    const finalBranch = branch_id || branch || null;
 
     console.log('Destructured role:', role);
 
@@ -66,10 +72,28 @@ router.post('/register', authenticateToken, validateRegister, async (req, res) =
     console.log('Birth date conversion:', { birth_date, mysqlBirthDate });
 
     // Insert new user - CORRECTED to match your database schema
+    // Convert all undefined values to null to prevent SQL errors
+    const insertParams = [
+      employee_id,
+      email,
+      hashedPassword,
+      first_name,
+      last_name,
+      middle_name,
+      role,
+      finalDepartment,
+      position,
+      finalBranch,
+      contact_number,
+      mysqlBirthDate
+    ].map(val => val === undefined ? null : val);
+
+    console.log('Insert parameters:', insertParams);
+
     const [result] = await pool.execute(
       `INSERT INTO users (employee_id, email, password_hash, first_name, last_name, middle_name, role, department, position, branch, contact_number, birth_date, is_active, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())`,
-      [employee_id, email, hashedPassword, first_name, last_name, middle_name ?? null, role, department, position, branch, contact_number, mysqlBirthDate]
+      insertParams
     );
 
     // Verify required data for JWT
@@ -112,9 +136,9 @@ router.post('/register', authenticateToken, validateRegister, async (req, res) =
         first_name,
         last_name,
         role,
-        department,
+        department: finalDepartment,
         position,
-        branch
+        branch: finalBranch
       }
     });
 
@@ -129,11 +153,11 @@ router.post('/register', authenticateToken, validateRegister, async (req, res) =
           email,
           first_name,
           last_name,
-          middle_name: middle_name ?? null,
+          middle_name: middle_name || null,
           role,
-          department,
+          department: finalDepartment,
           position,
-          branch,
+          branch: finalBranch,
           contact_number,
           birth_date: mysqlBirthDate
         },
