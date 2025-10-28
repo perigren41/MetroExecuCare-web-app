@@ -67,10 +67,11 @@ export default function LOAStatusTracker() {
   };
 
   // Fetch latest request status from API
-  useEffect(() => {
-    const fetchRequestStatus = async () => {
-      try {
+  const fetchRequestStatus = async (showLoadingIndicator = true) => {
+    try {
+      if (showLoadingIndicator) {
         setIsLoading(true);
+      }
 
         // Try to get request ID from navigation state or URL params
         const requestId = location.state?.request?.id ||
@@ -119,11 +120,26 @@ export default function LOAStatusTracker() {
         // Fallback to navigation state data
         setRequestDetails(getInitialRequestDetails());
       } finally {
-        setIsLoading(false);
+        if (showLoadingIndicator) {
+          setIsLoading(false);
+        }
       }
-    };
+  };
 
+  // Initial fetch on mount
+  useEffect(() => {
     fetchRequestStatus();
+  }, [location.state, searchParams, user]);
+
+  // Auto-refresh: Poll for updates every 10 seconds
+  useEffect(() => {
+    // Set up polling interval (fetch without showing loading spinner)
+    const pollInterval = setInterval(() => {
+      fetchRequestStatus(false); // false = don't show loading spinner for background updates
+    }, 10000); // 10 seconds
+
+    // Cleanup interval on unmount
+    return () => clearInterval(pollInterval);
   }, [location.state, searchParams, user]);
 
   // Get initial data from URL params or navigation state (fallback)

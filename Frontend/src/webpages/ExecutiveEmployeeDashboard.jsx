@@ -178,9 +178,24 @@ export default function ExecutiveEmployeeDashboard() {
     }
   }, [user]);
 
-  const fetchUserRequests = async () => {
+  // Auto-refresh: Poll for updates every 10 seconds
+  useEffect(() => {
+    if (!user) return;
+
+    // Set up polling interval (fetch without showing loading spinner)
+    const pollInterval = setInterval(() => {
+      fetchUserRequests(false); // false = don't show loading spinner for background updates
+    }, 10000); // 10 seconds
+
+    // Cleanup interval on unmount
+    return () => clearInterval(pollInterval);
+  }, [user]);
+
+  const fetchUserRequests = async (showLoadingIndicator = true) => {
     try {
-      setLoading(true);
+      if (showLoadingIndicator) {
+        setLoading(true);
+      }
       setError("");
 
       // Fetch user's requests
@@ -215,7 +230,9 @@ export default function ExecutiveEmployeeDashboard() {
       setCurrentRequest(prev => ({ ...prev, current_status: "no_request" }));
       setHasReachedAnnualLimit(false);
     } finally {
-      setLoading(false);
+      if (showLoadingIndicator) {
+        setLoading(false);
+      }
     }
   };
 
@@ -236,8 +253,8 @@ export default function ExecutiveEmployeeDashboard() {
 
       // Database status mappings
       pending: {
-        text: "Waiting for HR",
-        note: "HR Personnel reviewing your request",
+        text: "Waiting for Human Resource",
+        note: "Human Resource Personnel reviewing your request",
         icon: ClockSquare,
         pillStyle: {
           backgroundColor: "#FEF3C7",
@@ -248,7 +265,7 @@ export default function ExecutiveEmployeeDashboard() {
       },
       hr_processing: {
         text: "Human Resource Processing",
-        note: "Request being processed by Human Resource",
+        note: "Request being processed by Human Resource Personnel",
         icon: ClockSquare,
         pillStyle: {
           backgroundColor: "#DBEAFE",

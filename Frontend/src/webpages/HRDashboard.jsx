@@ -109,9 +109,11 @@ export default function HRDashboard() {
     const dropdownRef = useRef(null);
 
     // Fetch dashboard data with improved error handling
-    const fetchDashboardData = async () => {
+    const fetchDashboardData = async (showLoadingIndicator = true) => {
         try {
-            setLoading(true);
+            if (showLoadingIndicator) {
+                setLoading(true);
+            }
             console.log('HRDashboard: Starting to fetch dashboard data for user:', user);
 
             // Fetch claimed requests based on user role
@@ -161,7 +163,9 @@ export default function HRDashboard() {
             setPendingRequests([]);
             setDashboardStats(null);
         } finally {
-            setLoading(false);
+            if (showLoadingIndicator) {
+                setLoading(false);
+            }
         }
     };
 
@@ -170,6 +174,19 @@ export default function HRDashboard() {
         if (user) {
             fetchDashboardData();
         }
+    }, [user]);
+
+    // Auto-refresh: Poll for updates every 10 seconds
+    useEffect(() => {
+        if (!user) return;
+
+        // Set up polling interval (fetch without showing loading spinner)
+        const pollInterval = setInterval(() => {
+            fetchDashboardData(false); // false = don't show loading spinner for background updates
+        }, 10000); // 10 seconds
+
+        // Cleanup interval on unmount
+        return () => clearInterval(pollInterval);
     }, [user]);
 
     useEffect(() => {

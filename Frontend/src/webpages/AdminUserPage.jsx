@@ -60,9 +60,27 @@ export default function AdminUsersPage() {
     }
   }, [viewMode]);
 
-  const fetchUsers = async () => {
+  // Auto-refresh: Poll for updates every 15 seconds
+  useEffect(() => {
+    // Set up polling interval
+    const pollInterval = setInterval(() => {
+      if (viewMode === "users") {
+        fetchUsers(false); // false = don't show loading spinner for background updates
+      } else {
+        fetchRequests(false);
+        fetchRequestStats(false);
+      }
+    }, 15000); // 15 seconds
+
+    // Cleanup interval on unmount
+    return () => clearInterval(pollInterval);
+  }, [viewMode]);
+
+  const fetchUsers = async (showLoadingIndicator = true) => {
     try {
-      setLoading(true);
+      if (showLoadingIndicator) {
+        setLoading(true);
+      }
       setError("");
       // Request all users by setting a large limit
       const response = await apiService.getUsers({ limit: 1000 });
@@ -98,7 +116,9 @@ export default function AdminUsersPage() {
 
       setUsers([]); // Ensure users is always an array
     } finally {
-      setLoading(false);
+      if (showLoadingIndicator) {
+        setLoading(false);
+      }
     }
   };
 
@@ -191,9 +211,11 @@ export default function AdminUsersPage() {
   };
 
   // Fetch all requests for Request Management view
-  const fetchRequests = async () => {
+  const fetchRequests = async (showLoadingIndicator = true) => {
     try {
-      setRequestsLoading(true);
+      if (showLoadingIndicator) {
+        setRequestsLoading(true);
+      }
       setError("");
 
       const response = await apiService.getRequests({ limit: 100 });
@@ -217,7 +239,9 @@ export default function AdminUsersPage() {
       setError(error.message || "Failed to load requests");
       setRequests([]);
     } finally {
-      setRequestsLoading(false);
+      if (showLoadingIndicator) {
+        setRequestsLoading(false);
+      }
     }
   };
 
