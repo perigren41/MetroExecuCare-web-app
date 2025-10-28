@@ -23,10 +23,12 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showMissingFields, setShowMissingFields] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [missingFields, setMissingFields] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [errorDetails, setErrorDetails] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [successData, setSuccessData] = useState(null);
   const [departments, setDepartments] = useState([]);
   const [branches, setBranches] = useState([]);
 
@@ -265,8 +267,16 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
 
       await onSave(userData);
 
+      // Store success data
+      setSuccessData({
+        name: `${formData.FirstName} ${formData.LastName}`,
+        employeeId: formData.employeeid,
+        role: formData.role,
+        email: formData.email
+      });
+
       setShowConfirm(false);
-      onClose();
+      setShowSuccess(true); // Show success modal
     } catch (error) {
       console.error("Error saving user:", error);
 
@@ -682,6 +692,65 @@ export default function NewUserFormModal({ user, onClose, onSave }) {
               className="px-4 py-1 rounded-full bg-blue-700 text-white text-xs hover:bg-blue-800 cursor-pointer"
             >
               OK
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {showSuccess && successData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-2xl text-center w-full sm:w-96 mx-4 max-w-md transform transition-all">
+            {/* Success Icon */}
+            <div className="mb-6 flex justify-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+                <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Success Message */}
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              User Added Successfully!
+            </h2>
+            <p className="text-gray-600 mb-6">
+              The new user has been created and added to the system.
+            </p>
+
+            {/* User Details */}
+            <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 mb-6 text-left">
+              <div className="space-y-2">
+                <div className="flex items-start">
+                  <span className="text-sm font-semibold text-gray-700 w-28">Name:</span>
+                  <span className="text-sm text-gray-900 font-medium flex-1">{successData.name}</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="text-sm font-semibold text-gray-700 w-28">Employee ID:</span>
+                  <span className="text-sm text-gray-900 font-mono flex-1">{successData.employeeId}</span>
+                </div>
+                <div className="flex items-start">
+                  <span className="text-sm font-semibold text-gray-700 w-28">Role:</span>
+                  <span className="text-sm text-gray-900 capitalize flex-1">
+                    {successData.role.replace('_', ' ')}
+                  </span>
+                </div>
+                <div className="flex items-start">
+                  <span className="text-sm font-semibold text-gray-700 w-28">Email:</span>
+                  <span className="text-sm text-gray-900 flex-1">{successData.email}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Close Button */}
+            <button
+              onClick={() => {
+                setShowSuccess(false);
+                onClose();
+              }}
+              className="w-full px-6 py-3 rounded-full bg-gradient-to-r from-green-500 to-green-600 text-white font-semibold text-sm hover:from-green-600 hover:to-green-700 transition-all shadow-md hover:shadow-lg cursor-pointer"
+            >
+              Done
             </button>
           </div>
         </div>
