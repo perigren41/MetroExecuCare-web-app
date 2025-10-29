@@ -46,6 +46,8 @@ export default function PdfEditorModal({
   const [showFieldDropdown, setShowFieldDropdown] = useState(null); // Which field dropdown is open (TODO: Future feature)
   const [savedSignatures, setSavedSignatures] = useState([]); // Saved signatures from localStorage
   const fileInputRef = useRef(null); // For file upload input
+  const [resizingAnnotation, setResizingAnnotation] = useState(null); // Currently resizing annotation
+  const [resizeStart, setResizeStart] = useState({ x: 0, y: 0, width: 0, height: 0 }); // Initial resize state
 
   // Load PDF when modal opens
   useEffect(() => {
@@ -620,16 +622,27 @@ export default function PdfEditorModal({
 
   // Use saved signature (add to PDF)
   const handleUseSavedSignature = (signatureDataUrl) => {
-    setAnnotations([...annotations, {
-      type: 'signature',
-      dataUrl: signatureDataUrl,
-      page: currentPage,
-      x: 100,
-      y: 200,
-      width: 200,
-      height: 100,
-      id: Date.now()
-    }]);
+    // Load image to get actual dimensions
+    const img = new Image();
+    img.onload = () => {
+      // Calculate appropriate size (max 300px wide, maintain aspect ratio)
+      const maxWidth = 300;
+      const aspectRatio = img.height / img.width;
+      const width = Math.min(img.width, maxWidth);
+      const height = width * aspectRatio;
+
+      setAnnotations([...annotations, {
+        type: 'signature',
+        dataUrl: signatureDataUrl,
+        page: currentPage,
+        x: 100,
+        y: 200,
+        width: width,
+        height: height,
+        id: Date.now()
+      }]);
+    };
+    img.src = signatureDataUrl;
   };
 
   // Handle signature image upload
@@ -653,17 +666,28 @@ export default function PdfEditorModal({
     reader.onload = (e) => {
       const dataUrl = e.target.result;
 
-      // Add uploaded signature to PDF
-      setAnnotations([...annotations, {
-        type: 'signature',
-        dataUrl: dataUrl,
-        page: currentPage,
-        x: 100,
-        y: 200,
-        width: 200,
-        height: 100,
-        id: Date.now()
-      }]);
+      // Load image to get actual dimensions
+      const img = new Image();
+      img.onload = () => {
+        // Calculate appropriate size (max 300px wide, maintain aspect ratio)
+        const maxWidth = 300;
+        const aspectRatio = img.height / img.width;
+        const width = Math.min(img.width, maxWidth);
+        const height = width * aspectRatio;
+
+        // Add uploaded signature to PDF
+        setAnnotations([...annotations, {
+          type: 'signature',
+          dataUrl: dataUrl,
+          page: currentPage,
+          x: 100,
+          y: 200,
+          width: width,
+          height: height,
+          id: Date.now()
+        }]);
+      };
+      img.src = dataUrl;
 
       // Clear the file input
       if (fileInputRef.current) {
@@ -797,6 +821,80 @@ export default function PdfEditorModal({
       document.removeEventListener('touchend', handleUp);
     };
   }, [draggedAnnotation, dragOffset, annotations, canvasSize]);
+
+  // Resize handlers for signatures
+  const handleResizeStart = (e, annotation) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const container = containerRef.current;
+    if (!container) return;
+
+    const rect = container.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    setResizingAnnotation(annotation);
+    setResizeStart({
+      x: clientX,
+      y: clientY,
+      width: annotation.width,
+      height: annotation.height
+    });
+  };
+
+  const handleResizeMove = (e) => {
+    if (!resizingAnnotation || !containerRef.current) return;
+
+    e.preventDefault();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+    // Calculate delta from start
+    const deltaX = clientX - resizeStart.x;
+    const deltaY = clientY - resizeStart.y;
+
+    // Calculate new dimensions maintaining aspect ratio
+    const aspectRatio = resizeStart.height / resizeStart.width;
+    let newWidth = Math.max(50, resizeStart.width + deltaX);
+    let newHeight = newWidth * aspectRatio;
+
+    // Constrain maximum size
+    newWidth = Math.min(newWidth, canvasSize.width - resizingAnnotation.x);
+    newHeight = Math.min(newHeight, canvasSize.height - resizingAnnotation.y);
+
+    // Update annotation size
+    setAnnotations(annotations.map(ann =>
+      ann.id === resizingAnnotation.id
+        ? { ...ann, width: newWidth, height: newHeight }
+        : ann
+    ));
+  };
+
+  const handleResizeEnd = () => {
+    setResizingAnnotation(null);
+    setResizeStart({ x: 0, y: 0, width: 0, height: 0 });
+  };
+
+  // Add global listeners for resize
+  useEffect(() => {
+    if (!resizingAnnotation) return;
+
+    const handleMove = (e) => handleResizeMove(e);
+    const handleUp = () => handleResizeEnd();
+
+    document.addEventListener('mousemove', handleMove);
+    document.addEventListener('mouseup', handleUp);
+    document.addEventListener('touchmove', handleMove, { passive: false });
+    document.addEventListener('touchend', handleUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMove);
+      document.removeEventListener('mouseup', handleUp);
+      document.removeEventListener('touchmove', handleMove);
+      document.removeEventListener('touchend', handleUp);
+    };
+  }, [resizingAnnotation, resizeStart, annotations, canvasSize]);
 
   // Upload PDF with annotations (no download)
   const handleUploadOnly = async () => {
@@ -1167,15 +1265,32 @@ export default function PdfEditorModal({
                                 style={{
                                   width: annotation.width,
                                   height: annotation.height,
-                                  display: 'block'
+                                  display: 'block',
+                                  pointerEvents: 'none'
                                 }}
                               />
                               <button
-                                onClick={() => handleRemoveAnnotation(annotation.id)}
-                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full hover:bg-red-700 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveAnnotation(annotation.id);
+                                }}
+                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full hover:bg-red-700 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center z-10"
+                                title="Remove signature"
                               >
                                 ×
                               </button>
+                              {/* Resize handle - bottom right corner */}
+                              <div
+                                onMouseDown={(e) => handleResizeStart(e, annotation)}
+                                onTouchStart={(e) => handleResizeStart(e, annotation)}
+                                className="absolute -bottom-2 -right-2 w-6 h-6 bg-blue-600 border-2 border-white rounded-full hover:bg-blue-700 opacity-0 group-hover:opacity-100 transition-opacity cursor-nwse-resize flex items-center justify-center z-10"
+                                title="Drag to resize"
+                                style={{ touchAction: 'none' }}
+                              >
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="white">
+                                  <path d="M11 1L1 11M11 5L5 11M11 9L9 11" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                                </svg>
+                              </div>
                             </div>
                           )}
                         </div>
