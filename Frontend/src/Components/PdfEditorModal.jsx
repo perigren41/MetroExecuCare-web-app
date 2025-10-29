@@ -306,12 +306,14 @@ export default function PdfEditorModal({
             skippedFields.push(fieldName);
           }
         } else {
-          // Check if this is a field that should be left blank (hospital, doctor, etc.)
+          // Check if this is a field that should be left blank (hospital, doctor, approval code, etc.)
           const normalizedName = fieldName.toLowerCase();
           if (normalizedName.includes('hospital') ||
               normalizedName.includes('clinic') ||
               normalizedName.includes('doctor') ||
-              normalizedName.includes('physician')) {
+              normalizedName.includes('physician') ||
+              normalizedName.includes('approval') ||
+              normalizedName.includes('expiration')) {
             blankFields.push(fieldName);
           } else {
             skippedFields.push(fieldName);
