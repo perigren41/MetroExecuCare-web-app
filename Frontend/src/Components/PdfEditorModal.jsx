@@ -356,7 +356,7 @@ export default function PdfEditorModal({
     }
   };
 
-  // Fallback auto-fill: Create draggable text annotations
+  // Fallback auto-fill: Create draggable text annotations with improved positioning
   const handleAutoFillAnnotations = () => {
     if (!user) {
       alert('User information not available for auto-fill.');
@@ -378,20 +378,26 @@ export default function PdfEditorModal({
 
     const age = calculateAge();
     const ageSex = age && user.gender ? `${age}/${user.gender}` : (age || user.gender || '');
+    const fullName = `${user.first_name || ''} ${user.middle_name || ''} ${user.last_name || ''}`.trim();
+    const positionDepartment = `${user.position || ''} / ${user.department || ''}`.replace(' / ', ' / ').trim();
 
-    const startX = 50;
-    const startY = 100;
-    const spacingY = 50;
-
+    // Improved positioning based on typical HR approval form layout
+    // Coordinates estimated for standard letter-size PDF at 1.5x scale
     const fields = [
-      { label: 'Full Name', value: `${user.first_name || ''} ${user.middle_name || ''} ${user.last_name || ''}`.trim() },
-      { label: 'Employee ID', value: user.employee_id || '' },
-      { label: 'Department', value: user.department || '' },
-      { label: 'Position', value: user.position || '' },
-      { label: 'Age/Sex', value: ageSex },
-      { label: 'Contact', value: user.contact_number || '' },
-      { label: 'Branch', value: user.branch || '' },
-      { label: 'Date', value: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) },
+      // Top left section
+      { label: 'Patient Name', value: fullName, x: 540, y: 240, fontSize: 10 },
+      { label: 'ID Number', value: user.employee_id || '', x: 540, y: 300, fontSize: 10 },
+      { label: 'Date and Time', value: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), x: 540, y: 328, fontSize: 10 },
+
+      // Top right section
+      { label: 'Age/Sex', value: ageSex, x: 830, y: 268, fontSize: 10 },
+
+      // Middle section - "To:" area
+      { label: 'To - Employee Name', value: fullName, x: 490, y: 383, fontSize: 10 },
+      { label: 'Position/Department', value: positionDepartment, x: 490, y: 423, fontSize: 10 },
+
+      // "Dear" section
+      { label: 'Dear Name', value: fullName, x: 485, y: 465, fontSize: 10 },
     ];
 
     const newAnnotations = fields
@@ -400,9 +406,9 @@ export default function PdfEditorModal({
         type: 'text',
         text: field.value,
         page: currentPage,
-        x: startX,
-        y: startY + (index * spacingY),
-        fontSize: 11,
+        x: field.x,
+        y: field.y,
+        fontSize: field.fontSize,
         id: Date.now() + index,
         isAutoFilled: true,
         fieldLabel: field.label
@@ -411,10 +417,17 @@ export default function PdfEditorModal({
     setAnnotations([...annotations, ...newAnnotations]);
 
     alert(
-      `✅ Added ${newAnnotations.length} draggable text fields!\n\n` +
-      '📌 Drag each field to its correct position on the form.\n' +
-      '💡 Tip: Look for labels like "Name:", "ID:", "Age/Sex:", etc. and place the fields next to them.\n\n' +
-      '⚠️ Note: This PDF does not have interactive form fields. For automatic positioning, the PDF would need to be converted to a fillable form using Adobe Acrobat or similar software.'
+      `✅ Added ${newAnnotations.length} text fields with smart positioning!\n\n` +
+      '📌 Fields are positioned near their labels:\n' +
+      '  • Patient name\n' +
+      '  • ID number\n' +
+      '  • Age/Sex\n' +
+      '  • Date and Time\n' +
+      '  • To: [Employee Name]\n' +
+      '  • Position/Department\n' +
+      '  • Dear [Name]\n\n' +
+      '🎯 Drag fields if you need to adjust positioning.\n' +
+      '💡 Hospital Name, Approval Code, and signature fields are left blank for manual entry.'
     );
   };
 
