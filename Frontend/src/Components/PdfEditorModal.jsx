@@ -12,7 +12,8 @@ export default function PdfEditorModal({
   onClose,
   pdfUrl,
   onSave,
-  templateName = "template.pdf"
+  templateName = "template.pdf",
+  user = null // User data for auto-fill
 }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -34,6 +35,12 @@ export default function PdfEditorModal({
   const [draggedAnnotation, setDraggedAnnotation] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
   const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
+  const [showAutoFillPanel, setShowAutoFillPanel] = useState(false);
+  const [showSignatureUploadPanel, setShowSignatureUploadPanel] = useState(false);
+  const [uploadedSignature, setUploadedSignature] = useState(null);
+  const signatureUploadRef = useRef(null);
+  const [formFields, setFormFields] = useState([]);
+  const [hasFormFields, setHasFormFields] = useState(false);
 
   // Load PDF when modal opens
   useEffect(() => {
@@ -83,6 +90,228 @@ export default function PdfEditorModal({
 
     loadPdf();
   }, [isOpen, pdfUrl]);
+
+  // Detect form fields in PDF (for smart auto-fill)
+  useEffect(() => {
+    if (!pdfLibDoc) return;
+
+    const detectFormFields = async () => {
+      try {
+        const form = pdfLibDoc.getForm();
+        const fields = form.getFields();
+
+        console.log('📋 PDF Form Fields Detected:', fields.length);
+
+        if (fields.length > 0) {
+          setHasFormFields(true);
+
+          // Get all field names and types
+          const fieldInfo = fields.map(field => ({
+            name: field.getName(),
+            type: field.constructor.name,
+            field: field
+          }));
+
+          setFormFields(fieldInfo);
+          console.log('✅ Form Fields:', fieldInfo);
+        } else {
+          console.log('⚠️ This PDF has no interactive form fields');
+          setHasFormFields(false);
+        }
+      } catch (error) {
+        console.log('ℹ️ No form fields in this PDF');
+        setHasFormFields(false);
+      }
+    };
+
+    detectFormFields();
+  }, [pdfLibDoc]);
+
+  // Map user data to form field names
+  const mapUserDataToFormFields = (fieldName, userData) => {
+    if (!userData) return null;
+
+    const name = fieldName.toLowerCase().replace(/[_-]/g, '');
+
+    // Comprehensive field mappings
+    const mappings = {
+      // Name fields
+      name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
+      fullname: `${userData.first_name || ''} ${userData.middle_name || ''} ${userData.last_name || ''}`.trim(),
+      applicantname: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
+      employeename: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
+      firstname: userData.first_name || '',
+      lastname: userData.last_name || '',
+      middlename: userData.middle_name || '',
+
+      // ID fields
+      id: userData.employee_id || '',
+      employeeid: userData.employee_id || '',
+      empid: userData.employee_id || '',
+      staffid: userData.employee_id || '',
+
+      // Department
+      department: userData.department || '',
+      dept: userData.department || '',
+      division: userData.department || '',
+
+      // Position
+      position: userData.position || '',
+      title: userData.position || '',
+      jobtitle: userData.position || '',
+      role: userData.position || '',
+
+      // Contact
+      email: userData.email || '',
+      emailaddress: userData.email || '',
+      contact: userData.contact_number || '',
+      contactnumber: userData.contact_number || '',
+      phone: userData.contact_number || '',
+      mobile: userData.contact_number || '',
+
+      // Branch
+      branch: userData.branch || '',
+      office: userData.branch || '',
+
+      // Date
+      date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      datetoday: new Date().toLocaleDateString(),
+      currentdate: new Date().toLocaleDateString(),
+      applicationdate: new Date().toLocaleDateString(),
+    };
+
+    // Exact match
+    if (mappings[name]) return mappings[name];
+
+    // Partial match
+    for (const [key, value] of Object.entries(mappings)) {
+      if (name.includes(key) || key.includes(name)) {
+        return value;
+      }
+    }
+
+    return null;
+  };
+
+  // Smart auto-fill for PDFs with interactive form fields (WPS-style)
+  const handleAutoFillFormFields = async () => {
+    if (!pdfLibDoc || !user || !hasFormFields) {
+      alert('This PDF does not have fillable form fields.');
+      return;
+    }
+
+    try {
+      const form = pdfLibDoc.getForm();
+      let filledCount = 0;
+      const skippedFields = [];
+
+      for (const fieldInfo of formFields) {
+        const field = fieldInfo.field;
+        const fieldName = fieldInfo.name;
+        const value = mapUserDataToFormFields(fieldName, user);
+
+        if (value) {
+          try {
+            if (fieldInfo.type === 'PDFTextField') {
+              field.setText(String(value));
+              filledCount++;
+              console.log(`✅ Filled "${fieldName}": ${value}`);
+            } else if (fieldInfo.type === 'PDFDropdown') {
+              field.select(String(value));
+              filledCount++;
+            } else if (fieldInfo.type === 'PDFCheckBox') {
+              if (value === true || value === 'true' || value === 'yes') {
+                field.check();
+                filledCount++;
+              }
+            }
+          } catch (err) {
+            console.warn(`⚠️ Could not fill "${fieldName}":`, err.message);
+            skippedFields.push(fieldName);
+          }
+        } else {
+          skippedFields.push(fieldName);
+        }
+      }
+
+      // Reload PDF to show filled fields
+      const updatedBytes = await pdfLibDoc.save();
+      const updatedPdfLibDoc = await PDFDocument.load(updatedBytes);
+      setPdfLibDoc(updatedPdfLibDoc);
+
+      // Trigger re-render
+      setCurrentPage(currentPage);
+
+      alert(
+        `✅ Auto-filled ${filledCount} field(s) successfully!\n\n` +
+        (skippedFields.length > 0
+          ? `⚠️ ${skippedFields.length} field(s) could not be auto-filled. You can fill these manually.`
+          : 'All available fields have been filled with your information!')
+      );
+    } catch (error) {
+      console.error('Error auto-filling form fields:', error);
+      alert('Failed to auto-fill form fields. Please try again.');
+    }
+  };
+
+  // Fallback auto-fill: Create draggable text annotations
+  const handleAutoFillAnnotations = () => {
+    if (!user) {
+      alert('User information not available for auto-fill.');
+      return;
+    }
+
+    const startX = 50;
+    const startY = 100;
+    const spacingY = 55;
+
+    const fields = [
+      { label: 'Full Name', value: `${user.first_name || ''} ${user.last_name || ''}`.trim() },
+      { label: 'Employee ID', value: user.employee_id || '' },
+      { label: 'Department', value: user.department || '' },
+      { label: 'Position', value: user.position || '' },
+      { label: 'Email', value: user.email || '' },
+      { label: 'Contact', value: user.contact_number || '' },
+      { label: 'Date', value: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) },
+    ];
+
+    const newAnnotations = fields
+      .filter(f => f.value)
+      .map((field, index) => ({
+        type: 'text',
+        text: field.value,
+        page: currentPage,
+        x: startX,
+        y: startY + (index * spacingY),
+        fontSize: 12,
+        id: Date.now() + index,
+        isAutoFilled: true,
+        fieldLabel: field.label
+      }));
+
+    setAnnotations([...annotations, ...newAnnotations]);
+
+    alert(
+      `✅ Added ${newAnnotations.length} draggable fields with your information!\n\n` +
+      '📌 Drag each green box to the correct position on the form.'
+    );
+  };
+
+  // Hybrid auto-fill: Use form fields if available, otherwise use annotations
+  const handleSmartAutoFill = () => {
+    if (!user) {
+      alert('Please log in to use auto-fill.');
+      return;
+    }
+
+    if (hasFormFields) {
+      // Use WPS-style smart auto-fill
+      handleAutoFillFormFields();
+    } else {
+      // Use draggable annotations
+      handleAutoFillAnnotations();
+    }
+  };
 
   // Render current page
   useEffect(() => {
@@ -472,6 +701,20 @@ export default function PdfEditorModal({
               Add Signature
             </button>
 
+            {/* Smart Auto-Fill Button */}
+            {user && (
+              <button
+                onClick={handleSmartAutoFill}
+                className="cursor-pointer px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 shadow-md hover:shadow-lg"
+                title={hasFormFields ? 'Smart auto-fill with your information' : 'Add draggable fields with your information'}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                {hasFormFields ? `Auto-Fill (${formFields.length} fields)` : 'Auto-Fill My Info'}
+              </button>
+            )}
+
             <div className="ml-auto flex items-center gap-2">
               <button
                 onClick={() => setScale(Math.max(0.5, scale - 0.25))}
@@ -555,8 +798,22 @@ export default function PdfEditorModal({
                           className="group"
                         >
                           {annotation.type === 'text' ? (
-                            <div className="border-2 border-yellow-400 px-2 py-1 rounded shadow-lg hover:shadow-xl transition-shadow" style={{ background: 'rgba(254, 249, 195, 0.5)' }}>
+                            <div
+                              className={`border-2 px-2 py-1 rounded shadow-lg hover:shadow-xl transition-shadow ${
+                                annotation.isAutoFilled
+                                  ? 'border-green-400'
+                                  : 'border-yellow-400'
+                              }`}
+                              style={{
+                                background: annotation.isAutoFilled
+                                  ? 'rgba(187, 247, 208, 0.6)'
+                                  : 'rgba(254, 249, 195, 0.5)'
+                              }}
+                            >
                               <span style={{ fontSize: annotation.fontSize, color: '#000' }}>{annotation.text}</span>
+                              {annotation.isAutoFilled && (
+                                <span className="ml-2 text-xs text-green-700 font-semibold">✓ Auto</span>
+                              )}
                               <button
                                 onClick={() => handleRemoveAnnotation(annotation.id)}
                                 className="ml-2 text-red-600 hover:text-red-800 opacity-0 group-hover:opacity-100 transition-opacity"
