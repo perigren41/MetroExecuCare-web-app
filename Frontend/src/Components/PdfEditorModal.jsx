@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Download, Upload, CheckCircle, AlertCircle, Type, Edit3, Trash2 } from 'lucide-react';
+import { X, Download, Upload, CheckCircle, AlertCircle, Type, Edit3, Trash2, Image } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument, rgb } from 'pdf-lib';
@@ -44,6 +44,8 @@ export default function PdfEditorModal({
   const [clickToPlaceMode, setClickToPlaceMode] = useState(false); // New: Click-to-place text mode
   const [pendingText, setPendingText] = useState(''); // Text waiting to be placed
   const [showFieldDropdown, setShowFieldDropdown] = useState(null); // Which field dropdown is open (TODO: Future feature)
+  const [savedSignatures, setSavedSignatures] = useState([]); // Saved signatures from localStorage
+  const fileInputRef = useRef(null); // For file upload input
 
   // Load PDF when modal opens
   useEffect(() => {
@@ -536,6 +538,21 @@ export default function PdfEditorModal({
     setSelectedTool(null);
   };
 
+  // Load saved signatures from localStorage
+  useEffect(() => {
+    const loadSavedSignatures = () => {
+      try {
+        const saved = localStorage.getItem('metroexecucare_signatures');
+        if (saved) {
+          setSavedSignatures(JSON.parse(saved));
+        }
+      } catch (error) {
+        console.error('Error loading saved signatures:', error);
+      }
+    };
+    loadSavedSignatures();
+  }, []);
+
   // Add signature annotation
   const handleAddSignature = () => {
     if (!signaturePadRef.current || signaturePadRef.current.isEmpty()) {
@@ -559,6 +576,150 @@ export default function PdfEditorModal({
     signaturePadRef.current.clear();
     setShowSignaturePanel(false);
     setSelectedTool(null);
+  };
+
+  // Save signature to localStorage for reuse
+  const handleSaveSignature = () => {
+    if (!signaturePadRef.current || signaturePadRef.current.isEmpty()) {
+      alert('Please draw your signature first');
+      return;
+    }
+
+    const signatureDataUrl = signaturePadRef.current.toDataURL();
+    const signatureName = prompt('Enter a name for this signature (e.g., "My Signature", "John Doe"):');
+
+    if (!signatureName || signatureName.trim() === '') {
+      return;
+    }
+
+    const newSignature = {
+      id: Date.now(),
+      name: signatureName.trim(),
+      dataUrl: signatureDataUrl,
+      createdAt: new Date().toISOString()
+    };
+
+    const updatedSignatures = [...savedSignatures, newSignature];
+    setSavedSignatures(updatedSignatures);
+    localStorage.setItem('metroexecucare_signatures', JSON.stringify(updatedSignatures));
+
+    signaturePadRef.current.clear();
+    alert(`✅ Signature "${signatureName}" saved successfully! You can now reuse it in any document.`);
+  };
+
+  // Delete saved signature
+  const handleDeleteSavedSignature = (signatureId) => {
+    if (!confirm('Are you sure you want to delete this saved signature?')) {
+      return;
+    }
+
+    const updatedSignatures = savedSignatures.filter(sig => sig.id !== signatureId);
+    setSavedSignatures(updatedSignatures);
+    localStorage.setItem('metroexecucare_signatures', JSON.stringify(updatedSignatures));
+  };
+
+  // Use saved signature (add to PDF)
+  const handleUseSavedSignature = (signatureDataUrl) => {
+    setAnnotations([...annotations, {
+      type: 'signature',
+      dataUrl: signatureDataUrl,
+      page: currentPage,
+      x: 100,
+      y: 200,
+      width: 200,
+      height: 100,
+      id: Date.now()
+    }]);
+  };
+
+  // Handle signature image upload
+  const handleSignatureUpload = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file (PNG, JPG, etc.)');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+
+      // Add uploaded signature to PDF
+      setAnnotations([...annotations, {
+        type: 'signature',
+        dataUrl: dataUrl,
+        page: currentPage,
+        x: 100,
+        y: 200,
+        width: 200,
+        height: 100,
+        id: Date.now()
+      }]);
+
+      // Clear the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  // Save uploaded signature for future use
+  const handleSaveUploadedSignature = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file (PNG, JPG, etc.)');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      const signatureName = prompt('Enter a name for this signature (e.g., "My Signature", "John Doe"):');
+
+      if (!signatureName || signatureName.trim() === '') {
+        return;
+      }
+
+      const newSignature = {
+        id: Date.now(),
+        name: signatureName.trim(),
+        dataUrl: dataUrl,
+        createdAt: new Date().toISOString()
+      };
+
+      const updatedSignatures = [...savedSignatures, newSignature];
+      setSavedSignatures(updatedSignatures);
+      localStorage.setItem('metroexecucare_signatures', JSON.stringify(updatedSignatures));
+
+      alert(`✅ Signature "${signatureName}" saved successfully! You can now reuse it in any document.`);
+
+      // Clear the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    };
+
+    reader.readAsDataURL(file);
   };
 
   // Remove annotation
@@ -1121,43 +1282,131 @@ export default function PdfEditorModal({
             {/* Side Panel for Signature */}
             {showSignaturePanel && (
               <div className="w-80 bg-white border-l p-4 overflow-y-auto">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Draw Signature</h3>
-                <div className="border-2 border-gray-300 rounded-lg overflow-hidden">
-                  <SignatureCanvas
-                    ref={signaturePadRef}
-                    canvasProps={{
-                      className: 'w-full h-40 bg-white'
-                    }}
-                  />
-                </div>
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={() => signaturePadRef.current?.clear()}
-                    className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-medium"
-                  >
-                    Clear
-                  </button>
-                  <button
-                    onClick={handleAddSignature}
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-                  >
-                    Add to PDF
-                  </button>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Add Signature</h3>
+
+                {/* Draw Signature Section */}
+                <div className="mb-6">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Draw Signature</h4>
+                  <div className="border-2 border-gray-300 rounded-lg overflow-hidden">
+                    <SignatureCanvas
+                      ref={signaturePadRef}
+                      canvasProps={{
+                        className: 'w-full h-40 bg-white'
+                      }}
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 mt-3">
+                    <button
+                      onClick={() => signaturePadRef.current?.clear()}
+                      className="px-3 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 font-medium text-sm"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      onClick={handleSaveSignature}
+                      className="px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm"
+                      title="Save this signature for reuse"
+                    >
+                      Save
+                    </button>
+                    <button
+                      onClick={handleAddSignature}
+                      className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm"
+                    >
+                      Add
+                    </button>
+                  </div>
                 </div>
 
-                {/* Signatures List */}
+                {/* Upload Signature Section */}
+                <div className="mb-6 pb-6 border-b">
+                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Upload Signature</h4>
+                  <p className="text-xs text-gray-500 mb-3">Upload an image of your signature (PNG, JPG)</p>
+
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleSignatureUpload}
+                    className="hidden"
+                    id="signature-upload"
+                  />
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <label
+                      htmlFor="signature-upload"
+                      className="cursor-pointer px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-sm text-center flex items-center justify-center gap-2"
+                    >
+                      <Upload size={16} />
+                      Add to PDF
+                    </label>
+
+                    <label
+                      className="cursor-pointer px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm text-center flex items-center justify-center gap-2"
+                      onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.onchange = handleSaveUploadedSignature;
+                        input.click();
+                      }}
+                    >
+                      <Upload size={16} />
+                      Save
+                    </label>
+                  </div>
+                </div>
+
+                {/* Saved Signatures Gallery */}
+                {savedSignatures.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">My Saved Signatures</h4>
+                    <div className="space-y-2">
+                      {savedSignatures.map(signature => (
+                        <div key={signature.id} className="border border-gray-200 rounded-lg p-2 bg-gray-50">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-medium text-gray-700">{signature.name}</span>
+                            <button
+                              onClick={() => handleDeleteSavedSignature(signature.id)}
+                              className="p-1 text-red-600 hover:bg-red-50 rounded"
+                              title="Delete this signature"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
+                          <img
+                            src={signature.dataUrl}
+                            alt={signature.name}
+                            className="w-full h-16 object-contain border border-gray-200 bg-white rounded cursor-pointer hover:border-blue-500"
+                            onClick={() => handleUseSavedSignature(signature.dataUrl)}
+                            title="Click to add to PDF"
+                          />
+                          <button
+                            onClick={() => handleUseSavedSignature(signature.dataUrl)}
+                            className="w-full mt-2 px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                          >
+                            Add to PDF
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Signatures on Current Page */}
                 {annotations.filter(a => a.type === 'signature' && a.page === currentPage).length > 0 && (
                   <div className="mt-6">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Added Signatures on This Page:</h4>
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Signatures on This Page:</h4>
                     <div className="space-y-2">
                       {annotations
                         .filter(a => a.type === 'signature' && a.page === currentPage)
                         .map(annotation => (
-                          <div key={annotation.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                            <img src={annotation.dataUrl} alt="Signature" className="h-10 border border-gray-200" />
+                          <div key={annotation.id} className="flex items-center justify-between p-2 bg-gray-50 rounded border border-gray-200">
+                            <img src={annotation.dataUrl} alt="Signature" className="h-10 border border-gray-200 bg-white" />
                             <button
                               onClick={() => handleRemoveAnnotation(annotation.id)}
                               className="ml-2 p-1 text-red-600 hover:bg-red-50 rounded"
+                              title="Remove from PDF"
                             >
                               <Trash2 size={14} />
                             </button>
