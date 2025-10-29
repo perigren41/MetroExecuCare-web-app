@@ -2456,7 +2456,20 @@ export default function LOA_Submit() {
                         ? 'Approval_Letter_of_Authorization_For_Annual_Medical_Check-up_Laboratory_and_Procedures.pdf'
                         : 'Approval_For_Annual_Medical_Check-up.pdf'
                 }
-                user={user}
+                user={request ? {
+                    // Use executive's information for auto-fill (the person who made the request)
+                    first_name: request.first_name,
+                    last_name: request.last_name,
+                    middle_name: request.middle_name || '',
+                    employee_id: request.employee_number || request.employee_id,
+                    email: request.email,
+                    department: request.department,
+                    position: request.position,
+                    contact_number: request.contact_number,
+                    branch: request.branch,
+                    birth_date: request.birth_date,
+                    gender: request.gender
+                } : user}
             />
 
             {/* PDF Preview Modal - Read-only preview for Executive Clearance Review */}
