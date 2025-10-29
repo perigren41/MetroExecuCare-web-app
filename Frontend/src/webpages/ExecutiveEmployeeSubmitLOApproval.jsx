@@ -770,6 +770,7 @@ export default function SubmitLetterOfAuthorization() {
         pdfUrl={`${BACKEND_BASE_URL}/templates/documents/Request Letter of Approval.pdf`}
         onSave={handlePdfEditorSave}
         templateName="Request_Letter_of_Approval.pdf"
+        user={user}
       />
     </>
   );
