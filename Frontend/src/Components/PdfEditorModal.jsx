@@ -41,6 +41,9 @@ export default function PdfEditorModal({
   const signatureUploadRef = useRef(null);
   const [formFields, setFormFields] = useState([]);
   const [hasFormFields, setHasFormFields] = useState(false);
+  const [clickToPlaceMode, setClickToPlaceMode] = useState(false); // New: Click-to-place text mode
+  const [pendingText, setPendingText] = useState(''); // Text waiting to be placed
+  const [showFieldDropdown, setShowFieldDropdown] = useState(null); // Which field dropdown is open (TODO: Future feature)
 
   // Load PDF when modal opens
   useEffect(() => {
@@ -361,21 +364,43 @@ export default function PdfEditorModal({
     });
   }, [pdfDoc, currentPage, scale, isLoading]);
 
-  // Add text annotation
+  // Add text annotation - NEW: Click-to-place mode
   const handleAddText = () => {
     if (!textInput.trim()) return;
 
+    // Enable click-to-place mode instead of adding at fixed position
+    setPendingText(textInput);
+    setClickToPlaceMode(true);
+    setTextInput('');
+    // Keep panel open to show instruction
+  };
+
+  // Handle PDF canvas click for placing text
+  const handleCanvasClick = (e) => {
+    if (!clickToPlaceMode || !pendingText) return;
+
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Add annotation at clicked position
     setAnnotations([...annotations, {
       type: 'text',
-      text: textInput,
+      text: pendingText,
       page: currentPage,
-      x: 100, // Default position
-      y: 100,
+      x: x,
+      y: y,
       fontSize: 14,
-      id: Date.now()
+      id: Date.now(),
+      isAutoFilled: false
     }]);
 
-    setTextInput('');
+    // Reset click-to-place mode
+    setPendingText('');
+    setClickToPlaceMode(false);
     setShowTextPanel(false);
     setSelectedTool(null);
   };
@@ -769,14 +794,37 @@ export default function PdfEditorModal({
                     style={{
                       width: canvasSize.width > 0 ? `${canvasSize.width}px` : 'auto',
                       height: canvasSize.height > 0 ? `${canvasSize.height}px` : 'auto',
-                      minHeight: '400px'
+                      minHeight: '400px',
+                      cursor: clickToPlaceMode ? 'crosshair' : 'default'
                     }}
+                    onClick={handleCanvasClick}
                   >
                     <canvas
                       ref={canvasRef}
                       className="max-w-full block"
                       style={{ display: 'block' }}
                     />
+
+                    {/* Click-to-place mode indicator */}
+                    {clickToPlaceMode && pendingText && (
+                      <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-20 flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+                        </svg>
+                        <span className="font-medium">Click anywhere on the PDF to place: "{pendingText}"</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setClickToPlaceMode(false);
+                            setPendingText('');
+                            setTextInput(pendingText);
+                          }}
+                          className="ml-2 text-white hover:text-red-200"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
 
                     {/* Render annotations as draggable overlays */}
                     {annotations
@@ -874,19 +922,48 @@ export default function PdfEditorModal({
             {showTextPanel && (
               <div className="w-80 bg-white border-l p-4 overflow-y-auto">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Add Text</h3>
-                <textarea
-                  value={textInput}
-                  onChange={(e) => setTextInput(e.target.value)}
-                  placeholder="Enter text to add to PDF..."
-                  className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-blue-500"
-                  rows={4}
-                />
-                <button
-                  onClick={handleAddText}
-                  className="w-full mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
-                >
-                  Add Text to PDF
-                </button>
+
+                {/* Instruction for click-to-place mode */}
+                {clickToPlaceMode && pendingText ? (
+                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-800 font-medium mb-2">
+                      📍 Click-to-Place Mode Active
+                    </p>
+                    <p className="text-xs text-blue-600">
+                      Click anywhere on the PDF where you want to place: <strong>"{pendingText}"</strong>
+                    </p>
+                    <button
+                      onClick={() => {
+                        setClickToPlaceMode(false);
+                        setPendingText('');
+                        setTextInput(pendingText);
+                      }}
+                      className="mt-2 text-xs text-red-600 hover:text-red-800 underline"
+                    >
+                      Cancel and edit text
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="mb-3 p-2 bg-gray-50 border border-gray-200 rounded text-xs text-gray-600">
+                      💡 <strong>Tip:</strong> Type your text below, then click "Add Text". You'll be able to click anywhere on the PDF to place it!
+                    </div>
+                    <textarea
+                      value={textInput}
+                      onChange={(e) => setTextInput(e.target.value)}
+                      placeholder="Enter text to add to PDF..."
+                      className="w-full p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:border-blue-500"
+                      rows={4}
+                    />
+                    <button
+                      onClick={handleAddText}
+                      disabled={!textInput.trim()}
+                      className="w-full mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Add Text to PDF
+                    </button>
+                  </>
+                )}
 
                 {/* Annotations List */}
                 {annotations.filter(a => a.type === 'text' && a.page === currentPage).length > 0 && (
