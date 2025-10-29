@@ -361,17 +361,34 @@ export default function PdfEditorModal({
       return;
     }
 
+    // Calculate age if birth_date available
+    const calculateAge = () => {
+      if (!user.birth_date) return '';
+      const birthDate = new Date(user.birth_date);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age.toString();
+    };
+
+    const age = calculateAge();
+    const ageSex = age && user.gender ? `${age}/${user.gender}` : (age || user.gender || '');
+
     const startX = 50;
     const startY = 100;
-    const spacingY = 55;
+    const spacingY = 50;
 
     const fields = [
-      { label: 'Full Name', value: `${user.first_name || ''} ${user.last_name || ''}`.trim() },
+      { label: 'Full Name', value: `${user.first_name || ''} ${user.middle_name || ''} ${user.last_name || ''}`.trim() },
       { label: 'Employee ID', value: user.employee_id || '' },
       { label: 'Department', value: user.department || '' },
       { label: 'Position', value: user.position || '' },
-      { label: 'Email', value: user.email || '' },
+      { label: 'Age/Sex', value: ageSex },
       { label: 'Contact', value: user.contact_number || '' },
+      { label: 'Branch', value: user.branch || '' },
       { label: 'Date', value: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) },
     ];
 
@@ -383,7 +400,7 @@ export default function PdfEditorModal({
         page: currentPage,
         x: startX,
         y: startY + (index * spacingY),
-        fontSize: 12,
+        fontSize: 11,
         id: Date.now() + index,
         isAutoFilled: true,
         fieldLabel: field.label
@@ -392,8 +409,10 @@ export default function PdfEditorModal({
     setAnnotations([...annotations, ...newAnnotations]);
 
     alert(
-      `✅ Added ${newAnnotations.length} draggable fields with your information!\n\n` +
-      '📌 Drag each green box to the correct position on the form.'
+      `✅ Added ${newAnnotations.length} draggable text fields!\n\n` +
+      '📌 Drag each field to its correct position on the form.\n' +
+      '💡 Tip: Look for labels like "Name:", "ID:", "Age/Sex:", etc. and place the fields next to them.\n\n' +
+      '⚠️ Note: This PDF does not have interactive form fields. For automatic positioning, the PDF would need to be converted to a fillable form using Adobe Acrobat or similar software.'
     );
   };
 
@@ -944,24 +963,22 @@ export default function PdfEditorModal({
                         >
                           {annotation.type === 'text' ? (
                             <div
-                              className={`border-2 px-2 py-1 rounded shadow-lg hover:shadow-xl transition-shadow ${
+                              className={`px-2 py-1 rounded transition-shadow ${
                                 annotation.isAutoFilled
-                                  ? 'border-green-400'
-                                  : 'border-yellow-400'
+                                  ? 'border border-gray-300 shadow-sm hover:shadow-md bg-white'
+                                  : 'border-2 border-yellow-400 shadow-lg hover:shadow-xl'
                               }`}
                               style={{
                                 background: annotation.isAutoFilled
-                                  ? 'rgba(187, 247, 208, 0.6)'
+                                  ? 'rgba(255, 255, 255, 0.95)'
                                   : 'rgba(254, 249, 195, 0.5)'
                               }}
                             >
-                              <span style={{ fontSize: annotation.fontSize, color: '#000' }}>{annotation.text}</span>
-                              {annotation.isAutoFilled && (
-                                <span className="ml-2 text-xs text-green-700 font-semibold">✓ Auto</span>
-                              )}
+                              <span style={{ fontSize: annotation.fontSize, color: '#000', fontWeight: annotation.isAutoFilled ? '500' : 'normal' }}>{annotation.text}</span>
                               <button
                                 onClick={() => handleRemoveAnnotation(annotation.id)}
                                 className="ml-2 text-red-600 hover:text-red-800 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Remove this field"
                               >
                                 ×
                               </button>
