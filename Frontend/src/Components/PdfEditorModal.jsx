@@ -130,70 +130,138 @@ export default function PdfEditorModal({
     detectFormFields();
   }, [pdfLibDoc]);
 
-  // Map user data to form field names
+  // Enhanced: Map user data to form field names with intelligent label detection
   const mapUserDataToFormFields = (fieldName, userData) => {
     if (!userData) return null;
 
-    const name = fieldName.toLowerCase().replace(/[_-]/g, '');
+    // Normalize field name for matching
+    const name = fieldName.toLowerCase().replace(/[_\-\s:]/g, '');
 
-    // Comprehensive field mappings
+    // Calculate age from birth_date if available
+    const calculateAge = () => {
+      if (!userData.birth_date) return '';
+      const birthDate = new Date(userData.birth_date);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age.toString();
+    };
+
+    // Comprehensive field mappings for HR templates
     const mappings = {
-      // Name fields
+      // Name fields (multiple formats)
       name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
       fullname: `${userData.first_name || ''} ${userData.middle_name || ''} ${userData.last_name || ''}`.trim(),
+      completename: `${userData.first_name || ''} ${userData.middle_name || ''} ${userData.last_name || ''}`.trim(),
       applicantname: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
       employeename: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
+      patientname: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
       firstname: userData.first_name || '',
       lastname: userData.last_name || '',
       middlename: userData.middle_name || '',
+      givenname: userData.first_name || '',
+      surname: userData.last_name || '',
 
-      // ID fields
+      // ID/Number fields
       id: userData.employee_id || '',
+      idnumber: userData.employee_id || '',
       employeeid: userData.employee_id || '',
       empid: userData.employee_id || '',
       staffid: userData.employee_id || '',
+      personnelid: userData.employee_id || '',
 
-      // Department
+      // Department/Division
       department: userData.department || '',
       dept: userData.department || '',
       division: userData.department || '',
+      section: userData.department || '',
+      unit: userData.department || '',
 
-      // Position
+      // Position/Job Title
       position: userData.position || '',
       title: userData.position || '',
       jobtitle: userData.position || '',
       role: userData.position || '',
+      designation: userData.position || '',
+      rank: userData.position || '',
 
-      // Contact
+      // Contact Information
       email: userData.email || '',
       emailaddress: userData.email || '',
       contact: userData.contact_number || '',
       contactnumber: userData.contact_number || '',
       phone: userData.contact_number || '',
+      phonenumber: userData.contact_number || '',
       mobile: userData.contact_number || '',
+      mobilenumber: userData.contact_number || '',
+      telephone: userData.contact_number || '',
 
-      // Branch
+      // Branch/Office/Location
       branch: userData.branch || '',
       office: userData.branch || '',
+      location: userData.branch || '',
+      workplace: userData.branch || '',
+      officeaddress: userData.branch || '',
 
-      // Date
+      // Age and Sex
+      age: calculateAge(),
+      agesex: `${calculateAge()}/${userData.gender || 'N/A'}`,
+      ageandsex: `${calculateAge()}/${userData.gender || 'N/A'}`,
+      sex: userData.gender || '',
+      gender: userData.gender || '',
+
+      // Date fields
       date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
-      datetoday: new Date().toLocaleDateString(),
+      datetoday: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+      today: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
       currentdate: new Date().toLocaleDateString(),
       applicationdate: new Date().toLocaleDateString(),
+      dateandtime: new Date().toLocaleString('en-US'),
+      datetime: new Date().toLocaleString('en-US'),
+      dateofapplication: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+
+      // Hospital/Medical fields (leave blank for user to fill)
+      hospital: '',
+      hospitalname: '',
+      clinic: '',
+      clinicname: '',
+      doctor: '',
+      physician: '',
+
+      // Address (if available in user data)
+      address: userData.address || '',
+      homeaddress: userData.address || '',
+      residentialaddress: userData.address || '',
     };
 
     // Exact match
     if (mappings[name]) return mappings[name];
 
-    // Partial match
+    // Partial match with priority scoring
+    let bestMatch = null;
+    let bestScore = 0;
+
     for (const [key, value] of Object.entries(mappings)) {
-      if (name.includes(key) || key.includes(name)) {
-        return value;
+      // Calculate match score based on substring matching
+      if (name.includes(key)) {
+        const score = key.length / name.length; // Longer matches score higher
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatch = value;
+        }
+      } else if (key.includes(name)) {
+        const score = name.length / key.length;
+        if (score > bestScore) {
+          bestScore = score;
+          bestMatch = value;
+        }
       }
     }
 
-    return null;
+    return bestMatch;
   };
 
   // Smart auto-fill for PDFs with interactive form fields (WPS-style)
@@ -207,6 +275,8 @@ export default function PdfEditorModal({
       const form = pdfLibDoc.getForm();
       let filledCount = 0;
       const skippedFields = [];
+      const blankFields = []; // Fields intentionally left blank (hospital, doctor, etc.)
+      const filledDetails = [];
 
       for (const fieldInfo of formFields) {
         const field = fieldInfo.field;
@@ -218,14 +288,17 @@ export default function PdfEditorModal({
             if (fieldInfo.type === 'PDFTextField') {
               field.setText(String(value));
               filledCount++;
+              filledDetails.push(`✓ ${fieldName}: ${value.substring(0, 30)}${value.length > 30 ? '...' : ''}`);
               console.log(`✅ Filled "${fieldName}": ${value}`);
             } else if (fieldInfo.type === 'PDFDropdown') {
               field.select(String(value));
               filledCount++;
+              filledDetails.push(`✓ ${fieldName}: ${value.substring(0, 30)}${value.length > 30 ? '...' : ''}`);
             } else if (fieldInfo.type === 'PDFCheckBox') {
               if (value === true || value === 'true' || value === 'yes') {
                 field.check();
                 filledCount++;
+                filledDetails.push(`✓ ${fieldName}: Checked`);
               }
             }
           } catch (err) {
@@ -233,7 +306,16 @@ export default function PdfEditorModal({
             skippedFields.push(fieldName);
           }
         } else {
-          skippedFields.push(fieldName);
+          // Check if this is a field that should be left blank (hospital, doctor, etc.)
+          const normalizedName = fieldName.toLowerCase();
+          if (normalizedName.includes('hospital') ||
+              normalizedName.includes('clinic') ||
+              normalizedName.includes('doctor') ||
+              normalizedName.includes('physician')) {
+            blankFields.push(fieldName);
+          } else {
+            skippedFields.push(fieldName);
+          }
         }
       }
 
@@ -245,12 +327,27 @@ export default function PdfEditorModal({
       // Trigger re-render
       setCurrentPage(currentPage);
 
-      alert(
-        `✅ Auto-filled ${filledCount} field(s) successfully!\n\n` +
-        (skippedFields.length > 0
-          ? `⚠️ ${skippedFields.length} field(s) could not be auto-filled. You can fill these manually.`
-          : 'All available fields have been filled with your information!')
-      );
+      // Build detailed message
+      let message = `🎉 Successfully auto-filled ${filledCount} field(s) with your information!\n\n`;
+
+      if (filledDetails.length > 0 && filledDetails.length <= 10) {
+        message += 'Filled fields:\n' + filledDetails.join('\n') + '\n\n';
+      }
+
+      if (blankFields.length > 0) {
+        message += `📝 ${blankFields.length} field(s) left blank for manual entry:\n`;
+        message += blankFields.slice(0, 5).map(f => `  • ${f}`).join('\n');
+        if (blankFields.length > 5) message += `\n  • ... and ${blankFields.length - 5} more`;
+        message += '\n\n';
+      }
+
+      if (skippedFields.length > 0) {
+        message += `⚠️ ${skippedFields.length} field(s) could not be matched:\n`;
+        message += skippedFields.slice(0, 3).map(f => `  • ${f}`).join('\n');
+        if (skippedFields.length > 3) message += `\n  • ... and ${skippedFields.length - 3} more`;
+      }
+
+      alert(message);
     } catch (error) {
       console.error('Error auto-filling form fields:', error);
       alert('Failed to auto-fill form fields. Please try again.');
