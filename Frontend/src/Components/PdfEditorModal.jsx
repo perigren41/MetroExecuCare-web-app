@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { X, Download, Upload, CheckCircle, AlertCircle, Type, Edit3, Trash2, Image } from 'lucide-react';
+import { X, Download, Upload, CheckCircle, AlertCircle, Type, Edit3, Trash2 } from 'lucide-react';
 import SignatureCanvas from 'react-signature-canvas';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument, rgb } from 'pdf-lib';
@@ -623,7 +623,7 @@ export default function PdfEditorModal({
   // Use saved signature (add to PDF)
   const handleUseSavedSignature = (signatureDataUrl) => {
     // Load image to get actual dimensions
-    const img = new Image();
+    const img = document.createElement('img');
     img.onload = () => {
       // Calculate appropriate size (max 300px wide, maintain aspect ratio)
       const maxWidth = 300;
@@ -667,7 +667,7 @@ export default function PdfEditorModal({
       const dataUrl = e.target.result;
 
       // Load image to get actual dimensions
-      const img = new Image();
+      const img = document.createElement('img');
       img.onload = () => {
         // Calculate appropriate size (max 300px wide, maintain aspect ratio)
         const maxWidth = 300;
@@ -686,13 +686,13 @@ export default function PdfEditorModal({
           height: height,
           id: Date.now()
         }]);
+
+        // Clear the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
       };
       img.src = dataUrl;
-
-      // Clear the file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     };
 
     reader.readAsDataURL(file);
