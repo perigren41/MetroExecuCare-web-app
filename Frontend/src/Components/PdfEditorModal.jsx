@@ -367,6 +367,37 @@ export default function PdfEditorModal({
       return;
     }
 
+    const fullName = `${user.first_name || ''} ${user.middle_name || ''} ${user.last_name || ''}`.trim();
+
+    // Role-based auto-fill: Benefits Officer and Division Head only need their name
+    if (user.role === 'benefits_officer' || user.role === 'welfare_head') {
+      const roleLabel = user.role === 'benefits_officer' ? 'Benefits Officer' : 'Division Head';
+
+      // Just add the name field for approvers
+      const nameAnnotation = {
+        type: 'text',
+        text: fullName,
+        page: currentPage,
+        x: 300,
+        y: 400,
+        fontSize: 12,
+        id: Date.now(),
+        isAutoFilled: true,
+        fieldLabel: `${roleLabel} Name`
+      };
+
+      setAnnotations([...annotations, nameAnnotation]);
+
+      alert(
+        `✅ Added your name for ${roleLabel} signature!\n\n` +
+        `📝 Name: ${fullName}\n\n` +
+        '🎯 Drag the name field to position it correctly.\n' +
+        '✍️ Use "Add Signature" button to add your signature.'
+      );
+      return;
+    }
+
+    // Full auto-fill for HR personnel and executives
     // Calculate age if birth_date available
     const calculateAge = () => {
       if (!user.birth_date) return '';
@@ -382,7 +413,6 @@ export default function PdfEditorModal({
 
     const age = calculateAge();
     const ageSex = age && user.gender ? `${age}/${user.gender}` : (age || user.gender || '');
-    const fullName = `${user.first_name || ''} ${user.middle_name || ''} ${user.last_name || ''}`.trim();
     const positionDepartment = `${user.position || ''} / ${user.department || ''}`.replace(' / ', ' / ').trim();
 
     // Improved positioning based on typical HR approval form layout
