@@ -640,8 +640,8 @@ export default function ExecutiveEmployeeDashboard() {
 
       {/* Action Buttons */}
       <div className="py-8 sm:py-12 px-4 sm:px-8">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 sm:gap-6 lg:gap-12 max-w-5xl mx-auto">
-          <div className="w-full sm:w-1/2 sm:max-w-xs lg:max-w-sm">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 lg:gap-16 mx-auto">
+          <div className="w-full sm:w-auto sm:max-w-xs lg:max-w-sm">
             <ActionButton
               label={
                 <div className="flex flex-col items-center justify-center gap-1">
@@ -656,7 +656,7 @@ export default function ExecutiveEmployeeDashboard() {
             />
           </div>
 
-          <div className="w-full sm:w-1/2 sm:max-w-xs lg:max-w-sm">
+          <div className="w-full sm:w-auto sm:max-w-xs lg:max-w-sm">
             <ActionButton
               label={
                 <div className="flex flex-col items-center justify-center gap-1">
