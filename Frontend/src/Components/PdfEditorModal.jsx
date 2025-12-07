@@ -3,12 +3,12 @@ import { X, Download, Upload, CheckCircle, AlertCircle, Type, Edit3, Trash2 } fr
 import SignatureCanvas from 'react-signature-canvas';
 import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument, rgb } from 'pdf-lib';
+import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?worker";
 
-// Set up PDF.js worker - use unpkg with .mjs extension for ES modules
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url
-).toString();
+GlobalWorkerOptions.workerSrc = pdfWorker;
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+
 
 export default function PdfEditorModal({
   isOpen,
