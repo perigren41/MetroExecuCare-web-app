@@ -448,14 +448,16 @@ const deleteUser = async (req, res) => {
       });
     }
 
-    // Soft delete by setting is_active = 0
-    // Note: deleted_at, deletion_reason, deleted_by columns don't exist in schema
+    // Soft delete by setting is_active = 0 and recording deletion details
     await pool.execute(
       `UPDATE users SET
         is_active = 0,
+        deleted_at = CURRENT_TIMESTAMP,
+        deleted_by = ?,
+        deletion_reason = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?`,
-      [id]
+      [req.user.id, deletion_reason || 'No reason provided', id]
     );
 
     // Log user deletion activity
@@ -506,13 +508,15 @@ const getDeletedUsers = async (req, res) => {
     const offset = (page - 1) * limit;
     const search = req.query.search || '';
 
-    // Build query for inactive users (is_active = 0)
-    // Note: deleted_at, deleted_by, deletion_reason columns don't exist in schema
+    // Build query for inactive users (is_active = 0) with deletion tracking info
     let query = `
       SELECT
         u.id, u.employee_id, u.email, u.first_name, u.last_name, u.middle_name, u.role,
-        u.department, u.position, u.branch, u.contact_number, u.birth_date, u.updated_at
+        u.department, u.position, u.branch, u.contact_number, u.birth_date, u.updated_at,
+        u.deleted_at, u.deletion_reason,
+        del_user.first_name as deleted_by_first_name, del_user.last_name as deleted_by_last_name
       FROM users u
+      LEFT JOIN users del_user ON u.deleted_by = del_user.id
       WHERE u.is_active = 0
     `;
     let countQuery = 'SELECT COUNT(*) as total FROM users WHERE is_active = 0';
@@ -598,14 +602,15 @@ const restoreUser = async (req, res) => {
       });
     }
 
-    // Restore user - set is_active = 1
-    // Note: restored_at, restoration_reason, restored_by columns don't exist in schema
+    // Restore user - set is_active = 1 and record restoration details
     await pool.execute(
       `UPDATE users SET
         is_active = 1,
+        restored_at = CURRENT_TIMESTAMP,
+        restored_by = ?,
         updated_at = CURRENT_TIMESTAMP
       WHERE id = ?`,
-      [id]
+      [req.user.id, id]
     );
 
     // Get restored user data
