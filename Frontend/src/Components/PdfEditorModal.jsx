@@ -5,7 +5,6 @@ import * as pdfjsLib from 'pdfjs-dist';
 import { PDFDocument, rgb } from 'pdf-lib';
 import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?worker";
 
-GlobalWorkerOptions.workerSrc = pdfWorker;
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
