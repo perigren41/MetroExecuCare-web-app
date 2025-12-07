@@ -27,6 +27,5 @@
     "Frontend"
   ],
   "dependencies": {
-    "pdfjs-dist": "^5.4.449"
   }
 }

@@ -2,8 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X, Download, ZoomIn, ZoomOut } from 'lucide-react';
 import * as pdfjsLib from 'pdfjs-dist';
 
-// Set up PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@5.4.296/build/pdf.worker.min.mjs`;
+// Set up PDF.js worker - use local version to match package.json
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).toString();
 
 export default function PdfPreviewModal({
   isOpen,
