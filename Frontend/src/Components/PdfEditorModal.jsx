@@ -6,7 +6,10 @@ import { PDFDocument, rgb } from 'pdf-lib';
 import workerSrc from "pdfjs-dist/build/pdf.worker.min.mjs?worker";
 
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).toString();
 
 
 export default function PdfEditorModal({
